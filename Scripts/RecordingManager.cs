@@ -160,6 +160,9 @@ namespace PlayRecorder {
 
         public bool CheckUniqueDescriptor(RecordComponent component)
         {
+            if (Application.isPlaying)
+                return true;
+
             for (int i = 0; i < components.Count; i++)
             {
                 if (component == components[i])

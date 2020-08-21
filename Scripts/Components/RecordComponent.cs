@@ -124,21 +124,36 @@ namespace PlayRecorder
             _recordItem = data;
         }
 
+        public virtual void StartPlaying()
+        {
+            _playing = true;
+        }
+
         public void PlayTick(int tick)
         {
             if(_playing)
             {
                 _currentTick = tick;
-                PlayTickLogic();
+                Debug.Log("Tick rec!");
+                if (_recordItem.parts != null)
+                {
+                    for (int i = 0; i < _recordItem.parts.Count; i++)
+                    {
+                        int oF = _recordItem.parts[i].currentFrameIndex;
+                        int nF = _recordItem.parts[i].SetCurrentFrame(tick);
+                        Debug.Log("uh oh! " + oF + " " + nF);
+                        if (oF != nF)
+                        {
+                            PlayTickLogic(i);
+                        }
+                    }
+                }
             }
         }
 
-        protected virtual void PlayTickLogic()
+        protected virtual void PlayTickLogic(int index)
         {
-            for (int i = 0; i < _recordItem.parts.Count; i++)
-            {
-                
-            }
+            //_recordItem.parts[index]
         }
 
         public List<string> PlayMessages(int tick)

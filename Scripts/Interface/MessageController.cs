@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-namespace PlayRecorder
+namespace PlayRecorder.Interface
 {
 
     public class MessageController : MonoBehaviour

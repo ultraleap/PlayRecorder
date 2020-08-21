@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System;
+using System.Linq;
 
 namespace PlayRecorder
 {
@@ -98,7 +100,7 @@ namespace PlayRecorder
 
             EditorGUILayout.LabelField("Recorded Components ("+ serializedObject.FindProperty(bindersVariable).arraySize + ")", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
-            componentFilter = EditorGUILayout.TextField(new GUIContent("Filter Components", "Filter to specific components based upon their descriptor."), componentFilter);
+            componentFilter = EditorGUILayout.TextField(new GUIContent("Filter Components", "Filter to specific components based upon their descriptor and component type."), componentFilter);
             if(GUILayout.Button("Clear Filter",mbN,GUILayout.Width(90)))
             {
                 componentFilter = "";
@@ -108,7 +110,7 @@ namespace PlayRecorder
             int c = 0;
             for (int i = 0; i < serializedObject.FindProperty(bindersVariable).arraySize; i++)
             {
-                if (componentFilter == "" || serializedObject.FindProperty(bindersVariable).GetArrayElementAtIndex(i).FindPropertyRelative("descriptor").stringValue.Contains(componentFilter))
+                if (componentFilter == "" || serializedObject.FindProperty(bindersVariable).GetArrayElementAtIndex(i).FindPropertyRelative("descriptor").stringValue.Contains(componentFilter,StringComparison.InvariantCultureIgnoreCase) || serializedObject.FindProperty(bindersVariable).GetArrayElementAtIndex(i).FindPropertyRelative("type").stringValue.Contains(componentFilter,StringComparison.InvariantCultureIgnoreCase))
                 {
                     if (c > 0)
                     {

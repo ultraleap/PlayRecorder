@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace PlayRecorder
+namespace PlayRecorder.Interface
 {
 
     public class MessageManager : MonoBehaviour

@@ -23,12 +23,12 @@ namespace PlayRecorder {
         [SerializeField]
         List<TextAsset> _recordedFiles = new List<TextAsset>();
 
-        [SerializeField, HideInInspector]
+        [SerializeField]
         List<Data> _data = new List<Data>();
-        [SerializeField, HideInInspector]
+        [SerializeField]
         int _currentFile = -1;
 
-        public Data currentData { 
+        public Data currentData {
             get {
                 if (_currentFile != -1 && _data.Count > 0)
                     return _data[_currentFile];
@@ -52,7 +52,7 @@ namespace PlayRecorder {
 
         int _currentFrameRate = 0, _currentTickVal = 0;
 
-        [SerializeField,HideInInspector]
+        [SerializeField, HideInInspector]
         float _playbackRate = 1.0f;
 
         // Scrubbing Playback
@@ -67,19 +67,19 @@ namespace PlayRecorder {
 
         #region Actions
 
-        public Action<RecordComponent,List<string>> OnPlayMessages;
+        public Action<RecordComponent, List<string>> OnPlayMessages;
         public Action<Data> OnDataFileChange;
 
         #endregion
 
 
         public int currentTick { get { return _currentTickVal; } private set { _currentTickVal = value; _timeCounter = _currentTickVal / _data[_currentFile].frameRate; } }
-        public float currentTime {  get { return _timeCounter; } }
+        public float currentTime { get { return _timeCounter; } }
 
         public void ChangeFiles()
         {
             _data.Clear();
-            if(_recordedFiles.Count == 0)
+            if (_recordedFiles.Count == 0)
             {
                 Debug.LogWarning("No files chosen. Aborting.");
                 _binders.Clear();
@@ -87,7 +87,7 @@ namespace PlayRecorder {
             }
             for (int i = 0; i < _recordedFiles.Count; i++)
             {
-                if(_recordedFiles[i] == null)
+                if (_recordedFiles[i] == null)
                 {
                     _recordedFiles.RemoveAt(i);
                     Debug.LogError("Null file removed.");
@@ -97,7 +97,7 @@ namespace PlayRecorder {
                 try
                 {
                     Data d = SerializationUtility.DeserializeValue<Data>(_recordedFiles[i].bytes, DataFormat.JSON);
-                    if(d.objects != null)
+                    if (d.objects != null)
                     {
                         _data.Add(d);
                     }
@@ -124,7 +124,7 @@ namespace PlayRecorder {
                 for (int j = 0; j < _data[i].objects.Count; j++)
                 {
                     int ind = _binders.FindIndex(x => (x.descriptor == _data[i].objects[j].descriptor) && (x.type == _data[i].objects[j].type));
-                    if(ind != -1)
+                    if (ind != -1)
                     {
                         _binders[ind].count++;
                     }
@@ -142,18 +142,18 @@ namespace PlayRecorder {
             bool mismatch = false;
             for (int i = 0; i < _binders.Count; i++)
             {
-                if(_binders[i].count == 0)
+                if (_binders[i].count == 0)
                 {
                     _binders.RemoveAt(i);
                     i--;
                     continue;
                 }
-                if(_binders[i].count != _data.Count)
+                if (_binders[i].count != _data.Count)
                 {
                     mismatch = true;
                 }
             }
-            if(mismatch)
+            if (mismatch)
             {
                 Debug.LogWarning("You have a mismatch between your recorded item count and your data files. This may mean certain objects do not have unique playback data.");
             }
@@ -162,7 +162,7 @@ namespace PlayRecorder {
 
         public void ChangeCurrentFile(int fileIndex)
         {
-            if(fileIndex == -1)
+            if (fileIndex == -1)
             {
                 fileIndex = 0;
             }
@@ -181,35 +181,49 @@ namespace PlayRecorder {
                 if (ind != -1)
                 {
                     _binders[i].recordItem = _data[fileIndex].objects[ind];
+                    if (_binders[i].recordComponent != null)
+                    {
+                        _binders[i].recordComponent.SetPlaybackData(_binders[i].recordItem);
+                    }
                 }
                 else
                 {
                     _binders[i].recordItem = null;
                 }
             }
+            _currentFrameRate = _data[fileIndex].frameRate;
             _tickRate = 1.0 / _data[fileIndex].frameRate;
             OnDataFileChange?.Invoke(_data[fileIndex]);
         }
 
         public void Awake()
         {
-            if(_currentFile == -1)
+            if (_currentFile == -1)
             {
                 _currentFile = 0;
-            }
-            if(_data.Count > 0)
-            {
-                ChangeCurrentFile(_currentFile);
             }
         }
 
         public void Start()
         {
+            if (_data.Count > 0)
+            {
+                Debug.Log("Changed!");
+                ChangeCurrentFile(_currentFile);
+            }
             _playbackThread = new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
                 PlaybackThread();
             });
+            for (int i = 0; i < _binders.Count; i++)
+            {
+                if (_binders[i].recordComponent != null)
+                {
+                    _binders[i].recordComponent.StartPlaying();
+                }
+            }
+            _playing = true;
             _paused = true;
             _playbackThread.Start();
         }
@@ -229,6 +243,11 @@ namespace PlayRecorder {
 
         // 
 
+        public bool TogglePlaying()
+        {
+            return _paused = !_paused;
+        }
+
         public void ScrubTick(int tick)
         {
             if(_playing)
@@ -244,6 +263,7 @@ namespace PlayRecorder {
             float ticks = _mainThreadTime;
             double tickDelta = 0.0, tickCounter = 0.0;
             List<string> tempMessages = new List<string>();
+            int statusIndex = -1;
             while (_playing)
             {
                 tickDelta = (_mainThreadTime - ticks);
@@ -276,12 +296,24 @@ namespace PlayRecorder {
                     currentTick++;
 
                     for (int i = 0; i < _binders.Count; i++)
-                    {    
-                        _binders[i]?.recordComponent.PlayTick(currentTick);
-                        tempMessages = _binders[i]?.recordComponent.PlayMessages(currentTick);
-                        if(tempMessages.Count > 0)
+                    {
+                        if (_binders[i].recordComponent == null)
+                            continue;
+
+                        Debug.Log("Tick time!");
+                        _binders[i].recordComponent.PlayTick(currentTick);
+                        tempMessages = _binders[i].recordComponent.PlayMessages(currentTick);
+                        if(tempMessages != null && tempMessages.Count > 0)
                         {
-                            OnPlayMessages?.Invoke(_binders[i]?.recordComponent,tempMessages);
+                            OnPlayMessages?.Invoke(_binders[i].recordComponent,tempMessages);
+                        }
+                        if(_binders[i].recordItem != null && _binders[i].recordItem.status != null)
+                        {
+                            statusIndex = _binders[i].recordItem.status.FindIndex(x => x.frame == currentTick);
+                            if (statusIndex != -1)
+                            {
+                                _binders[i]?.recordComponent?.gameObject.SetActive(_binders[i].recordItem.status[statusIndex].status);
+                            }
                         }
                     }
                 }

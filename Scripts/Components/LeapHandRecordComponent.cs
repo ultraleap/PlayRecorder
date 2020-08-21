@@ -77,7 +77,17 @@ namespace PlayRecorder
             }
         }
 
+        public override void StartPlaying()
+        {
+            base.StartPlaying();
+            _handModel = GetComponent<HandModelBase>();
+        }
 
+        protected override void PlayTickLogic(int index)
+        {
+            _handModel.SetLeapHand(((LeapFrame)_recordItem.parts[index].frames[_recordItem.parts[index].currentFrameIndex]).hand);
+            Debug.Log("set hand!");
+        }
     }
 
 }

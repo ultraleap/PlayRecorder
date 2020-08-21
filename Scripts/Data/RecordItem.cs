@@ -50,7 +50,8 @@ namespace PlayRecorder
         /// <summary>
         /// Used for playback purposes only
         /// </summary>
-        private int currentFrameIndex = -1;
+        [System.NonSerialized, HideInInspector]
+        public int currentFrameIndex = -1;
         private int increasingTicks = 1;
 
         public int SetCurrentFrame(int tick)
