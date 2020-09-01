@@ -42,6 +42,18 @@ namespace PlayRecorder
 
             EditorGUILayout.EndHorizontal();
 
+            for (int i = 0; i < serializedObject.FindProperty("components").arraySize; i++)
+            {
+                if (serializedObject.FindProperty("components").GetArrayElementAtIndex(i).objectReferenceValue == null)
+                {
+                    serializedObject.FindProperty("components").DeleteArrayElementAtIndex(i);
+                    serializedObject.ApplyModifiedProperties();
+                    i--;
+                }
+            }
+
+
+
             componentNames.Clear();
             for (int i = 0; i < serializedObject.FindProperty("components").arraySize; i++)
             {
@@ -92,6 +104,7 @@ namespace PlayRecorder
                     }
                 }
             }
+
 
             DrawDefaultInspector();
         }

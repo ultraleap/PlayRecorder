@@ -122,6 +122,12 @@ namespace PlayRecorder
         public void SetPlaybackData(RecordItem data)
         {
             _recordItem = data;
+            for (int i = 0; i < _recordItem.parts.Count; i++)
+            {
+                Debug.Log(_recordItem.type.ToString());
+                if (_recordItem.parts[i].frames.Count > 0)
+                    Debug.Log(_recordItem.parts[i].frames[0].GetType().ToString());
+            }
         }
 
         public virtual void StartPlaying()

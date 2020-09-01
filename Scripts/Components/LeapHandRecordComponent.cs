@@ -41,7 +41,8 @@ namespace PlayRecorder
             _handModel.OnFinish += HandModelFinish;
 
             base.StartRecording();
-            _recordItem.parts.Add(new RecordPart());
+            RecordPart r = new RecordPart();
+            _recordItem.parts.Add(r);
         }
 
         public override RecordItem StopRecording()
@@ -85,6 +86,8 @@ namespace PlayRecorder
 
         protected override void PlayTickLogic(int index)
         {
+            Debug.Log("PTL: " +_recordItem.parts[index].frames[_recordItem.parts[index].currentFrameIndex].GetType().ToString());
+            LeapFrame f = (LeapFrame)_recordItem.parts[index].frames[_recordItem.parts[index].currentFrameIndex];
             _handModel.SetLeapHand(((LeapFrame)_recordItem.parts[index].frames[_recordItem.parts[index].currentFrameIndex]).hand);
             Debug.Log("set hand!");
         }

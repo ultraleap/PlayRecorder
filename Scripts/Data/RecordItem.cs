@@ -75,7 +75,7 @@ namespace PlayRecorder
                 increasingTicks = -1;
             }
 
-            while(!(frames[currentFrameIndex].tick >= tick && (frames[currentFrameIndex].nextTick < tick || frames[currentFrameIndex].nextTick == -1)))
+            while(tick > frames[currentFrameIndex].tick && frames[currentFrameIndex].nextTick != -1)
             {
                 currentFrameIndex+=increasingTicks;
             }

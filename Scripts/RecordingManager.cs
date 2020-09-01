@@ -33,7 +33,7 @@ namespace PlayRecorder {
         public string recordingName = "";
         string _recordingTimeDate = "";
 
-        [SerializeField,HideInInspector]
+        [SerializeField]
         protected List<RecordComponent> components = new List<RecordComponent>();
 
         protected Thread _recordingThread;
@@ -153,7 +153,8 @@ namespace PlayRecorder {
                 if (_data.objects[i].parts.Count > 0)
                 {
                     Debug.Log(_data.objects[i].type.ToString());
-                    //Debug.Log(_data.objects[i].parts[0].frames[0].GetType().ToString());
+                    if(_data.objects[i].parts[0].frames.Count > 0)
+                        Debug.Log(_data.objects[i].parts[0].frames[0].GetType().ToString());
                 }
             }
         }

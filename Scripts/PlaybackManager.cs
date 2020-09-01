@@ -100,6 +100,15 @@ namespace PlayRecorder {
                     if (d.objects != null)
                     {
                         _data.Add(d);
+                        for (int j = 0; j < d.objects.Count; j++)
+                        {
+                            if (d.objects[j].parts.Count > 0)
+                            {
+                                Debug.Log(d.objects[j].type.ToString());
+                                if (d.objects[j].parts[0].frames.Count > 0)
+                                    Debug.Log(d.objects[j].parts[0].frames[0].GetType().ToString());
+                            }
+                        }
                     }
                     else
                     {
@@ -134,7 +143,7 @@ namespace PlayRecorder {
                         {
                             descriptor = _data[i].objects[j].descriptor,
                             count = 1,
-                            type = _data[i].objects[j].type
+                            type = _data[i].objects[j].type,
                         });
                     }
                 }
@@ -181,6 +190,12 @@ namespace PlayRecorder {
                 if (ind != -1)
                 {
                     _binders[i].recordItem = _data[fileIndex].objects[ind];
+                    for (int j = 0; j < _binders[i].recordItem.parts.Count; j++)
+                    {
+                        Debug.Log(_binders[i].recordItem.type.ToString());
+                        if (_binders[i].recordItem.parts[j].frames.Count > 0)
+                            Debug.Log("CCF: "+ _binders[i].recordItem.parts[j].frames[0].GetType().ToString());
+                    }
                     if (_binders[i].recordComponent != null)
                     {
                         _binders[i].recordComponent.SetPlaybackData(_binders[i].recordItem);
@@ -208,8 +223,7 @@ namespace PlayRecorder {
         {
             if (_data.Count > 0)
             {
-                Debug.Log("Changed!");
-                ChangeCurrentFile(_currentFile);
+                ChangeFiles();
             }
             _playbackThread = new Thread(() =>
             {
