@@ -25,6 +25,7 @@ namespace PlayRecorder {
 
         [SerializeField]
         List<Data> _data = new List<Data>();
+        string _dataBytes = "";
         [SerializeField]
         int _currentFile = -1;
 
@@ -49,6 +50,8 @@ namespace PlayRecorder {
         float _timeCounter = 0f;
 
         double _tickRate = 0;
+        bool _ticked = false;
+        int _statusIndex = -1;
 
         int _currentFrameRate = 0, _currentTickVal = 0;
 
@@ -253,6 +256,22 @@ namespace PlayRecorder {
             {
                 _mainThreadTime = Time.time;
             }
+            if(_ticked)
+            {
+                _ticked = false;
+                for (int i = 0; i < _binders.Count; i++)
+                {
+                    if (_binders[i].recordItem != null && _binders[i].recordItem.status != null)
+                    {
+                        _statusIndex = _binders[i].recordItem.status.FindIndex(x => x.frame == currentTick);
+                        if (_statusIndex != -1)
+                        {
+                            // Can't modify gameObject status during a thread
+                            _binders[i].recordComponent.gameObject.SetActive(_binders[i].recordItem.status[_statusIndex].status);
+                        }
+                    }
+                }
+            }
         }
 
         // 
@@ -308,26 +327,18 @@ namespace PlayRecorder {
                 {
                     tickCounter -= _tickRate;
                     currentTick++;
+                    _ticked = true;
 
                     for (int i = 0; i < _binders.Count; i++)
                     {
                         if (_binders[i].recordComponent == null)
                             continue;
 
-                        Debug.Log("Tick time!");
                         _binders[i].recordComponent.PlayTick(currentTick);
                         tempMessages = _binders[i].recordComponent.PlayMessages(currentTick);
                         if(tempMessages != null && tempMessages.Count > 0)
                         {
                             OnPlayMessages?.Invoke(_binders[i].recordComponent,tempMessages);
-                        }
-                        if(_binders[i].recordItem != null && _binders[i].recordItem.status != null)
-                        {
-                            statusIndex = _binders[i].recordItem.status.FindIndex(x => x.frame == currentTick);
-                            if (statusIndex != -1)
-                            {
-                                _binders[i]?.recordComponent?.gameObject.SetActive(_binders[i].recordItem.status[statusIndex].status);
-                            }
                         }
                     }
                 }

@@ -13,7 +13,6 @@ namespace PlayRecorder
         public Vector3 localPosition;
         public Quaternion rotation;
         public Quaternion localRotation;
-        public Vector3 lossyScale;
         public Vector3 localScale;
 
         public TransformFrame(int tick, TransformCache tc) : base(tick)
@@ -22,10 +21,8 @@ namespace PlayRecorder
             localPosition = tc.localPosition;
             rotation = tc.rotation;
             localRotation = tc.localRotation;
-            lossyScale = tc.lossyScale;
             localScale = tc.localScale;
         }
-
     }
 
     public class TransformCache
@@ -37,7 +34,6 @@ namespace PlayRecorder
         public Vector3 localPosition;
         public Quaternion rotation;
         public Quaternion localRotation;
-        public Vector3 lossyScale;
         public Vector3 localScale;
 
         public bool hasChanged = false;
@@ -49,7 +45,6 @@ namespace PlayRecorder
             localPosition = transform.localPosition;
             rotation = transform.rotation;
             localRotation = transform.localRotation;
-            lossyScale = transform.lossyScale;
             localScale = transform.localScale;
         }
 
@@ -76,17 +71,13 @@ namespace PlayRecorder
                 localRotation = transform.localRotation;
                 hasChanged = true;
             }
-            if (transform.lossyScale != lossyScale)
-            {
-                lossyScale = transform.lossyScale;
-                hasChanged = true;
-            }
             if (transform.localScale != localScale)
             {
                 localScale = transform.localScale;
                 hasChanged = true;
             }
         }
+
     }
 
     public class TransformRecordComponent : RecordComponent
@@ -123,7 +114,7 @@ namespace PlayRecorder
             }
         }
 
-        private void Update()
+        protected override void RecordUpdate()
         {
             for (int i = 0; i < _transformCache.Count; i++)
             {
@@ -149,6 +140,37 @@ namespace PlayRecorder
             baseTransform = gameObject.transform;
         }
 #endif
+
+        protected override void PlayUpdate()
+        {
+            if (_recordItem.parts.Count == 0 || _playUpdatedParts.Count == 0)
+                return;
+
+            for (int i = 0; i < _playUpdatedParts.Count; i++)
+            {
+                switch (_playUpdatedParts[i])
+                {
+                    case 0:
+                        if(baseTransform != null)
+                            ApplyTransform((TransformFrame)_recordItem.parts[0].currentFrame, baseTransform);
+                        break;
+                    default:
+                        if (_extraTransforms[_playUpdatedParts[i] - 1] != null)
+                            ApplyTransform((TransformFrame)_recordItem.parts[_playUpdatedParts[i]].currentFrame, _extraTransforms[_playUpdatedParts[i] - 1]);
+                        break;
+                }
+            }
+            
+        }
+
+        void ApplyTransform(TransformFrame frame, Transform transform)
+        {
+            transform.position = frame.position;
+            transform.localPosition = frame.localPosition;
+            transform.rotation = frame.rotation;
+            transform.localRotation = frame.localRotation;
+            transform.localScale = frame.localScale;
+        }
 
     }
 

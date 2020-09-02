@@ -23,10 +23,28 @@ namespace PlayRecorder
         protected bool _recording = false;
         protected bool _playing = false;
 
+        protected bool _recordUpdated = false;
+        protected List<int> _playUpdatedParts = new List<int>();
+
+        // Playback temp variables
+        private int _oldFrame, _newFrame;
+
         private void Awake()
         {
             _manager = FindObjectOfType<RecordingManager>();
             _manager?.AddComponent(this);
+        }
+
+        private void Update()
+        {
+            if(_recording)
+            {
+                RecordUpdate();
+            }
+            if(_playing)
+            {
+                PlayUpdate();
+            }
         }
 
         [ExecuteInEditMode]
@@ -101,6 +119,11 @@ namespace PlayRecorder
                 _recordItem.messages[ind].frames.Add(_manager.currentTick);
             }
         }
+
+        protected virtual void RecordUpdate()
+        {
+
+        }
       
         public void RecordTick(int tick)
         {
@@ -135,6 +158,11 @@ namespace PlayRecorder
             _playing = true;
         }
 
+        protected virtual void PlayUpdate()
+        {
+            _playUpdatedParts.Clear();
+        }
+
         public void PlayTick(int tick)
         {
             if(_playing)
@@ -145,11 +173,13 @@ namespace PlayRecorder
                 {
                     for (int i = 0; i < _recordItem.parts.Count; i++)
                     {
-                        int oF = _recordItem.parts[i].currentFrameIndex;
-                        int nF = _recordItem.parts[i].SetCurrentFrame(tick);
-                        Debug.Log("uh oh! " + oF + " " + nF);
-                        if (oF != nF)
+                        _oldFrame = _recordItem.parts[i].currentFrameIndex;
+                        _newFrame = _recordItem.parts[i].SetCurrentFrame(tick);
+                        if (_oldFrame != _newFrame)
                         {
+                            int j = i;
+                            if(!_playUpdatedParts.Contains(j))
+                                _playUpdatedParts.Add(j);
                             PlayTickLogic(i);
                         }
                     }

@@ -40,6 +40,8 @@ namespace PlayRecorder
             _handModel.OnBegin += HandModelBegin;
             _handModel.OnFinish += HandModelFinish;
 
+            _hand = new Hand();
+
             base.StartRecording();
             RecordPart r = new RecordPart();
             _recordItem.parts.Add(r);
@@ -74,7 +76,9 @@ namespace PlayRecorder
             if(_handUpdated)
             {
                 _handUpdated = false;
-                _recordItem.parts[0].AddFrame(new LeapFrame(_currentTick, _hand));
+                Hand h = new Hand();
+                h.CopyFrom(_hand);
+                _recordItem.parts[0].AddFrame(new LeapFrame(_currentTick, h));
             }
         }
 
@@ -84,13 +88,16 @@ namespace PlayRecorder
             _handModel = GetComponent<HandModelBase>();
         }
 
-        protected override void PlayTickLogic(int index)
+        protected override void PlayUpdate()
         {
-            Debug.Log("PTL: " +_recordItem.parts[index].frames[_recordItem.parts[index].currentFrameIndex].GetType().ToString());
-            LeapFrame f = (LeapFrame)_recordItem.parts[index].frames[_recordItem.parts[index].currentFrameIndex];
-            _handModel.SetLeapHand(((LeapFrame)_recordItem.parts[index].frames[_recordItem.parts[index].currentFrameIndex]).hand);
-            Debug.Log("set hand!");
+            if(_playUpdatedParts.Count > 0)
+            {
+                _playUpdatedParts.Clear();
+                _handModel.SetLeapHand(((LeapFrame)_recordItem.parts[0].currentFrame).hand);
+                _handModel.UpdateHand();
+            }
         }
+
     }
 
 }
