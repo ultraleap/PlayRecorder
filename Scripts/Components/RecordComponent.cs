@@ -14,8 +14,6 @@ namespace PlayRecorder
 
         protected int _currentTick = 0;
 
-        protected string _id;
-
         [SerializeField, HideInInspector]
         protected string _descriptor = "";
         public string descriptor { get { return _descriptor; } }
@@ -41,9 +39,10 @@ namespace PlayRecorder
             {
                 RecordUpdate();
             }
-            if(_playing)
-            {
+            if(_playing && (_recordItem.parts.Count > 0 || _playUpdatedParts.Count > 0))
+            {                    
                 PlayUpdate();
+                _playUpdatedParts.Clear();
             }
         }
 
@@ -76,18 +75,9 @@ namespace PlayRecorder
 
         public virtual void StartRecording()
         {
-            if(_id == null || _id == "")
-            {
-                _id = System.Guid.NewGuid().ToString();
-            }
             _currentTick = 0;
             _recording = true;
-            _recordItem = new RecordItem(gameObject.activeInHierarchy)
-            {
-                id = _id,
-                descriptor = _descriptor,
-                type = this.GetType().ToString()
-            };
+            _recordItem = new RecordItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy);
         }
 
         public virtual RecordItem StopRecording()

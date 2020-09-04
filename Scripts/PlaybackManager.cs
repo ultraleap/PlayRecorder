@@ -224,25 +224,8 @@ namespace PlayRecorder {
 
         public void Start()
         {
-            if (_data.Count > 0)
-            {
-                ChangeFiles();
-            }
-            _playbackThread = new Thread(() =>
-            {
-                Thread.CurrentThread.IsBackground = true;
-                PlaybackThread();
-            });
-            for (int i = 0; i < _binders.Count; i++)
-            {
-                if (_binders[i].recordComponent != null)
-                {
-                    _binders[i].recordComponent.StartPlaying();
-                }
-            }
-            _playing = true;
             _paused = true;
-            _playbackThread.Start();
+            _playing = false;
         }
 
         private void OnDestroy()
@@ -274,10 +257,36 @@ namespace PlayRecorder {
             }
         }
 
+        public void StartPlaying()
+        {
+            if (_data.Count > 0)
+            {
+                ChangeFiles();
+            }
+            _playbackThread = new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                PlaybackThread();
+            });
+            for (int i = 0; i < _binders.Count; i++)
+            {
+                if (_binders[i].recordComponent != null)
+                {
+                    _binders[i].recordComponent.StartPlaying();
+                }
+            }
+            _playing = true;
+            _playbackThread.Start();
+        }
+
         // 
 
         public bool TogglePlaying()
         {
+            if(!_playing)
+            {
+                StartPlaying();
+            }
             return _paused = !_paused;
         }
 

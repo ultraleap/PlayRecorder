@@ -9,17 +9,13 @@ namespace PlayRecorder
     public class TransformFrame : Frame
     {
         // Used in recording thread
-        public Vector3 position;
         public Vector3 localPosition;
-        public Quaternion rotation;
         public Quaternion localRotation;
         public Vector3 localScale;
 
         public TransformFrame(int tick, TransformCache tc) : base(tick)
         {
-            position = tc.position;
             localPosition = tc.localPosition;
-            rotation = tc.rotation;
             localRotation = tc.localRotation;
             localScale = tc.localScale;
         }
@@ -30,9 +26,7 @@ namespace PlayRecorder
         Transform transform;
 
         // Used in main thread
-        public Vector3 position;
         public Vector3 localPosition;
-        public Quaternion rotation;
         public Quaternion localRotation;
         public Vector3 localScale;
 
@@ -41,9 +35,7 @@ namespace PlayRecorder
         public TransformCache(Transform transform)
         {
             this.transform = transform;
-            position = transform.position;
             localPosition = transform.localPosition;
-            rotation = transform.rotation;
             localRotation = transform.localRotation;
             localScale = transform.localScale;
         }
@@ -51,19 +43,9 @@ namespace PlayRecorder
         public void Update()
         {
             hasChanged = false;
-            if (transform.position != position)
-            {
-                position = transform.position;
-                hasChanged = true;
-            }
             if (transform.localPosition != localPosition)
             {
                 localPosition = transform.localPosition;
-                hasChanged = true;
-            }
-            if (transform.rotation != rotation)
-            {
-                rotation = transform.rotation;
                 hasChanged = true;
             }
             if (transform.localRotation != localRotation)
@@ -101,6 +83,9 @@ namespace PlayRecorder
             _transformCache.Add(new TransformCache(baseTransform));
             for (int i = 0; i < _extraTransforms.Count; i++)
             {
+                if (_extraTransforms[i] == null)
+                    continue;
+
                 TransformCache tc = new TransformCache(_extraTransforms[i]);
                 _transformCache.Add(tc);
                 
@@ -141,11 +126,26 @@ namespace PlayRecorder
         }
 #endif
 
+        public override void StartPlaying()
+        {
+            base.StartPlaying();
+            if(baseTransform != null)
+            {
+                DisableAllComponents(baseTransform);
+            }
+
+
+            for (int i = 0; i < _extraTransforms.Count; i++)
+            {
+                if(_extraTransforms[i] != null)
+                {
+                    DisableAllComponents(_extraTransforms[i]);
+                }
+            }
+        }
+
         protected override void PlayUpdate()
         {
-            if (_recordItem.parts.Count == 0 || _playUpdatedParts.Count == 0)
-                return;
-
             for (int i = 0; i < _playUpdatedParts.Count; i++)
             {
                 switch (_playUpdatedParts[i])
@@ -160,16 +160,29 @@ namespace PlayRecorder
                         break;
                 }
             }
-            
         }
 
         void ApplyTransform(TransformFrame frame, Transform transform)
         {
-            transform.position = frame.position;
             transform.localPosition = frame.localPosition;
-            transform.rotation = frame.rotation;
             transform.localRotation = frame.localRotation;
             transform.localScale = frame.localScale;
+        }
+
+        void DisableAllComponents(Transform transform)
+        {
+            MonoBehaviour[] mb = transform.GetComponents<MonoBehaviour>();
+            for (int i = 0; i < mb.Length; i++)
+            {
+                // This may need more items to be added
+                if(mb[i].GetType() != typeof(RecordComponent) ||
+                   mb[i].GetType() != typeof(Renderer) ||
+                   mb[i].GetType() != typeof(MeshFilter) ||
+                   mb[i].GetType() != typeof(Camera))
+                {
+                    mb[i].enabled = false;
+                }
+            }
         }
 
     }

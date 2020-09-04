@@ -23,7 +23,7 @@ namespace PlayRecorder
     [System.Serializable]
     public class Frame
     {
-        public int tick, previousTick = -1, nextTick = -1;
+        public int tick, nextTick = -1;
 
         public Frame(int tick)
         {

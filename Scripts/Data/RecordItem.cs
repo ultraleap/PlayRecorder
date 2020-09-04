@@ -8,16 +8,16 @@ namespace PlayRecorder
     [System.Serializable]
     public class RecordItem
     {
-        [HideInInspector]
-        public string id;
         public string descriptor;
         public string type;
         public List<RecordPart> parts = new List<RecordPart>();
         public List<RecordMessage> messages = new List<RecordMessage>();
         public List<RecordStatus> status = new List<RecordStatus>();
         
-        public RecordItem(bool active)
+        public RecordItem(string descriptor, string type, bool active)
         {
+            this.descriptor = descriptor;
+            this.type = type;
             AddStatus(active, 0);
         }
 
@@ -42,7 +42,6 @@ namespace PlayRecorder
             if(frames.Count > 0)
             {
                 frames[frames.Count - 1].nextTick = frame.tick;
-                frame.previousTick = frames[frames.Count - 1].tick;
             }
             frames.Add(frame);
         }
