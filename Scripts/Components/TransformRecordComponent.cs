@@ -66,12 +66,12 @@ namespace PlayRecorder
     {
 
         [SerializeField]
-        Transform baseTransform = null;
+        protected Transform baseTransform = null;
 
         [SerializeField]
-        List<Transform> _extraTransforms = new List<Transform>();
+        protected List<Transform> _extraTransforms = new List<Transform>();
 
-        List<TransformCache> _transformCache = new List<TransformCache>();
+        protected List<TransformCache> _transformCache = new List<TransformCache>();
 
         public override void StartRecording()
         {

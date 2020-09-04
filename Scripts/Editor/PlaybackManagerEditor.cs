@@ -13,7 +13,7 @@ namespace PlayRecorder
     {
 
         Vector2 scrollPos;
-        bool filesVisible = false, awaitingFileRefresh = false;
+        bool awaitingFileRefresh = false;
 
         static string recordedFilesVariable = "_recordedFiles", bindersVariable = "_binders", currentFileVariable = "_currentFile";
 
@@ -26,7 +26,7 @@ namespace PlayRecorder
             GUIStyle s = new GUIStyle(EditorStyles.foldout);
             s.fontStyle = FontStyle.Bold;
 
-            filesVisible = EditorGUILayout.Foldout(filesVisible, "Recorded Files (" + serializedObject.FindProperty(recordedFilesVariable).arraySize + ")",true,s);
+            serializedObject.FindProperty(recordedFilesVariable).isExpanded = EditorGUILayout.Foldout(serializedObject.FindProperty(recordedFilesVariable).isExpanded, "Recorded Files (" + serializedObject.FindProperty(recordedFilesVariable).arraySize + ")",true,s);
 
             GUIStyle mb = new GUIStyle(EditorStyles.miniButton);
             mb.fontStyle = FontStyle.Bold;
@@ -42,7 +42,7 @@ namespace PlayRecorder
             {
                 serializedObject.FindProperty(recordedFilesVariable).InsertArrayElementAtIndex(serializedObject.FindProperty(recordedFilesVariable).arraySize);
                 serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(serializedObject.FindProperty(recordedFilesVariable).arraySize-1).objectReferenceValue = null;
-                filesVisible = true;
+                serializedObject.FindProperty(recordedFilesVariable).isExpanded = true;
                 awaitingFileRefresh = true;
             }
 
@@ -65,7 +65,7 @@ namespace PlayRecorder
 
             EditorGUILayout.EndHorizontal();
 
-            if (filesVisible)
+            if (serializedObject.FindProperty(recordedFilesVariable).isExpanded)
             {
                 for (int i = 0; i < serializedObject.FindProperty(recordedFilesVariable).arraySize; i++)
                 {
@@ -95,8 +95,8 @@ namespace PlayRecorder
                     EditorGUILayout.LabelField("Current file: " + ((TextAsset)serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(serializedObject.FindProperty(currentFileVariable).intValue).objectReferenceValue).name);
                 }
             }
-            
-            DrawUILine(Color.grey, 1, 4);
+
+            EditorUtils.DrawUILine(Color.grey, 1, 4);
 
             EditorGUILayout.LabelField("Recorded Components ("+ serializedObject.FindProperty(bindersVariable).arraySize + ")", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
@@ -114,7 +114,7 @@ namespace PlayRecorder
                 {
                     if (c > 0)
                     {
-                        DrawUILine(Color.grey, 1, 4);
+                        EditorUtils.DrawUILine(Color.grey, 1, 4);
                     }
                     EditorGUILayout.PropertyField(serializedObject.FindProperty(bindersVariable).GetArrayElementAtIndex(i));
                     c++;
@@ -136,7 +136,7 @@ namespace PlayRecorder
             }
             EditorGUILayout.EndHorizontal();
 
-            DrawUILine(Color.grey, 1, 4);
+            EditorUtils.DrawUILine(Color.grey, 1, 4);
 
             EditorGUILayout.LabelField("Playback Parameters", EditorStyles.boldLabel);
 
@@ -144,16 +144,6 @@ namespace PlayRecorder
             serializedObject.FindProperty("_scrubWaitTime").floatValue = EditorGUILayout.Slider(new GUIContent("Scrubbing Wait Time", "The amount of time to wait before jumping to a specific point on the timeline."), serializedObject.FindProperty("_scrubWaitTime").floatValue, 0, 1.0f);
 
             serializedObject.ApplyModifiedProperties();
-        }
-
-        public void DrawUILine(Color color, int thickness = 2, int padding = 10)
-        {
-            Rect r = EditorGUILayout.GetControlRect(GUILayout.Height(padding + thickness));
-            r.height = thickness;
-            r.y += padding / 2;
-            r.x -= 2;
-            r.width += 6;
-            EditorGUI.DrawRect(r, color);
         }
 
         void ToggleExpanded(bool expand)

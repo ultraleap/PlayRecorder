@@ -33,16 +33,14 @@ namespace PlayRecorder {
         public string recordingName = "";
         string _recordingTimeDate = "";
 
-        [SerializeField]
-        protected List<RecordComponent> components = new List<RecordComponent>();
+        [SerializeField, HideInInspector]
+        protected List<RecordComponent> _components = new List<RecordComponent>();
+        // The components used for the current file
+        protected List<RecordComponent> _currentComponents = new List<RecordComponent>();
 
         protected Thread _recordingThread;
 
         public Action OnTick;
-
-        byte[] b = null;
-
-        string s = "";
 
         [ContextMenu("Start")]
         public void StartRecording()
@@ -61,9 +59,14 @@ namespace PlayRecorder {
             _timeCounter = 0f;
             _currentTickVal = 0;
             _recording = true;
-            for (int i = 0; i < components.Count; i++)
+            _currentComponents.Clear();
+            for (int i = 0; i < _components.Count; i++)
             {
-                components[i].StartRecording();
+                if(_components[i].required)
+                {
+                    _components[i].StartRecording();
+                    _currentComponents.Add(_components[i]);
+                }
             }
             _mainThreadTime = Time.time;
             _recordingThread = new Thread(() => 
@@ -79,13 +82,13 @@ namespace PlayRecorder {
         {
             _recording = false;
             _data.frameCount = _currentTickVal;
-            for (int i = 0; i < components.Count; i++)
+            for (int i = 0; i < _currentComponents.Count; i++)
             {
-                _data.objects.Add(components[i].StopRecording());
+                _data.objects.Add(_currentComponents[i].StopRecording());
             }
-            b = SerializationUtility.SerializeValue(_data, DataFormat.JSON);
+            byte[] b = SerializationUtility.SerializeValue(_data, DataFormat.Binary);
             System.IO.Directory.CreateDirectory(Application.dataPath + "/../" + recordingFolderName + "/");
-            System.IO.File.WriteAllBytes(Application.dataPath + "/../" + recordingFolderName + "/" + _recordingTimeDate + " " + recordingName + ".json",b);
+            System.IO.File.WriteAllBytes(Application.dataPath + "/../" + recordingFolderName + "/" + _recordingTimeDate + " " + recordingName + ".bytes",b);
         }
 
         void OnDestroy()
@@ -106,15 +109,15 @@ namespace PlayRecorder {
 
         public void AddComponent(RecordComponent component)
         {
-            if(!components.Contains(component))
+            if(!_components.Contains(component))
             {
-                components.Add(component);
+                _components.Add(component);
             }
         }
 
         public void RemoveComponent(RecordComponent component)
         {
-            components.Remove(component);
+            _components.Remove(component);
         }
 
         protected void RecordingThread(int frameRate)
@@ -132,30 +135,13 @@ namespace PlayRecorder {
                     tickCounter -= tickTime;
                     _currentTickVal++;
 
-                    for (int i = 0; i < components.Count; i++)
+                    for (int i = 0; i < _currentComponents.Count; i++)
                     {
-                        components[i].RecordTick(_currentTickVal);
+                        _currentComponents[i].RecordTick(_currentTickVal);
                     }
                 }
                 // Woh there cowboy not so fast
                 Thread.Sleep(1);
-            }
-        }
-
-        [ContextMenu("Reserialize")]
-        void Reser()
-        {
-            _data = null;
-            
-            _data = SerializationUtility.DeserializeValue<Data>(b, DataFormat.JSON);
-            for (int i = 0; i < _data.objects.Count; i++)
-            {
-                if (_data.objects[i].parts.Count > 0)
-                {
-                    Debug.Log(_data.objects[i].type.ToString());
-                    if(_data.objects[i].parts[0].frames.Count > 0)
-                        Debug.Log(_data.objects[i].parts[0].frames[0].GetType().ToString());
-                }
             }
         }
 
@@ -164,15 +150,24 @@ namespace PlayRecorder {
             if (Application.isPlaying)
                 return true;
 
-            for (int i = 0; i < components.Count; i++)
+            for (int i = 0; i < _components.Count; i++)
             {
-                if (component == components[i])
+                if (component == _components[i])
                     continue;
 
-                if (component.descriptor == components[i].descriptor)
+                if (component.descriptor == _components[i].descriptor)
                     return false;
             }
             return true;
+        }
+
+        public void RefreshComponents()
+        {
+            RecordComponent[] rc = FindObjectsOfType<RecordComponent>();
+            for (int i = 0; i < rc.Length; i++)
+            {
+                AddComponent(rc[i]);
+            }
         }
 
     }

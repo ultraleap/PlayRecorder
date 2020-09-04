@@ -10,6 +10,11 @@ namespace PlayRecorder
     [CustomEditor(typeof(RecordingManager), true)]
     public class RecordManagerEditor : Editor
     {
+
+        static string componentString = "_components";
+
+        GUIStyle iconButtonStyle;
+
         public class RecordManagerDuplicates
         {
             public string descriptor;
@@ -20,6 +25,12 @@ namespace PlayRecorder
 
         public override void OnInspectorGUI()
         {
+            iconButtonStyle = new GUIStyle(EditorStyles.miniButton)
+            {
+                padding = new RectOffset(2, 2, 2, 2),
+                fixedHeight = 20
+            };
+
             EditorGUILayout.BeginHorizontal();
 
             EditorGUI.BeginDisabledGroup(!Application.isPlaying || serializedObject.FindProperty("_recording").boolValue);
@@ -42,35 +53,33 @@ namespace PlayRecorder
 
             EditorGUILayout.EndHorizontal();
 
-            for (int i = 0; i < serializedObject.FindProperty("components").arraySize; i++)
+            for (int i = 0; i < serializedObject.FindProperty(componentString).arraySize; i++)
             {
-                if (serializedObject.FindProperty("components").GetArrayElementAtIndex(i).objectReferenceValue == null)
+                if (serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue == null)
                 {
-                    serializedObject.FindProperty("components").DeleteArrayElementAtIndex(i);
+                    serializedObject.FindProperty(componentString).DeleteArrayElementAtIndex(i);
                     serializedObject.ApplyModifiedProperties();
                     i--;
                 }
             }
 
-
-
             componentNames.Clear();
-            for (int i = 0; i < serializedObject.FindProperty("components").arraySize; i++)
+            for (int i = 0; i < serializedObject.FindProperty(componentString).arraySize; i++)
             {
-                string d = ((RecordComponent)serializedObject.FindProperty("components").GetArrayElementAtIndex(i).objectReferenceValue).descriptor;
+                string d = ((RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue).descriptor;
 
                 int ind = componentNames.FindIndex(x => x.descriptor == d);
 
                 if(ind != -1)
                 {
-                    componentNames[ind].components.Add((RecordComponent)serializedObject.FindProperty("components").GetArrayElementAtIndex(i).objectReferenceValue);
+                    componentNames[ind].components.Add((RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue);
                 }
                 else
                 {
                     componentNames.Add(new RecordManagerDuplicates()
                     {
                         descriptor = d,
-                        components = new List<RecordComponent>() { (RecordComponent)serializedObject.FindProperty("components").GetArrayElementAtIndex(i).objectReferenceValue }
+                        components = new List<RecordComponent>() { (RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue }
                     });
                 }
 
@@ -105,8 +114,73 @@ namespace PlayRecorder
                 }
             }
 
-
             DrawDefaultInspector();
+
+            EditorGUILayout.BeginHorizontal();
+
+            if(serializedObject.FindProperty(componentString).isExpanded = EditorGUILayout.Foldout(serializedObject.FindProperty(componentString).isExpanded,new GUIContent("Recording Components ("+ serializedObject.FindProperty(componentString).arraySize+")", "All recording components currently found within the scene."),true))
+            {
+                RefreshComponentsButton();
+                EditorGUILayout.EndHorizontal();
+
+                GUIContent hierarchyButton = EditorGUIUtility.IconContent("UnityEditor.SceneHierarchyWindow");
+                hierarchyButton.tooltip = "Ping the object within the scene hierarchy.";
+
+                GUIContent recordLabel = new GUIContent("Record", "Decides whether this component will be used during the next recording. Does not affect playback.");
+                for (int i = 0; i < serializedObject.FindProperty(componentString).arraySize; i++)
+                {
+                    if (serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue == null)
+                    {
+                        serializedObject.FindProperty(componentString).DeleteArrayElementAtIndex(i);
+                        i--;
+                        continue;
+                    }
+
+                    if(i > 0)
+                    {
+                        EditorUtils.DrawUILine(Color.grey, 1, 4);
+                    }
+
+                    EditorGUILayout.BeginHorizontal();
+                    if(GUILayout.Button(hierarchyButton, iconButtonStyle, GUILayout.Width(20)))
+                    {
+                        EditorGUIUtility.PingObject(serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue);
+                    }
+                    if(GUILayout.Button(((RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue).descriptor + " ("+ serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue.name+")", EditorStyles.boldLabel))
+                    {
+                        EditorGUIUtility.PingObject(serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue);
+                    }
+
+                    RecordComponent r = (RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue;
+                    if(GUILayout.Button(recordLabel,EditorStyles.label,GUILayout.Width(46)))
+                    {
+                        r.required = !r.required;
+                    }
+                    r.required = EditorGUILayout.Toggle(r.required,GUILayout.Width(14));
+
+                    EditorGUILayout.EndHorizontal();
+
+                    EditorGUILayout.LabelField(new GUIContent("Type: " + serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue.GetType().ToString()));
+                }
+            }
+            else
+            {
+                RefreshComponentsButton();
+                EditorGUILayout.EndHorizontal();
+            }
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        void RefreshComponentsButton()
+        {
+            GUIContent rf = EditorGUIUtility.IconContent("Refresh");
+            rf.text = "Refresh";
+            rf.tooltip = "Finds all the current components within the scene in case automatic additions fail.";
+            if (GUILayout.Button(rf,iconButtonStyle,GUILayout.Width(68)))
+            {
+                ((RecordingManager)serializedObject.targetObject).RefreshComponents();
+            }
         }
 
     }

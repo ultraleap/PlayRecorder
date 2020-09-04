@@ -18,6 +18,10 @@ namespace PlayRecorder
         protected string _descriptor = "";
         public string descriptor { get { return _descriptor; } }
 
+        [SerializeField, HideInInspector]
+        protected bool _required = true;
+        public bool required { get { return _required; } set { _required = value; } }
+
         protected bool _recording = false;
         protected bool _playing = false;
 
@@ -158,7 +162,6 @@ namespace PlayRecorder
             if(_playing)
             {
                 _currentTick = tick;
-                Debug.Log("Tick rec!");
                 if (_recordItem.parts != null)
                 {
                     for (int i = 0; i < _recordItem.parts.Count; i++)

@@ -11,7 +11,7 @@ namespace PlayRecorder
     public class RecordComponentEditor : Editor
     {
 
-        bool requiresCheck = true, isUnique = true;
+        bool descriptorCheck = true, isUnique = true;
         string currentDescriptor = "";
 
         RecordingManager manager = null;
@@ -26,9 +26,9 @@ namespace PlayRecorder
                 manager.AddComponent((RecordComponent)serializedObject.targetObject);
             }
 
-            if(requiresCheck && manager != null)
+            if(descriptorCheck && manager != null)
             {
-                requiresCheck = false;
+                descriptorCheck = false;
                 isUnique = manager.CheckUniqueDescriptor((RecordComponent)serializedObject.targetObject);
             }
 
@@ -45,17 +45,15 @@ namespace PlayRecorder
             {
                 EditorGUILayout.LabelField("Current descriptor is not unique. Please change this to make it unique.",errorStyle);
             }
+
+            serializedObject.FindProperty("_required").boolValue = EditorGUILayout.Toggle(new GUIContent("Required for Recording", "Decides whether this component will be used during the next recording. Does not affect playback."), serializedObject.FindProperty("_required").boolValue);
+
             serializedObject.ApplyModifiedProperties();
             DrawDefaultInspector();
             if(currentDescriptor != serializedObject.FindProperty("_descriptor").stringValue)
             {
-                requiresCheck = true;
+                descriptorCheck = true;
             }
         }
-
-        private void OnValidate()
-        {
-        }
-
     }
 }

@@ -99,7 +99,7 @@ namespace PlayRecorder {
                 }
                 try
                 {
-                    Data d = SerializationUtility.DeserializeValue<Data>(_recordedFiles[i].bytes, DataFormat.JSON);
+                    Data d = SerializationUtility.DeserializeValue<Data>(_recordedFiles[i].bytes, DataFormat.Binary);
                     if (d.objects != null)
                     {
                         _data.Add(d);
