@@ -88,7 +88,7 @@ namespace PlayRecorder
 
                 TransformCache tc = new TransformCache(_extraTransforms[i]);
                 _transformCache.Add(tc);
-                
+
             }
 
             for (int i = 0; i < _transformCache.Count; i++)
@@ -111,7 +111,7 @@ namespace PlayRecorder
         {
             for (int i = 0; i < _transformCache.Count; i++)
             {
-                if(_transformCache[i].hasChanged)
+                if (_transformCache[i].hasChanged)
                 {
                     _transformCache[i].hasChanged = false;
                     _recordItem.parts[i].AddFrame(new TransformFrame(_currentTick, _transformCache[i]));
@@ -129,7 +129,7 @@ namespace PlayRecorder
         public override void StartPlaying()
         {
             base.StartPlaying();
-            if(baseTransform != null)
+            if (baseTransform != null)
             {
                 DisableAllComponents(baseTransform);
             }
@@ -137,7 +137,7 @@ namespace PlayRecorder
 
             for (int i = 0; i < _extraTransforms.Count; i++)
             {
-                if(_extraTransforms[i] != null)
+                if (_extraTransforms[i] != null)
                 {
                     DisableAllComponents(_extraTransforms[i]);
                 }
@@ -151,7 +151,7 @@ namespace PlayRecorder
                 switch (_playUpdatedParts[i])
                 {
                     case 0:
-                        if(baseTransform != null)
+                        if (baseTransform != null)
                             ApplyTransform((TransformFrame)_recordItem.parts[0].currentFrame, baseTransform);
                         break;
                     default:
@@ -171,16 +171,20 @@ namespace PlayRecorder
 
         void DisableAllComponents(Transform transform)
         {
-            MonoBehaviour[] mb = transform.GetComponents<MonoBehaviour>();
+            Behaviour[] mb = transform.GetComponents<Behaviour>();
             for (int i = 0; i < mb.Length; i++)
             {
                 // This may need more items to be added
-                if(mb[i].GetType() != typeof(RecordComponent) ||
-                   mb[i].GetType() != typeof(Renderer) ||
-                   mb[i].GetType() != typeof(MeshFilter) ||
-                   mb[i].GetType() != typeof(Camera))
+                if (!(typeof(RecordComponent).IsSameOrSubclass(mb[i].GetType()) ||
+                   mb[i].GetType() == typeof(Renderer) ||
+                   mb[i].GetType() == typeof(MeshFilter) ||
+                   mb[i].GetType() == typeof(Camera)))
                 {
                     mb[i].enabled = false;
+                }
+                if (mb[i].GetType() == typeof(Camera))
+                {
+                    ((Camera)mb[i]).stereoTargetEye = StereoTargetEyeMask.None;
                 }
             }
         }

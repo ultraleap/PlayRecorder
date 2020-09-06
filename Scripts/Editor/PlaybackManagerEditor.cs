@@ -55,11 +55,20 @@ namespace PlayRecorder
                 mbR.normal.textColor = Color.red;
             }
 
-            if (GUILayout.Button(new GUIContent("Update Files","This can take a while to process depending on your system, the number of files, and the recording complexity."), mbR, GUILayout.Width(90)))
+            if (serializedObject.FindProperty("_changingFiles").boolValue)
             {
-                ((PlaybackManager)serializedObject.targetObject).ChangeFiles();
-                awaitingFileRefresh = false;
+                mbR.normal.textColor = Color.grey;
+                GUILayout.Button(new GUIContent("Loading...", "This can take a while to process depending on your system, the number of files, and the recording complexity."), mbR, GUILayout.Width(90));
             }
+            else
+            {
+                if (GUILayout.Button(new GUIContent("Update Files", "This can take a while to process depending on your system, the number of files, and the recording complexity."), mbR, GUILayout.Width(90)))
+                {
+                    ((PlaybackManager)serializedObject.targetObject).ChangeFiles();
+                    awaitingFileRefresh = false;
+                }
+            }
+                
 
             EditorGUI.EndDisabledGroup();
 
@@ -142,6 +151,51 @@ namespace PlayRecorder
 
             serializedObject.FindProperty("_playbackRate").floatValue = EditorGUILayout.Slider(new GUIContent("Playback Rate", "The rate/speed at which the recordings should play."), serializedObject.FindProperty("_playbackRate").floatValue, 0, 3.0f);
             serializedObject.FindProperty("_scrubWaitTime").floatValue = EditorGUILayout.Slider(new GUIContent("Scrubbing Wait Time", "The amount of time to wait before jumping to a specific point on the timeline."), serializedObject.FindProperty("_scrubWaitTime").floatValue, 0, 1.0f);
+
+            EditorGUI.BeginDisabledGroup(!Application.isPlaying || serializedObject.FindProperty(recordedFilesVariable).arraySize == 0);
+
+            EditorGUILayout.LabelField("Current Playback Information", EditorStyles.boldLabel);
+
+            GUIContent playpause = new GUIContent();
+            if(serializedObject.FindProperty("_paused").boolValue)
+            {
+                playpause.text = "Play";
+            }
+            else
+            {
+                playpause.text = "Pause";
+            }
+            if(GUILayout.Button(playpause))
+            {
+                ((PlaybackManager)serializedObject.targetObject).TogglePlaying();
+            }
+
+            EditorGUI.EndDisabledGroup();
+
+            EditorGUI.BeginDisabledGroup(!serializedObject.FindProperty("_playing").boolValue);
+            int value = (int)EditorGUILayout.Slider(new GUIContent("Frame", "The current frame being played back from the current file."), Mathf.Clamp(serializedObject.FindProperty("_currentTickVal").intValue,0, serializedObject.FindProperty("_maxTickVal").intValue), 0, serializedObject.FindProperty("_maxTickVal").intValue);
+
+            if(value != Mathf.Clamp(serializedObject.FindProperty("_currentTickVal").intValue, 0, serializedObject.FindProperty("_maxTickVal").intValue))
+            {
+                ((PlaybackManager)serializedObject.targetObject).ScrubTick(value);
+            }
+
+            EditorGUILayout.BeginHorizontal();
+
+            EditorGUILayout.LabelField("Frame Rate: " + serializedObject.FindProperty("_currentFrameRate").intValue.ToString());
+
+            if (serializedObject.FindProperty("_currentFrameRate").intValue > 0)
+            {
+                EditorGUILayout.LabelField("Time: " + TimeUtil.ConvertToTime((double)serializedObject.FindProperty("_timeCounter").floatValue) + " / " + TimeUtil.ConvertToTime((double)serializedObject.FindProperty("_maxTickVal").intValue / (double)serializedObject.FindProperty("_currentFrameRate").intValue));
+            }
+            else
+            {
+                EditorGUILayout.LabelField("Time: 00:00:00 / 00:00:00");
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUI.EndDisabledGroup();
 
             serializedObject.ApplyModifiedProperties();
         }

@@ -67,23 +67,26 @@ namespace PlayRecorder
             if(frames[currentFrameIndex].tick <= tick)
             {
                 // increase
-                increasingTicks = 1;
+                while (tick > frames[currentFrameIndex].tick && currentFrameIndex < frames.Count - 1 && tick >= frames[currentFrameIndex + 1].tick)
+                {
+                    currentFrameIndex++;
+                }
+
             }
             else
             {
                 // decrease or stay
-                increasingTicks = -1;
+                while(tick < frames[currentFrameIndex].tick && currentFrameIndex > 0 && tick < frames[currentFrameIndex - 1].tick)
+                {
+                    currentFrameIndex--;
+                }
             }
 
-            while(tick > frames[currentFrameIndex].tick && frames[currentFrameIndex].nextTick != -1)
-            {
-                currentFrameIndex+=increasingTicks;
-            }
-            
             return currentFrameIndex;
         }
     }
 
+    [System.Serializable]
     public class RecordStatus
     {
         public bool status = true;
