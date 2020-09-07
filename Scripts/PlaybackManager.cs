@@ -20,9 +20,6 @@ namespace PlayRecorder {
         public RecordItem recordItem;
     }
 
-
-    
-
     public class PlaybackManager : MonoBehaviour
     {
 

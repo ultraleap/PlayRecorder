@@ -87,8 +87,8 @@ namespace PlayRecorder {
                 _data.objects.Add(_currentComponents[i].StopRecording());
             }
             byte[] b = SerializationUtility.SerializeValue(_data, DataFormat.Binary);
-            System.IO.Directory.CreateDirectory(Application.dataPath + "/../" + recordingFolderName + "/");
-            System.IO.File.WriteAllBytes(Application.dataPath + "/../" + recordingFolderName + "/" + _recordingTimeDate + " " + recordingName + ".bytes",b);
+            System.IO.Directory.CreateDirectory(Application.dataPath + "/" + recordingFolderName + "/");
+            System.IO.File.WriteAllBytes(Application.dataPath + "/" + recordingFolderName + "/" + _recordingTimeDate + " " + recordingName + ".bytes",b);
         }
 
         void OnDestroy()
