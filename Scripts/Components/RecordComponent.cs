@@ -17,6 +17,8 @@ namespace PlayRecorder
         [SerializeField, HideInInspector]
         protected string _descriptor = "";
         public string descriptor { get { return _descriptor; } }
+        [SerializeField, HideInInspector]
+        protected bool _uniqueDescriptor = true;
 
         [SerializeField, HideInInspector]
         protected bool _required = true;
@@ -32,6 +34,11 @@ namespace PlayRecorder
         private int _oldFrame, _newFrame;
 
         private void Awake()
+        {
+            AddToManager();
+        }
+
+        public void AddToManager()
         {
             _manager = FindObjectOfType<RecordingManager>();
             _manager?.AddComponent(this);
@@ -191,6 +198,15 @@ namespace PlayRecorder
                 }
             }
             return messages;
+        }
+
+        public void SetDescriptor(string descriptor)
+        {
+            _descriptor = descriptor;
+            if(_manager != null)
+            {
+                _uniqueDescriptor = _manager.CheckUniqueDescriptor(this);
+            }
         }
 
     }

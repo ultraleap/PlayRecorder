@@ -86,9 +86,8 @@ namespace PlayRecorder {
             {
                 _data.objects.Add(_currentComponents[i].StopRecording());
             }
-            byte[] b = SerializationUtility.SerializeValue(_data, DataFormat.Binary);
             System.IO.Directory.CreateDirectory(Application.dataPath + "/" + recordingFolderName + "/");
-            System.IO.File.WriteAllBytes(Application.dataPath + "/" + recordingFolderName + "/" + _recordingTimeDate + " " + recordingName + ".bytes",b);
+            System.IO.File.WriteAllBytes(Application.dataPath + "/" + recordingFolderName + "/" + _recordingTimeDate + " " + recordingName + ".bytes", SerializationUtility.SerializeValue(_data, DataFormat.Binary));
         }
 
         void OnDestroy()
@@ -147,9 +146,6 @@ namespace PlayRecorder {
 
         public bool CheckUniqueDescriptor(RecordComponent component)
         {
-            if (Application.isPlaying)
-                return true;
-
             for (int i = 0; i < _components.Count; i++)
             {
                 if (component == _components[i])
@@ -161,12 +157,30 @@ namespace PlayRecorder {
             return true;
         }
 
+        public bool CheckUniqueDescriptor(string descriptor)
+        {
+            for (int i = 0; i < _components.Count; i++)
+            {
+                if (descriptor == _components[i].descriptor)
+                    return false;
+            }
+            return true;
+        }
+
         public void RefreshComponents()
         {
-            RecordComponent[] rc = FindObjectsOfType<RecordComponent>();
+            RecordComponent[] rc = Resources.FindObjectsOfTypeAll<RecordComponent>();
             for (int i = 0; i < rc.Length; i++)
             {
                 AddComponent(rc[i]);
+            }
+            for (int i = 0; i < _components.Count; i++)
+            {
+                if(_components[i].gameObject.scene.name == null)
+                {
+                    RemoveComponent(_components[i]);
+                    i--;
+                }
             }
         }
 

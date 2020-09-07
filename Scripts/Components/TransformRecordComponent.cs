@@ -65,7 +65,7 @@ namespace PlayRecorder
     public class TransformRecordComponent : RecordComponent
     {
 
-        [SerializeField]
+        [SerializeField, Tooltip("Automatically assigned to the current object transform, changes will be ignored and reset once recording starts.")]
         protected Transform baseTransform = null;
 
         [SerializeField]
