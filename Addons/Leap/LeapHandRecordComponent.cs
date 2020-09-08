@@ -216,7 +216,7 @@ namespace PlayRecorder.Leap
     {
 
         [SerializeField,Tooltip("This value is the square magnitude at which rotation changes will cause a frame to be stored.")]
-        float _rotationThreshold = 1.5f;
+        float _rotationThreshold = 0.5f;
 
         HandModel _handModel;
 
@@ -284,11 +284,13 @@ namespace PlayRecorder.Leap
 
         private void HandModelBegin()
         {
+            Debug.Log("hmb");
             _recordItem.AddStatus(true, _currentTick);
         }
 
         private void HandModelFinish()
         {
+            Debug.Log("hmf");
             _recordItem.AddStatus(false, _currentTick);
         }
 

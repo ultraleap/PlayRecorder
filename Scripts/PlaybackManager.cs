@@ -16,6 +16,7 @@ namespace PlayRecorder {
         public string descriptor;
         public int count = 0;
         public string type;
+        public List<int> statusIndex = new List<int>();
         public RecordComponent recordComponent;
         public RecordItem recordItem;
     }
@@ -150,10 +151,13 @@ namespace PlayRecorder {
         {
 
             _componentCache.Clear();
-            RecordComponent[] rc = FindObjectsOfType<RecordComponent>();
+            RecordComponent[] rc = Resources.FindObjectsOfTypeAll<RecordComponent>();
 
             for (int i = 0; i < rc.Length; i++)
             {
+                if (rc[i].gameObject.scene.name == null)
+                    continue;
+
                 _componentCache.Add(new ComponentCache(rc[i]));
             }
 
@@ -346,27 +350,29 @@ namespace PlayRecorder {
             }
             if(_ticked)
             {
+                UpdateComponentStatus();   
                 _ticked = false;
-                for (int i = 0; i < _binders.Count; i++)
-                {
-                    if (_binders[i].recordItem != null && _binders[i].recordItem.status != null && _binders[i].recordComponent != null)
-                    {
-                        if(_scrubbed)
-                        {
-                            _statusIndex = _binders[i].recordItem.status.FindLastIndex(x => x.frame <= currentTick);
-                        }
-                        else
-                        {
-                            _statusIndex = _binders[i].recordItem.status.FindIndex(x => x.frame == currentTick);
-                        }
-                        if (_statusIndex != -1)
-                        {
-                            // Can't modify gameObject status during a thread
-                            _binders[i].recordComponent.gameObject.SetActive(_binders[i].recordItem.status[_statusIndex].status);
-                        }
-                    }
-                }
                 _scrubbed = false;
+            }
+        }
+
+        void UpdateComponentStatus()
+        {
+            for (int i = 0; i < _binders.Count; i++)
+            {
+                if (_binders[i].recordItem != null && _binders[i].recordItem.status != null && _binders[i].recordComponent != null)
+                {
+                    if (_scrubbed)
+                    {
+                        _binders[i].statusIndex.Add(_binders[i].recordItem.status.FindLastIndex(x => x.frame <= currentTick));
+                    }
+                    if (_binders[i].statusIndex.Count > 0)
+                    {
+                        // Can't modify gameObject status during a thread
+                        _binders[i].recordComponent.gameObject.SetActive(_binders[i].recordItem.status[_binders[i].statusIndex[_binders[i].statusIndex.Count - 1]].status);
+                    }
+                    _binders[i].statusIndex.Clear();
+                }
             }
         }
 
@@ -386,6 +392,10 @@ namespace PlayRecorder {
                 Thread.CurrentThread.IsBackground = true;
                 PlaybackThread();
             });
+            _currentTickVal = 0;
+            _scrubbed = true;
+            _ticked = true;
+            UpdateComponentStatus();
             for (int i = 0; i < _binders.Count; i++)
             {
                 if (_binders[i].recordComponent != null)
@@ -393,7 +403,6 @@ namespace PlayRecorder {
                     _binders[i].recordComponent.StartPlaying();
                 }
             }
-            _ticked = true;
             _playing = true;
             _playbackThread.Start();
         }
@@ -470,6 +479,11 @@ namespace PlayRecorder {
                             continue;
 
                         _binders[i].recordComponent.PlayTick(currentTick);
+                        int status = _binders[i].recordItem.status.FindIndex(x => x.frame == currentTick);
+                        if (status != -1)
+                        {
+                            _binders[i].statusIndex.Add(status);
+                        }
                         tempMessages = _binders[i].recordComponent.PlayMessages(currentTick);
                         if(tempMessages != null && tempMessages.Count > 0)
                         {

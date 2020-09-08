@@ -37,6 +37,7 @@ namespace PlayRecorder.Interface
                 return;
             }
             _textmesh.color = textColor;
+            _textmesh.text = message;
             _timeRemaining = time;
             _camera = Camera.main.transform;
             gameObject.SetActive(true);
@@ -47,6 +48,7 @@ namespace PlayRecorder.Interface
             _timeRemaining -= Time.deltaTime;
 
             transform.LookAt(_camera);
+            transform.Rotate(0, 180, 0);
 
             if(_timeRemaining <= 0)
             {

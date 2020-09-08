@@ -23,7 +23,15 @@ namespace PlayRecorder
 
         public void AddStatus(bool active, int tick)
         {
-            status.Add(new RecordStatus(active, tick));
+            int ind = status.FindIndex(x => x.frame == tick);
+            if(ind == -1)
+            {
+                status.Add(new RecordStatus(active, tick));
+            }
+            else
+            {
+                status[ind].status = active;
+            }
         }
 
     }
