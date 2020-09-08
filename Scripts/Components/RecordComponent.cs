@@ -108,7 +108,7 @@ namespace PlayRecorder
                 return;
 
             int ind = _recordItem.messages.FindIndex(x => x.message == message);
-            if (ind != -1)
+            if (ind == -1)
             {
                 _recordItem.messages.Add(new RecordMessage { message = message });
             }
@@ -120,7 +120,7 @@ namespace PlayRecorder
                 return;
 
             int ind = _recordItem.messages.FindIndex(x => x.message == message);
-            if(ind != -1)
+            if(ind == -1)
             {
                 RecordMessage rm = new RecordMessage { message = message };
                 rm.frames.Add(_currentTick);
