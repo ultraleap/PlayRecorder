@@ -44,7 +44,7 @@ namespace PlayRecorder
 
             EditorGUI.BeginDisabledGroup(!Application.isPlaying || !serializedObject.FindProperty("_recording").boolValue);
 
-            if(GUILayout.Button("End Recording"))
+            if(GUILayout.Button("Stop Recording"))
             {
                 ((RecordingManager)serializedObject.targetObject).StopRecording();
             }
@@ -108,7 +108,7 @@ namespace PlayRecorder
                         EditorGUILayout.EndHorizontal();
                         for (int j = 0; j < componentNames[i].components.Count; j++)
                         {
-                            EditorGUILayout.ObjectField(componentNames[i].components[j], typeof(RecordComponent));
+                            EditorGUILayout.ObjectField(componentNames[i].components[j], typeof(RecordComponent), true);
                         }
                     }
                 }

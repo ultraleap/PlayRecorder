@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,6 +25,7 @@ namespace PlayRecorder
         public bool required { get { return _required; } set { _required = value; } }
 
         protected bool _recording = false;
+        public bool recording { get { return _recording; } }
         protected bool _playing = false;
 
         protected bool _recordUpdated = false;
@@ -32,6 +33,8 @@ namespace PlayRecorder
 
         // Playback temp variables
         private int _oldFrame, _newFrame;
+
+        public Action OnStartRecording, OnStopRecording, OnStartPlayback;
 
         private void Awake()
         {
@@ -89,16 +92,21 @@ namespace PlayRecorder
             _currentTick = 0;
             _recording = true;
             _recordItem = new RecordItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy);
+            OnStartRecording?.Invoke();
         }
 
         public virtual RecordItem StopRecording()
         {
             _recording = false;
+            OnStopRecording?.Invoke();
             return _recordItem;
         }
 
         public void AddEmptyMessage(string message)
         {
+            if (_recordItem == null)
+                return;
+
             int ind = _recordItem.messages.FindIndex(x => x.message == message);
             if (ind != -1)
             {
@@ -108,6 +116,9 @@ namespace PlayRecorder
 
         public void AddMessage(string message)
         {
+            if (_recordItem == null)
+                return;
+
             int ind = _recordItem.messages.FindIndex(x => x.message == message);
             if(ind != -1)
             {
@@ -151,6 +162,7 @@ namespace PlayRecorder
         public virtual void StartPlaying()
         {
             _playing = true;
+            OnStartPlayback?.Invoke();
         }
 
         protected virtual void PlayUpdate()
