@@ -284,13 +284,11 @@ namespace PlayRecorder.Leap
 
         private void HandModelBegin()
         {
-            Debug.Log("hmb");
             _recordItem.AddStatus(true, _currentTick);
         }
 
         private void HandModelFinish()
         {
-            Debug.Log("hmf");
             _recordItem.AddStatus(false, _currentTick);
         }
 
