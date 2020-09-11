@@ -137,7 +137,7 @@ namespace PlayRecorder.SteamVR
         {
             _handPose = GetComponent<SteamVR_Behaviour_Pose>();
 
-            if(_handPose)
+            if(_handPose == null)
             {
                 Debug.LogError("SteamVR hand recorder has no SteamVR Behaviour Pose on the current object.");
                 return;
@@ -282,6 +282,12 @@ namespace PlayRecorder.SteamVR
             if(anim != null)
             {
                 anim.enabled = false;
+            }
+            SkinnedMeshRenderer smr = GetComponentInChildren<SkinnedMeshRenderer>();
+            if(smr != null)
+            {
+                smr.gameObject.SetActive(true);
+                smr.enabled = true;
             }
             SetCaches();
             base.StartPlaying();

@@ -77,7 +77,6 @@ namespace PlayRecorder {
 
         double _tickRate = 0;
         bool _ticked = false, _scrubbed = false;
-        int _statusIndex = -1;
 
         [SerializeField, HideInInspector]
         int _currentFrameRate = 0, _currentTickVal = 0, _maxTickVal = 0;
@@ -97,7 +96,7 @@ namespace PlayRecorder {
 
         [SerializeField]
         bool _changingFiles = false;
-        bool _removeErrorFile = false, _loadingFilesThreadCheck = false, _changeFilesThreadCheck = false;
+        bool _removeErrorFile = false;
         Thread _loadFilesThread = null, _changeFilesThread = null;
 
         #region Actions
@@ -175,9 +174,8 @@ namespace PlayRecorder {
                 tempName = _recordedFiles[i].name;
                 _loadFilesThread = new Thread(() => { LoadFilesThread(tempBytes, tempName); });
                 _removeErrorFile = false;
-                _loadingFilesThreadCheck = true;
                 _loadFilesThread.Start();
-                while(_loadingFilesThreadCheck)
+                while(_loadFilesThread.IsAlive)
                 {
                     yield return waitForSeconds;
                 }
@@ -216,7 +214,6 @@ namespace PlayRecorder {
                 Debug.LogError(name + " is an invalid recording file and has been ignored and removed.");
                 _removeErrorFile = true;
             }
-            _loadingFilesThreadCheck = false;
         }
 
         private void ChangeFilesThread()
