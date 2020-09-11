@@ -21,11 +21,11 @@ namespace PlayRecorder
     // store previous index at which item was moving
 
     [System.Serializable]
-    public class Frame
+    public class RecordFrame
     {
-        public int tick, nextTick = -1;
+        public int tick;
 
-        public Frame(int tick)
+        public RecordFrame(int tick)
         {
             this.tick = tick;
         }

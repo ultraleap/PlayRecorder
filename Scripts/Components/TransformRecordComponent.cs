@@ -6,7 +6,7 @@ namespace PlayRecorder
 {
 
     [System.Serializable]
-    public class TransformFrame : Frame
+    public class TransformFrame : RecordFrame
     {
         // Used in recording thread
         public Vector3 localPosition;

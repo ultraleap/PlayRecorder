@@ -104,7 +104,7 @@ namespace PlayRecorder
 
         public void AddEmptyMessage(string message)
         {
-            if (_recordItem == null)
+            if (_recordItem == null || _recordItem.messages == null)
                 return;
 
             int ind = _recordItem.messages.FindIndex(x => x.message == message);
@@ -116,7 +116,7 @@ namespace PlayRecorder
 
         public void AddMessage(string message)
         {
-            if (_recordItem == null)
+            if (_recordItem == null || _recordItem.messages == null)
                 return;
 
             int ind = _recordItem.messages.FindIndex(x => x.message == message);
@@ -150,7 +150,7 @@ namespace PlayRecorder
         {
             for (int i = 0; i < _recordItem.parts.Count; i++)
             {
-                _recordItem.parts[i].AddFrame(new Frame(_currentTick));
+                _recordItem.parts[i].AddFrame(new RecordFrame(_currentTick));
             }
         }
 

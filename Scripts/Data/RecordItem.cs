@@ -43,14 +43,10 @@ namespace PlayRecorder
         /// Do not directly add to this unless you are planning to manually add the frame ticks.
         /// </summary>
         /// 
-        public List<Frame> frames = new List<Frame>();
+        public List<RecordFrame> frames = new List<RecordFrame>();
 
-        public void AddFrame(Frame frame)
+        public void AddFrame(RecordFrame frame)
         {
-            if(frames.Count > 0)
-            {
-                frames[frames.Count - 1].nextTick = frame.tick;
-            }
             frames.Add(frame);
         }
 
@@ -60,7 +56,7 @@ namespace PlayRecorder
         [System.NonSerialized, HideInInspector]
         public int currentFrameIndex = -1;
         private int increasingTicks = 1;
-        public Frame currentFrame { get { if(currentFrameIndex != -1 && frames.Count > 0) return frames[currentFrameIndex]; return null; } }
+        public RecordFrame currentFrame { get { if(currentFrameIndex != -1 && frames.Count > 0) return frames[currentFrameIndex]; return null; } }
 
         public int SetCurrentFrame(int tick)
         {
