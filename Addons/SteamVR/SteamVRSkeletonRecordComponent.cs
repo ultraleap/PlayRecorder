@@ -143,7 +143,7 @@ namespace PlayRecorder.SteamVR
                 return;
             }
 
-            _handSkeleton = GetComponent<SteamVR_Behaviour_Skeleton>();
+            _handSkeleton = GetComponentInChildren<SteamVR_Behaviour_Skeleton>(true);
 
             if (_handSkeleton == null)
             {
@@ -193,22 +193,7 @@ namespace PlayRecorder.SteamVR
             _recordItem.parts.Add(pinky);
         }
 
-        public override RecordItem StopRecording()
-        {
-            return base.StopRecording();
-        }
-
-        private void HandModelBegin()
-        {
-            _recordItem.AddStatus(true, _currentTick);
-        }
-
-        private void HandModelFinish()
-        {
-            _recordItem.AddStatus(false, _currentTick);
-        }
-
-        private void HandModelUpdate()
+        protected override void RecordUpdate()
         {
             _palmCache.Update(_rotationThreshold);
             _thumbCache.Update(_rotationThreshold);
@@ -270,26 +255,26 @@ namespace PlayRecorder.SteamVR
         public override void StartPlaying()
         {
             _handPose = GetComponent<SteamVR_Behaviour_Pose>();
-            _handSkeleton = GetComponentInChildren<SteamVR_Behaviour_Skeleton>();
+            _handSkeleton = GetComponentInChildren<SteamVR_Behaviour_Skeleton>(true);
             if(_handPose == null || _handSkeleton == null)
             {
                 Debug.LogError("SteamVR hand recorder does not included required components and will not be played back.");
                 return;
             }
+            SetCaches();
             _handPose.enabled = false;
             _handSkeleton.enabled = false;
-            Animator anim = _handPose.GetComponentInChildren<Animator>();
+            Animator anim = _handPose.GetComponentInChildren<Animator>(true);
             if(anim != null)
             {
                 anim.enabled = false;
             }
-            SkinnedMeshRenderer smr = GetComponentInChildren<SkinnedMeshRenderer>();
+            SkinnedMeshRenderer smr = GetComponentInChildren<SkinnedMeshRenderer>(true);
             if(smr != null)
             {
                 smr.gameObject.SetActive(true);
                 smr.enabled = true;
             }
-            SetCaches();
             base.StartPlaying();
         }
 
