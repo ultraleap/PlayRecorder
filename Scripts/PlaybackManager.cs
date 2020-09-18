@@ -163,7 +163,7 @@ namespace PlayRecorder {
 #if UNITY_EDITOR
             EditorWaitForSeconds waitForSeconds = new EditorWaitForSeconds(0.1f);
 #else
-            WaitForSeconds waitForSeconds = new WaitForSeconds(0.1)f;
+            WaitForSeconds waitForSeconds = new WaitForSeconds(0.1f);
 #endif
             byte[] tempBytes = null;
             string tempName = "";            

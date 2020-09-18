@@ -148,8 +148,15 @@ namespace PlayRecorder {
         {
             for (int i = 0; i < _components.Count; i++)
             {
+                if (_components[i] == null)
+                {
+                    _components.RemoveAt(i); 
+                    i--;
+                }
+
                 if (component == _components[i])
                     continue;
+
 
                 if (component.descriptor == _components[i].descriptor)
                     return false;
