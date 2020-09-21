@@ -1,5 +1,9 @@
 Current Unity Version: 2019.3
+
 Use this as a submodule within your project.
+
+**Requirements**
+- [Odin Serializer](https://github.com/TeamSirenix/odin-serializer)
 
 **Getting Started**
 

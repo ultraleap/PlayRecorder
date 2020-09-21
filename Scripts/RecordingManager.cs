@@ -16,7 +16,7 @@ namespace PlayRecorder {
         bool _duplicateItems = false;
 
         [SerializeField, HideInInspector]
-        bool _recording = false;
+        bool _recording = false, _recordingPaused = false;
 
         [SerializeField] [Range(1, 100)]
         int _frameRateVal = 60;
@@ -32,13 +32,14 @@ namespace PlayRecorder {
         public string recordingFolderName = "Recordings";
         public string recordingName = "";
         string _recordingTimeDate = "";
+        string _unityDataPath;
 
         [SerializeField, HideInInspector]
         protected List<RecordComponent> _components = new List<RecordComponent>();
         // The components used for the current file
         protected List<RecordComponent> _currentComponents = new List<RecordComponent>();
 
-        protected Thread _recordingThread;
+        protected Thread _recordingThread, _savingThread;
 
         public Action OnTick;
 
@@ -49,6 +50,7 @@ namespace PlayRecorder {
             {
                 Debug.LogError("There are duplicate descriptors in your current setup. Please fix before trying to record.");
             }
+            _unityDataPath = Application.dataPath;
             _data = new Data()
             {
                 recordingName = recordingName,
@@ -59,6 +61,7 @@ namespace PlayRecorder {
             _timeCounter = 0f;
             _currentTickVal = 0;
             _recording = true;
+            _recordingPaused = false;
             _currentComponents.Clear();
             for (int i = 0; i < _components.Count; i++)
             {
@@ -81,13 +84,35 @@ namespace PlayRecorder {
         public void StopRecording()
         {
             _recording = false;
+            _recordingPaused = false;
             _data.frameCount = _currentTickVal;
             for (int i = 0; i < _currentComponents.Count; i++)
             {
                 _data.objects.Add(_currentComponents[i].StopRecording());
             }
-            System.IO.Directory.CreateDirectory(Application.dataPath + "/" + recordingFolderName + "/");
-            System.IO.File.WriteAllBytes(Application.dataPath + "/" + recordingFolderName + "/" + _recordingTimeDate + " " + recordingName + ".bytes", SerializationUtility.SerializeValue(_data, DataFormat.Binary));
+
+            _savingThread = new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                SaveThread(_unityDataPath, _data);
+            });
+            _savingThread.Start();
+        }
+
+        void SaveThread(string path, Data data)
+        {
+            System.IO.Directory.CreateDirectory(path + "/" + recordingFolderName + "/");
+            System.IO.File.WriteAllBytes(path + "/" + recordingFolderName + "/" + _recordingTimeDate + " " + recordingName + ".bytes", SerializationUtility.SerializeValue(data, DataFormat.Binary));
+        }
+
+        public void PauseRecording()
+        {
+            _recordingPaused = true;
+        }
+
+        public void ResumeRecording()
+        {
+            _recordingPaused = false;
         }
 
         void OnDestroy()
@@ -127,8 +152,11 @@ namespace PlayRecorder {
             {
                 tickDelta = (_mainThreadTime - ticks);
                 ticks = _mainThreadTime;
-                _timeCounter += (float)tickDelta;
-                tickCounter += tickDelta;
+                if (!_recordingPaused)
+                {
+                    _timeCounter += (float)tickDelta;
+                    tickCounter += tickDelta;
+                }
                 if (tickCounter >= tickTime)
                 {
                     tickCounter -= tickTime;
