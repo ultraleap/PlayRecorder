@@ -47,7 +47,7 @@ namespace PlayRecorder {
         
         [SerializeField]
         List<Data> _data = new List<Data>();
-        string _dataBytes = "";
+
         [SerializeField]
         int _currentFile = -1;
 

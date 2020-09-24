@@ -55,7 +55,6 @@ namespace PlayRecorder
         /// </summary>
         [System.NonSerialized, HideInInspector]
         public int currentFrameIndex = -1;
-        private int increasingTicks = 1;
         public RecordFrame currentFrame { get { if(currentFrameIndex != -1 && frames.Count > 0) return frames[currentFrameIndex]; return null; } }
 
         public int SetCurrentFrame(int tick)
