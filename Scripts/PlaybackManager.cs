@@ -383,7 +383,14 @@ namespace PlayRecorder {
             if (_data.Count > 0)
             {
                 ChangeFiles();
+                OnDataFileChange += (value) => { StartPlayingAfterLoad(); };
+                _playing = true;
             }
+        }
+
+        void StartPlayingAfterLoad()
+        {
+            OnDataFileChange -= (value) => { StartPlayingAfterLoad(); };
             _playbackThread = new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
@@ -400,7 +407,6 @@ namespace PlayRecorder {
                     _binders[i].recordComponent.StartPlaying();
                 }
             }
-            _playing = true;
             _playbackThread.Start();
         }
 

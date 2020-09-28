@@ -157,11 +157,19 @@ namespace PlayRecorder
         public void SetPlaybackData(RecordItem data)
         {
             _recordItem = data;
+            if (_recordItem.parts != null)
+            {
+                for (int i = 0; i < _recordItem.parts.Count; i++)
+                {
+                    _recordItem.parts[i].currentFrameIndex = -1;
+                }
+            }
         }
 
         public virtual void StartPlaying()
         {
             _playing = true;
+
             OnStartPlayback?.Invoke();
         }
 
