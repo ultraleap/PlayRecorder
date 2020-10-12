@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Linq;
+using PlayRecorder.Tools;
 
 namespace PlayRecorder
 {
@@ -23,22 +24,14 @@ namespace PlayRecorder
         {
             EditorGUILayout.BeginHorizontal();
 
-            GUIStyle s = new GUIStyle(EditorStyles.foldout);
-            s.fontStyle = FontStyle.Bold;
 
-            serializedObject.FindProperty(recordedFilesVariable).isExpanded = EditorGUILayout.Foldout(serializedObject.FindProperty(recordedFilesVariable).isExpanded, "Recorded Files (" + serializedObject.FindProperty(recordedFilesVariable).arraySize + ")",true,s);
+            serializedObject.FindProperty(recordedFilesVariable).isExpanded = EditorGUILayout.Foldout(serializedObject.FindProperty(recordedFilesVariable).isExpanded, "Recorded Files (" + serializedObject.FindProperty(recordedFilesVariable).arraySize + ")",true,Styles.foldoutBold);
 
-            GUIStyle mb = new GUIStyle(EditorStyles.miniButton);
-            mb.fontStyle = FontStyle.Bold;
-            mb.fixedHeight = 18;
-            GUIStyle mbN = new GUIStyle(EditorStyles.miniButton);
-            mbN.fixedHeight = 18;
-            mbN.fontStyle = FontStyle.Normal;
 
             EditorGUI.BeginDisabledGroup(Application.isPlaying);
-            
 
-            if (GUILayout.Button("+", mb, GUILayout.Width(26)))
+
+            if (GUILayout.Button("+", Styles.miniButton, GUILayout.Width(26)))
             {
                 serializedObject.FindProperty(recordedFilesVariable).InsertArrayElementAtIndex(serializedObject.FindProperty(recordedFilesVariable).arraySize);
                 serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(serializedObject.FindProperty(recordedFilesVariable).arraySize-1).objectReferenceValue = null;
@@ -46,23 +39,13 @@ namespace PlayRecorder
                 awaitingFileRefresh = true;
             }
 
-            GUIStyle mbR = new GUIStyle(EditorStyles.miniButton);
-            mbR.fixedHeight = 18;
-            mbR.fontStyle = FontStyle.Normal;
-            if(awaitingFileRefresh)
-            {
-                mbR.fontStyle = FontStyle.Bold;
-                mbR.normal.textColor = Color.red;
-            }
-
             if (serializedObject.FindProperty("_changingFiles").boolValue)
             {
-                mbR.normal.textColor = Color.grey;
-                GUILayout.Button(new GUIContent("Loading...", "This can take a while to process depending on your system, the number of files, and the recording complexity."), mbR, GUILayout.Width(90));
+                GUILayout.Button(new GUIContent("Loading...", "This can take a while to process depending on your system, the number of files, and the recording complexity."), Styles.miniButtonGrey, GUILayout.Width(90));
             }
             else
             {
-                if (GUILayout.Button(new GUIContent("Update Files", "This can take a while to process depending on your system, the number of files, and the recording complexity."), mbR, GUILayout.Width(90)))
+                if (GUILayout.Button(new GUIContent("Update Files", "This can take a while to process depending on your system, the number of files, and the recording complexity."), awaitingFileRefresh ? Styles.miniButtonBoldRed : Styles.miniButton, GUILayout.Width(90)))
                 {
                     ((PlaybackManager)serializedObject.targetObject).ChangeFiles();
                     awaitingFileRefresh = false;
@@ -84,7 +67,7 @@ namespace PlayRecorder
 
                     EditorGUI.BeginDisabledGroup(Application.isPlaying);
 
-                    if (GUILayout.Button("-",mb,GUILayout.Width(26)))
+                    if (GUILayout.Button("-",Styles.miniButton,GUILayout.Width(26)))
                     {
                         serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue = null;
                         serializedObject.FindProperty(recordedFilesVariable).DeleteArrayElementAtIndex(i);
@@ -110,7 +93,7 @@ namespace PlayRecorder
             EditorGUILayout.LabelField("Recorded Components ("+ serializedObject.FindProperty(bindersVariable).arraySize + ")", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
             componentFilter = EditorGUILayout.TextField(new GUIContent("Filter Components", "Filter to specific components based upon their descriptor and component type."), componentFilter);
-            if(GUILayout.Button("Clear Filter",mbN,GUILayout.Width(90)))
+            if(GUILayout.Button("Clear Filter",Styles.miniButton,GUILayout.Width(90)))
             {
                 componentFilter = "";
             }
@@ -135,11 +118,11 @@ namespace PlayRecorder
             }
             EditorGUILayout.EndScrollView();
             EditorGUILayout.BeginHorizontal();
-            if(GUILayout.Button("Expand All", mbN))
+            if(GUILayout.Button("Expand All", Styles.miniButton))
             {
                 ToggleExpanded(true);
             }
-            if(GUILayout.Button("Collapse All", mbN))
+            if(GUILayout.Button("Collapse All", Styles.miniButton))
             {
                 ToggleExpanded(false);
             }

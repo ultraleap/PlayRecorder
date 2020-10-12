@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
-using OdinSerializer;
 using Debug = UnityEngine.Debug;
 
 namespace PlayRecorder {
@@ -97,15 +96,9 @@ namespace PlayRecorder {
             _savingThread = new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
-                SaveThread(_unityDataPath, _data);
+                FileUtil.SaveDataToFile(_unityDataPath + "/" + recordingFolderName + "/", _recordingTimeDate + " " + recordingName, _data);
             });
             _savingThread.Start();
-        }
-
-        void SaveThread(string path, Data data)
-        {
-            System.IO.Directory.CreateDirectory(path + "/" + recordingFolderName + "/");
-            System.IO.File.WriteAllBytes(path + "/" + recordingFolderName + "/" + _recordingTimeDate + " " + recordingName + ".bytes", SerializationUtility.SerializeValue(data, DataFormat.Binary));
         }
 
         public void PauseRecording()

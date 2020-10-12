@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
+using PlayRecorder.Tools;
 
 namespace PlayRecorder
 {
@@ -27,10 +28,6 @@ namespace PlayRecorder
 
             Rect foldoutRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
 
-            GUIStyle s = new GUIStyle(EditorStyles.foldout);
-
-            s.richText = true;
-            s.fontStyle = FontStyle.Bold;
             string col = "00B200";
             if (property.FindPropertyRelative("recordComponent").objectReferenceValue == null)
             {
@@ -44,8 +41,7 @@ namespace PlayRecorder
 
             EditorGUI.indentLevel++;
 
-
-            if (property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, foldoutlabel, true, s))
+            if (property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, foldoutlabel, true, Styles.foldoutBold))
             {
                 var typeRect = new Rect(position.x, position.y + EditorGUIUtility.singleLineHeight, position.width, 18);
                 var countRect = new Rect(position.x, position.y + (EditorGUIUtility.singleLineHeight * 2), position.width, 18);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using PlayRecorder.Tools;
 using System.Text.RegularExpressions;
 
 namespace PlayRecorder
@@ -34,7 +35,10 @@ namespace PlayRecorder
                 if (manager == null)
                 {
                     manager = FindObjectOfType<RecordingManager>();
-                    manager.AddComponent((RecordComponent)serializedObject.targetObject);
+                    if(manager != null)
+                    {
+                        manager.AddComponent((RecordComponent)serializedObject.targetObject);
+                    }
                 }
 
                 if (descriptorCheck && manager != null)
@@ -43,18 +47,16 @@ namespace PlayRecorder
                     serializedObject.FindProperty("_uniqueDescriptor").boolValue = manager.CheckUniqueDescriptor((RecordComponent)serializedObject.targetObject);
                 }
 
-                GUIStyle errorStyle = new GUIStyle(EditorStyles.boldLabel);
-                errorStyle.normal.textColor = new Color(255f * 0.8f, 0, 0);
                 if (manager == null)
                 {
-                    EditorGUILayout.LabelField("No recording manager in scene. Please add one.");
+                    EditorGUILayout.LabelField("No recording manager in scene. Please add one.",Styles.textBoldRed);
                 }
 
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("_descriptor"), new GUIContent("Descriptor", "This needs to be unique."));
 
                 if (!serializedObject.FindProperty("_uniqueDescriptor").boolValue || Regex.Replace(serializedObject.FindProperty("_descriptor").stringValue, @"\s+", "") == "")
                 {
-                    EditorGUILayout.LabelField("Current descriptor is not unique. Please change this to make it unique.", errorStyle);
+                    EditorGUILayout.LabelField("Current descriptor is not unique. Please change this to make it unique.", Styles.textBoldRed);
                 }
 
                 serializedObject.FindProperty("_required").boolValue = EditorGUILayout.Toggle(new GUIContent("Required for Recording", "Decides whether this component will be used during the next recording. Does not affect playback."), serializedObject.FindProperty("_required").boolValue);

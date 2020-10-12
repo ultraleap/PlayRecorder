@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.Text.RegularExpressions;
+using PlayRecorder.Tools;
 
 namespace PlayRecorder
 {
@@ -12,8 +13,6 @@ namespace PlayRecorder
     {
 
         static string componentString = "_components";
-
-        GUIStyle iconButtonStyle;
 
         Vector2 scrollPos;
 
@@ -27,11 +26,6 @@ namespace PlayRecorder
 
         public override void OnInspectorGUI()
         {
-            iconButtonStyle = new GUIStyle(EditorStyles.miniButton)
-            {
-                padding = new RectOffset(2, 2, 2, 2),
-                fixedHeight = 20
-            };
 
             EditorGUILayout.BeginHorizontal();
 
@@ -137,17 +131,6 @@ namespace PlayRecorder
                 {
                     RecordComponent r = (RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue;
 
-                    if (r.required)
-                    {
-                        s.normal.textColor = Color.black;
-                    }
-                    else
-                    {
-                        s.normal.textColor = Color.grey;
-                        s.active.textColor = Color.grey;
-                        s.hover.textColor = Color.grey;
-                    }
-
                     if (serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue == null)
                     {
                         serializedObject.FindProperty(componentString).DeleteArrayElementAtIndex(i);
@@ -161,11 +144,11 @@ namespace PlayRecorder
                     }
 
                     EditorGUILayout.BeginHorizontal();
-                    if(GUILayout.Button(hierarchyButton, iconButtonStyle, GUILayout.Width(20)))
+                    if(GUILayout.Button(hierarchyButton, Styles.buttonIcon, GUILayout.Width(20)))
                     {
                         EditorGUIUtility.PingObject(serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue);
                     }
-                    if(GUILayout.Button(((RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue).descriptor + " ("+ serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue.name+")", s))
+                    if(GUILayout.Button(((RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue).descriptor + " ("+ serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue.name+")", r.required ? Styles.textBold : Styles.textDisabledBold))
                     {
                         EditorGUIUtility.PingObject(serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue);
                     }
@@ -196,7 +179,7 @@ namespace PlayRecorder
             GUIContent rf = EditorGUIUtility.IconContent("Refresh");
             rf.text = "Refresh";
             rf.tooltip = "Finds all the current components within the scene in case automatic additions fail.";
-            if (GUILayout.Button(rf,iconButtonStyle,GUILayout.Width(68)))
+            if (GUILayout.Button(rf,Styles.buttonIcon,GUILayout.Width(68)))
             {
                 ((RecordingManager)serializedObject.targetObject).RefreshComponents();
             }

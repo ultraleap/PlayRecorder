@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using OdinSerializer;
 using System.Threading;
 #if UNITY_EDITOR
 using Unity.EditorCoroutines.Editor;
@@ -172,7 +171,17 @@ namespace PlayRecorder {
             {
                 tempBytes = _recordedFiles[i].bytes;
                 tempName = _recordedFiles[i].name;
-                _loadFilesThread = new Thread(() => { LoadFilesThread(tempBytes, tempName); });
+                _loadFilesThread = new Thread(() => {
+                    Data d =  FileUtil.LoadSingleFile(tempBytes, tempName);
+                    if(d != null)
+                    {
+                        _data.Add(d);
+                    }
+                    else
+                    {
+                        _removeErrorFile = true;
+                    }
+                });
                 _removeErrorFile = false;
                 _loadFilesThread.Start();
                 while(_loadFilesThread.IsAlive)
@@ -192,28 +201,6 @@ namespace PlayRecorder {
             }
             ChangeCurrentFile(_currentFile);
             _changingFiles = false;
-        }
-
-        private void LoadFilesThread(byte[] bytes, string name)
-        {
-            try
-            {
-                Data d = SerializationUtility.DeserializeValue<Data>(bytes, DataFormat.Binary);
-                if (d.objects != null)
-                {
-                    _data.Add(d);
-                }
-                else
-                {
-                    Debug.LogError(name + " is an invalid recording file and has been ignored and removed.");
-                    _removeErrorFile = true;
-                }
-            }
-            catch
-            {
-                Debug.LogError(name + " is an invalid recording file and has been ignored and removed.");
-                _removeErrorFile = true;
-            }
         }
 
         private void ChangeFilesThread()
