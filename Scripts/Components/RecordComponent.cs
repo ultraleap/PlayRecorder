@@ -54,8 +54,11 @@ namespace PlayRecorder
                 RecordUpdate();
             }
             if(_playing && _recordItem != null && (_recordItem.parts.Count > 0 || _playUpdatedParts.Count > 0))
-            {                    
-                PlayUpdate();
+            {
+                if(ValidPlayUpdate())
+                {
+                    PlayUpdate();
+                }
                 _playUpdatedParts.Clear();
             }
         }
@@ -157,7 +160,7 @@ namespace PlayRecorder
         public void SetPlaybackData(RecordItem data)
         {
             _recordItem = data;
-            if (_recordItem.parts != null)
+            if (_recordItem != null && _recordItem.parts != null)
             {
                 for (int i = 0; i < _recordItem.parts.Count; i++)
                 {
@@ -178,12 +181,31 @@ namespace PlayRecorder
             _playUpdatedParts.Clear();
         }
 
+        private bool ValidPlayUpdate()
+        {
+            if(_playUpdatedParts.Count > _recordItem.parts.Count)
+            {
+                return false;
+            }
+            for (int i = 0; i < _playUpdatedParts.Count; i++)
+            {
+                if(_recordItem.parts[_playUpdatedParts[i]].currentFrame == null)
+                    return false;
+            }
+            return true;
+        }
+
+        public virtual void OnChangeFile()
+        {
+            _playUpdatedParts.Clear();
+        }
+
         public void PlayTick(int tick)
         {
             if(_playing)
             {
                 _currentTick = tick;
-                if (_recordItem.parts != null)
+                if (_recordItem != null && _recordItem.parts != null)
                 {
                     for (int i = 0; i < _recordItem.parts.Count; i++)
                     {
@@ -209,7 +231,7 @@ namespace PlayRecorder
         public List<string> PlayMessages(int tick)
         {
             List<string> messages = new List<string>();
-            if(_playing)
+            if(_playing && _recordItem != null && _recordItem.messages != null)
             {
                 for (int i = 0; i < _recordItem.messages.Count; i++)
                 {

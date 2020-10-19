@@ -75,6 +75,9 @@ namespace PlayRecorder.Interface
             {
                 for (int i = 0; i < _awaitingMessages.Count; i++)
                 {
+                    if (_awaitingMessages[i] == null)
+                        continue;
+
                     for (int j = 0; j < _awaitingMessages[i].messages.Count; j++)
                     {
                         _messagePool[_messageIndex].CreateMessage(_awaitingMessages[i].messages[j], _messageVisibleTime);

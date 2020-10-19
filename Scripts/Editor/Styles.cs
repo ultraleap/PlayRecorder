@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 
 namespace PlayRecorder.Tools
@@ -20,6 +18,8 @@ namespace PlayRecorder.Tools
         public static GUIStyle miniButtonBoldRed = new GUIStyle(EditorStyles.miniButton) { fontStyle = FontStyle.Bold, normal = new GUIStyleState() { textColor = new Color(255f * 0.8f, 0, 0) }, fixedHeight = 18 };
 
         public static GUIStyle buttonIcon = new GUIStyle(EditorStyles.miniButton) { padding = new RectOffset(1, 1, 1, 1), fixedHeight = 18 };
+
+        public static GUIStyle boxBorder = new GUIStyle(EditorStyles.helpBox);
 
     }
     

@@ -16,7 +16,8 @@ namespace PlayRecorder
         Vector2 scrollPos;
         bool awaitingFileRefresh = false;
 
-        static string recordedFilesVariable = "_recordedFiles", bindersVariable = "_binders", currentFileVariable = "_currentFile";
+        static string recordedFilesVariable = "_recordedFiles", bindersVariable = "_binders", currentFileVariable = "_currentFile", playlistFilesVariable = "_playlistFiles";
+        static string playingVariable = "_playing";
 
         string componentFilter = "";
 
@@ -51,7 +52,6 @@ namespace PlayRecorder
                     awaitingFileRefresh = false;
                 }
             }
-                
 
             EditorGUI.EndDisabledGroup();
 
@@ -62,6 +62,18 @@ namespace PlayRecorder
                 for (int i = 0; i < serializedObject.FindProperty(recordedFilesVariable).arraySize; i++)
                 {
                     EditorGUILayout.BeginHorizontal();
+
+                    if(GUILayout.Button(serializedObject.FindProperty(currentFileVariable).intValue == i ? "▶" : " ",GUILayout.Width(26)))
+                    {
+                        if(Application.isPlaying && serializedObject.FindProperty(playingVariable).boolValue)
+                        {
+                            ((PlaybackManager)serializedObject.targetObject).ChangeCurrentFile(i);
+                        }
+                        else
+                        {
+                            serializedObject.FindProperty(currentFileVariable).intValue = i;
+                        }
+                    }
 
                     serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue = EditorGUILayout.ObjectField("File " + (i + 1).ToString(), serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue, typeof(TextAsset), false);
 
@@ -79,6 +91,10 @@ namespace PlayRecorder
                     EditorGUILayout.EndHorizontal();
                 }
             }
+
+            EditorUtils.DrawUILine(Color.grey, 1, 4);
+
+            Playlists();
 
             if (serializedObject.FindProperty(currentFileVariable).intValue != -1 && serializedObject.FindProperty(recordedFilesVariable).arraySize != 0)
             {
@@ -189,6 +205,42 @@ namespace PlayRecorder
             {
                 serializedObject.FindProperty("_binders").GetArrayElementAtIndex(i).isExpanded = expand;
             }
+        }
+
+        void Playlists()
+        {
+            EditorGUILayout.LabelField(new GUIContent("Playlist"), Styles.textBold);
+
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button(new GUIContent("Save Playlist")))
+            {
+                var path = EditorUtility.SaveFilePanel("Save Playlist", "", "playlist.json", "json");
+                if (path.Length != 0)
+                {
+                    FileUtil.SavePlaylist(path, ((PlaybackManager)serializedObject.targetObject).playlist);
+                }
+            }
+
+            if (GUILayout.Button(new GUIContent("Load Playlist")))
+            {
+                var path = EditorUtility.OpenFilePanel("Load Playlist", "", "json");
+                if(path.Length != 0)
+                {
+                    try
+                    {
+                        ((PlaybackManager)serializedObject.targetObject).playlist = FileUtil.LoadPlaylist(System.IO.File.ReadAllBytes(path));
+                    }
+                    catch
+                    {
+                        EditorUtility.DisplayDialog("Error", "Invalid playlist file loaded.", "Ok");
+                    }
+
+                    EditorUtility.DisplayDialog("Loaded", "Playlist loaded. " + ((PlaybackManager)serializedObject.targetObject).playlist.Count + " file(s) set.", "Ok");
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
         }
     }
 

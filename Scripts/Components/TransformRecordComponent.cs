@@ -151,11 +151,11 @@ namespace PlayRecorder
                 switch (_playUpdatedParts[i])
                 {
                     case 0:
-                        if (baseTransform != null)
+                        if (baseTransform != null && _recordItem.parts[0].currentFrame != null)
                             ApplyTransform((TransformFrame)_recordItem.parts[0].currentFrame, baseTransform);
                         break;
                     default:
-                        if (_extraTransforms[_playUpdatedParts[i] - 1] != null)
+                        if (_extraTransforms[_playUpdatedParts[i] - 1] != null && _recordItem.parts[_playUpdatedParts[i]].currentFrame != null)
                             ApplyTransform((TransformFrame)_recordItem.parts[_playUpdatedParts[i]].currentFrame, _extraTransforms[_playUpdatedParts[i] - 1]);
                         break;
                 }
@@ -164,9 +164,16 @@ namespace PlayRecorder
 
         void ApplyTransform(TransformFrame frame, Transform transform)
         {
-            transform.localPosition = frame.localPosition;
-            transform.localRotation = frame.localRotation;
-            transform.localScale = frame.localScale;
+            try
+            {
+                transform.localPosition = frame.localPosition;
+                transform.localRotation = frame.localRotation;
+                transform.localScale = frame.localScale;
+            }
+            catch
+            {
+                Debug.Log("ah");
+            }
         }
 
         void DisableAllComponents(Transform transform)
