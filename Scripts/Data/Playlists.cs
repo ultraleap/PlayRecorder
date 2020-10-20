@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,11 +9,13 @@ namespace PlayRecorder
     public class PlaylistItem
     {
         public string name;
-        public int guid;
+        public string path;
+        public string guid;
 
-        public PlaylistItem(string name, int guid)
+        public PlaylistItem(string name, string path, string guid)
         {
             this.name = name;
+            this.path = path;
             this.guid = guid;
         }
     }

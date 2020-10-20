@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -43,11 +44,20 @@ namespace PlayRecorder {
 
         [SerializeField]
         List<TextAsset> _recordedFiles = new List<TextAsset>();
-
-        public List<PlaylistItem> playlist = new List<PlaylistItem>();
         
+        // DO NOT USE WILL BE REMOVED
         [SerializeField]
         List<Data> _data = new List<Data>();
+
+        // TO BE ADDED
+        // CURRENT MULTI-FILE SUPPORT IS LAGGY AS HELL PAST LIKE 5 FILES
+        [SerializeField]
+        List<PlaybackCache> _dataCache = new List<PlaybackCache>();
+
+        Data _currentData = null;
+
+        [SerializeField]
+        bool _awaitingFileRefresh = false;
 
         [SerializeField]
         int _currentFile = -1;
@@ -59,6 +69,15 @@ namespace PlayRecorder {
                 else
                     return null;
             } }
+
+        public Data GetData(int i)
+        {
+            if(i >= _data.Count)
+            {
+                return null;
+            }
+            return _data[i];
+        }
 
         // Please use the custom inspector.
         [SerializeField]
@@ -120,17 +139,24 @@ namespace PlayRecorder {
             }
             _data.Clear();
 
+            bool nulls = false;
+
             for (int i = 0; i < _recordedFiles.Count; i++)
             {
                 if (_recordedFiles[i] == null)
                 {
                     _recordedFiles.RemoveAt(i);
-                    Debug.LogError("Null file removed.");
+                    nulls = true;
                     i--;
                     continue;
                 }
-                
             }
+
+            if(nulls)
+            {
+                Debug.LogError("Null files were removed.");
+            }
+
 
             if (_recordedFiles.Count == 0)
             {
@@ -139,11 +165,23 @@ namespace PlayRecorder {
                 return;
             }
 
+            RemoveDuplicateFiles();
+
 #if UNITY_EDITOR
             EditorCoroutineUtility.StartCoroutine(ChangeFilesCoroutine(), this);
 #else
             StartCoroutine(ChangeFilesCoroutine());
 #endif
+        }
+
+        public void RemoveDuplicateFiles()
+        {
+            int c = _recordedFiles.Count;
+            _recordedFiles = _recordedFiles.Distinct().ToList();
+            if(c != _recordedFiles.Count)
+            {
+                Debug.LogWarning("Duplicate files have been removed from playback.");
+            }
         }
 
         private IEnumerator ChangeFilesCoroutine()
@@ -194,11 +232,6 @@ namespace PlayRecorder {
                 {
                     _recordedFiles.RemoveAt(i);
                 }
-            }
-            playlist.Clear();
-            for (int i = 0; i < _recordedFiles.Count; i++)
-            {
-                playlist.Add(new PlaylistItem(_recordedFiles[i].name,_recordedFiles[i].GetInstanceID()));
             }
             _changeFilesThread = new Thread(ChangeFilesThread);
             _changeFilesThread.Start();

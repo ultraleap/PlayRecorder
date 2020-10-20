@@ -1,4 +1,3 @@
-﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -14,42 +13,90 @@ namespace PlayRecorder
     {
 
         Vector2 scrollPos;
-        bool awaitingFileRefresh = false;
 
-        static string recordedFilesVariable = "_recordedFiles", bindersVariable = "_binders", currentFileVariable = "_currentFile", playlistFilesVariable = "_playlistFiles";
+        static string recordedFilesVariable = "_recordedFiles", bindersVariable = "_binders", currentFileVariable = "_currentFile", awaitingRefreshVariable = "_awaitingFileRefresh";
         static string playingVariable = "_playing";
 
         string componentFilter = "";
 
+        GUIContent recordFoldoutGUI = new GUIContent("", "You can drag files onto this header to add them to the files list."),
+            loadingButtonGUI = new GUIContent("Loading...", "This can take a while to process depending on your system, the number of files, and the recording complexity."),
+            updateFilesGUI = new GUIContent("Update Files", "This can take a while to process depending on your system, the number of files, and the recording complexity."),
+            filterComponentsGUI = new GUIContent("Filter Components", "Filter to specific components based upon their descriptor and component type."),
+            playbackRateGUI = new GUIContent("Playback Rate", "The rate/speed at which the recordings should play."),
+            scrubWaitGUI = new GUIContent("Scrubbing Wait Time", "The amount of time to wait before jumping to a specific point on the timeline.");
+
+
+        private void Awake()
+        {
+            for (int i = 0; i < serializedObject.FindProperty(recordedFilesVariable).arraySize; i++)
+            {
+                if (serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue == null)
+                {
+                    serializedObject.FindProperty(recordedFilesVariable).DeleteArrayElementAtIndex(i);
+                }
+            }
+        }
+
         public override void OnInspectorGUI()
         {
+            
+            //EditorGUI.DrawRect(dragRect,Color.red);
             EditorGUILayout.BeginHorizontal();
 
+            Rect dragRect = GUILayoutUtility.GetRect(0, 20, GUILayout.ExpandWidth(true));
 
-            serializedObject.FindProperty(recordedFilesVariable).isExpanded = EditorGUILayout.Foldout(serializedObject.FindProperty(recordedFilesVariable).isExpanded, "Recorded Files (" + serializedObject.FindProperty(recordedFilesVariable).arraySize + ")",true,Styles.foldoutBold);
+            recordFoldoutGUI.text = "Recorded Files (" + serializedObject.FindProperty(recordedFilesVariable).arraySize + ")";
+            serializedObject.FindProperty(recordedFilesVariable).isExpanded = EditorGUI.Foldout(dragRect, serializedObject.FindProperty(recordedFilesVariable).isExpanded, recordFoldoutGUI, true, Styles.foldoutBold);
 
+            if(dragRect.Contains(Event.current.mousePosition))
+            {
+                if(Event.current.type == EventType.DragUpdated)
+                {
+                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                    Event.current.Use();
+                }
+                else if(Event.current.type == EventType.DragPerform)
+                {
+                    for (int i = 0; i < DragAndDrop.objectReferences.Length; i++)
+                    {
+                        if(DragAndDrop.objectReferences[i].GetType() == typeof(TextAsset))
+                        {
+                            serializedObject.FindProperty(recordedFilesVariable).InsertArrayElementAtIndex(serializedObject.FindProperty(recordedFilesVariable).arraySize);
+                            serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(serializedObject.FindProperty(recordedFilesVariable).arraySize - 1).objectReferenceValue = DragAndDrop.objectReferences[i];
+                            serializedObject.FindProperty(recordedFilesVariable).isExpanded = true;
+                            serializedObject.FindProperty(awaitingRefreshVariable).boolValue = true;
+                        }
+                    }
+                    serializedObject.ApplyModifiedProperties();
+                    ((PlaybackManager)serializedObject.targetObject).RemoveDuplicateFiles();
+                    Event.current.Use();
+                    GUIUtility.ExitGUI();
+                }
+            }
 
             EditorGUI.BeginDisabledGroup(Application.isPlaying);
-
 
             if (GUILayout.Button("+", Styles.miniButton, GUILayout.Width(26)))
             {
                 serializedObject.FindProperty(recordedFilesVariable).InsertArrayElementAtIndex(serializedObject.FindProperty(recordedFilesVariable).arraySize);
                 serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(serializedObject.FindProperty(recordedFilesVariable).arraySize-1).objectReferenceValue = null;
                 serializedObject.FindProperty(recordedFilesVariable).isExpanded = true;
-                awaitingFileRefresh = true;
+                serializedObject.FindProperty(awaitingRefreshVariable).boolValue = true;
             }
 
             if (serializedObject.FindProperty("_changingFiles").boolValue)
             {
-                GUILayout.Button(new GUIContent("Loading...", "This can take a while to process depending on your system, the number of files, and the recording complexity."), Styles.miniButtonGrey, GUILayout.Width(90));
+                GUILayout.Button(loadingButtonGUI, Styles.miniButtonGrey, GUILayout.Width(90));
             }
             else
             {
-                if (GUILayout.Button(new GUIContent("Update Files", "This can take a while to process depending on your system, the number of files, and the recording complexity."), awaitingFileRefresh ? Styles.miniButtonBoldRed : Styles.miniButton, GUILayout.Width(90)))
+                if (GUILayout.Button(updateFilesGUI, serializedObject.FindProperty(awaitingRefreshVariable).boolValue ? Styles.miniButtonBoldRed : Styles.miniButton, GUILayout.Width(90)))
                 {
+                    serializedObject.FindProperty(awaitingRefreshVariable).boolValue = false;
+                    serializedObject.ApplyModifiedProperties();
                     ((PlaybackManager)serializedObject.targetObject).ChangeFiles();
-                    awaitingFileRefresh = false;
+                    GUIUtility.ExitGUI();
                 }
             }
 
@@ -61,13 +108,19 @@ namespace PlayRecorder
             {
                 for (int i = 0; i < serializedObject.FindProperty(recordedFilesVariable).arraySize; i++)
                 {
+                    if(serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue == null)
+                    {
+                        serializedObject.FindProperty(awaitingRefreshVariable).boolValue = true;
+                    }
+
                     EditorGUILayout.BeginHorizontal();
 
-                    if(GUILayout.Button(serializedObject.FindProperty(currentFileVariable).intValue == i ? "▶" : " ",GUILayout.Width(26)))
+                    if(GUILayout.Button(new GUIContent(serializedObject.FindProperty(currentFileVariable).intValue == i ? "▶" : " ","Change the currently selected file to this file."),GUILayout.Width(26)))
                     {
                         if(Application.isPlaying && serializedObject.FindProperty(playingVariable).boolValue)
                         {
                             ((PlaybackManager)serializedObject.targetObject).ChangeCurrentFile(i);
+                            GUIUtility.ExitGUI();
                         }
                         else
                         {
@@ -75,7 +128,9 @@ namespace PlayRecorder
                         }
                     }
 
-                    serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue = EditorGUILayout.ObjectField("File " + (i + 1).ToString(), serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue, typeof(TextAsset), false);
+                    string recName = ((PlaybackManager)serializedObject.targetObject).GetData(i) != null ? ((PlaybackManager)serializedObject.targetObject).GetData(i).recordingName : "";
+
+                    serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue = EditorGUILayout.ObjectField(recName.Length > 0 ? new GUIContent("File " + (i + 1).ToString() + " ("+recName+")","Recording name: "+recName) : new GUIContent("File " + (i+1).ToString()), serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue, typeof(TextAsset), false);
 
                     EditorGUI.BeginDisabledGroup(Application.isPlaying);
 
@@ -83,7 +138,7 @@ namespace PlayRecorder
                     {
                         serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue = null;
                         serializedObject.FindProperty(recordedFilesVariable).DeleteArrayElementAtIndex(i);
-                        awaitingFileRefresh = true;
+                        serializedObject.FindProperty(awaitingRefreshVariable).boolValue = true;
                     }
 
                     EditorGUI.EndDisabledGroup();
@@ -92,23 +147,38 @@ namespace PlayRecorder
                 }
             }
 
-            EditorUtils.DrawUILine(Color.grey, 1, 4);
 
-            Playlists();
 
             if (serializedObject.FindProperty(currentFileVariable).intValue != -1 && serializedObject.FindProperty(recordedFilesVariable).arraySize != 0)
             {
+                EditorGUILayout.BeginHorizontal();
                 if (serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(serializedObject.FindProperty(currentFileVariable).intValue).objectReferenceValue != null)
                 {
                     EditorGUILayout.LabelField("Current file: " + ((TextAsset)serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(serializedObject.FindProperty(currentFileVariable).intValue).objectReferenceValue).name);
                 }
+                else
+                {
+                    EditorGUILayout.LabelField("No files loaded");
+                }
+                if(GUILayout.Button("Clear Files",Styles.miniButton,GUILayout.Width(90)))
+                {
+                    serializedObject.FindProperty(recordedFilesVariable).ClearArray();
+                    serializedObject.FindProperty(awaitingRefreshVariable).boolValue = true;
+                    serializedObject.ApplyModifiedProperties();
+                    GUIUtility.ExitGUI();
+                }
+                EditorGUILayout.EndHorizontal();
             }
+
+            EditorUtils.DrawUILine(Color.grey, 1, 4);
+            
+            Playlists();
 
             EditorUtils.DrawUILine(Color.grey, 1, 4);
 
             EditorGUILayout.LabelField("Recorded Components ("+ serializedObject.FindProperty(bindersVariable).arraySize + ")", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
-            componentFilter = EditorGUILayout.TextField(new GUIContent("Filter Components", "Filter to specific components based upon their descriptor and component type."), componentFilter);
+            componentFilter = EditorGUILayout.TextField(filterComponentsGUI, componentFilter);
             if(GUILayout.Button("Clear Filter",Styles.miniButton,GUILayout.Width(90)))
             {
                 componentFilter = "";
@@ -148,8 +218,8 @@ namespace PlayRecorder
 
             EditorGUILayout.LabelField("Playback Parameters", EditorStyles.boldLabel);
 
-            serializedObject.FindProperty("_playbackRate").floatValue = EditorGUILayout.Slider(new GUIContent("Playback Rate", "The rate/speed at which the recordings should play."), serializedObject.FindProperty("_playbackRate").floatValue, 0, 3.0f);
-            serializedObject.FindProperty("_scrubWaitTime").floatValue = EditorGUILayout.Slider(new GUIContent("Scrubbing Wait Time", "The amount of time to wait before jumping to a specific point on the timeline."), serializedObject.FindProperty("_scrubWaitTime").floatValue, 0, 1.0f);
+            serializedObject.FindProperty("_playbackRate").floatValue = EditorGUILayout.Slider(playbackRateGUI, serializedObject.FindProperty("_playbackRate").floatValue, 0, 3.0f);
+            serializedObject.FindProperty("_scrubWaitTime").floatValue = EditorGUILayout.Slider(scrubWaitGUI, serializedObject.FindProperty("_scrubWaitTime").floatValue, 0, 1.0f);
 
             EditorGUI.BeginDisabledGroup(!Application.isPlaying || serializedObject.FindProperty(recordedFilesVariable).arraySize == 0);
 
@@ -213,35 +283,108 @@ namespace PlayRecorder
 
             EditorGUILayout.BeginHorizontal();
 
-            if (GUILayout.Button(new GUIContent("Save Playlist")))
+            EditorGUI.BeginDisabledGroup(serializedObject.FindProperty(recordedFilesVariable).arraySize == 0 || serializedObject.FindProperty(awaitingRefreshVariable).boolValue);
+
+            if (GUILayout.Button(new GUIContent("Save Playlist", serializedObject.FindProperty(awaitingRefreshVariable).boolValue ? "Please make sure to press Update Files before trying to save a playlist." : "Save the current set of files into a playlist.")))
             {
                 var path = EditorUtility.SaveFilePanel("Save Playlist", "", "playlist.json", "json");
                 if (path.Length != 0)
                 {
-                    FileUtil.SavePlaylist(path, ((PlaybackManager)serializedObject.targetObject).playlist);
+                    List<PlaylistItem> playlist = new List<PlaylistItem>();
+                    for (int i = 0; i < serializedObject.FindProperty(recordedFilesVariable).arraySize; i++)
+                    {
+                        TextAsset t = (TextAsset)serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue;
+                        if(t == null)
+                        {
+                            continue;
+                        }
+                        string guid = "";
+                        long local = 0;
+                        if(AssetDatabase.TryGetGUIDAndLocalFileIdentifier(t, out guid, out local))
+                        {
+                            playlist.Add(new PlaylistItem(t.name, AssetDatabase.GUIDToAssetPath(guid), guid));
+                        }
+                    }
+                    FileUtil.SavePlaylist(path, playlist);
+                    EditorUtility.DisplayDialog("Saved", "Play list saved to " + path, "Ok");
                 }
             }
 
-            if (GUILayout.Button(new GUIContent("Load Playlist")))
+            EditorGUI.EndDisabledGroup();
+
+            if (GUILayout.Button(new GUIContent("Load Playlist","Loading a playlist will overwrite your current set of loaded files. Playlist order is determined on how files are found, not the order they are present within the file.")))
             {
                 var path = EditorUtility.OpenFilePanel("Load Playlist", "", "json");
                 if(path.Length != 0)
                 {
                     try
                     {
-                        ((PlaybackManager)serializedObject.targetObject).playlist = FileUtil.LoadPlaylist(System.IO.File.ReadAllBytes(path));
+                        List<PlaylistItem> playlist = FileUtil.LoadPlaylist(System.IO.File.ReadAllBytes(path));
+                        List<TextAsset> textAssets = new List<TextAsset>();
+
+                        string temp;
+                        for (int i = 0; i < playlist.Count; i++)
+                        {
+                            temp = AssetDatabase.GUIDToAssetPath(playlist[i].guid.ToString());
+                            if(temp.Contains(playlist[i].name + ".bytes"))
+                            {
+                                textAssets.Add(AssetDatabase.LoadAssetAtPath<TextAsset>(temp));
+                                playlist.RemoveAt(i);
+                                i--;
+                            }
+                        }
+                        if (playlist.Count > 0)
+                        {
+                            string[] assets = AssetDatabase.FindAssets("t:TextAsset");
+                            for (int i = 0; i < assets.Length; i++)
+                            {
+                                temp = AssetDatabase.GUIDToAssetPath(assets[i]);
+                                if(temp.EndsWith("bytes"))
+                                {
+                                    for (int j = 0; j < playlist.Count; j++)
+                                    {
+                                        if(temp.Contains(playlist[j].name))
+                                        {
+                                            textAssets.Add(AssetDatabase.LoadAssetAtPath<TextAsset>(temp));
+                                            playlist.RemoveAt(j);
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(playlist.Count == 0)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+
+                        serializedObject.FindProperty(recordedFilesVariable).ClearArray();
+
+                        for (int i = 0; i < textAssets.Count; i++)
+                        {
+                            serializedObject.FindProperty(recordedFilesVariable).InsertArrayElementAtIndex(i);
+                            serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue = textAssets[i];
+                        }
+
+                        serializedObject.ApplyModifiedProperties();
+
+                        ((PlaybackManager)serializedObject.targetObject).ChangeFiles();
+                        serializedObject.FindProperty(awaitingRefreshVariable).boolValue = false;
+
+                        EditorUtility.DisplayDialog("Loaded", "Playlist loaded. " + textAssets.Count + " file(s) set.", "Ok");
                     }
                     catch
                     {
                         EditorUtility.DisplayDialog("Error", "Invalid playlist file loaded.", "Ok");
                     }
 
-                    EditorUtility.DisplayDialog("Loaded", "Playlist loaded. " + ((PlaybackManager)serializedObject.targetObject).playlist.Count + " file(s) set.", "Ok");
                 }
             }
 
             EditorGUILayout.EndHorizontal();
         }
+
+        
     }
 
 }
