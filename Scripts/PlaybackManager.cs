@@ -24,12 +24,6 @@ namespace PlayRecorder {
     public class PlaybackManager : MonoBehaviour
     {
 
-        public class PlaybackCache
-        {
-            public string name;
-            public byte[] bytes;
-        }
-
         public class ComponentCache
         {
             public string descriptor;
@@ -44,40 +38,38 @@ namespace PlayRecorder {
 
         [SerializeField]
         List<TextAsset> _recordedFiles = new List<TextAsset>();
-        
-        // DO NOT USE WILL BE REMOVED
+
         [SerializeField]
-        List<Data> _data = new List<Data>();
+        List<TextAsset> _loadedRecordedFiles = new List<TextAsset>();
 
         // TO BE ADDED
         // CURRENT MULTI-FILE SUPPORT IS LAGGY AS HELL PAST LIKE 5 FILES
         [SerializeField]
-        List<PlaybackCache> _dataCache = new List<PlaybackCache>();
+        List<string> _dataCache = new List<string>();
+
+        public int dataCacheCount { get { return _dataCache.Count; } }
+
+        public string GetDataCache(int i)
+        {
+            if(i >= _dataCache.Count)
+            {
+                return null;
+            }
+            return _dataCache[i];
+        }
 
         Data _currentData = null;
+
+        public Data currentData {
+            get {
+                return _currentData;
+            } }
 
         [SerializeField]
         bool _awaitingFileRefresh = false;
 
         [SerializeField]
         int _currentFile = -1;
-
-        public Data currentData {
-            get {
-                if (_currentFile != -1 && _data.Count > 0)
-                    return _data[_currentFile];
-                else
-                    return null;
-            } }
-
-        public Data GetData(int i)
-        {
-            if(i >= _data.Count)
-            {
-                return null;
-            }
-            return _data[i];
-        }
 
         // Please use the custom inspector.
         [SerializeField]
@@ -128,7 +120,7 @@ namespace PlayRecorder {
 
         #endregion
 
-        public int currentTick { get { return _currentTickVal; } private set { _currentTickVal = value; _timeCounter = _currentTickVal / _data[_currentFile].frameRate; } }
+        public int currentTick { get { return _currentTickVal; } private set { _currentTickVal = value; _timeCounter = _currentTickVal / _currentData.frameRate; } }
         public float currentTime { get { return _timeCounter; } }
 
         public void ChangeFiles()
@@ -137,7 +129,8 @@ namespace PlayRecorder {
             {
                 Debug.LogError("Unable to change files. Currently working.");
             }
-            _data.Clear();
+
+            _loadedRecordedFiles.Clear();
 
             bool nulls = false;
 
@@ -166,6 +159,12 @@ namespace PlayRecorder {
             }
 
             RemoveDuplicateFiles();
+
+            for (int i = 0; i < _binders.Count; i++)
+            {
+                _binders[i].count = 0;
+            }
+
 
 #if UNITY_EDITOR
             EditorCoroutineUtility.StartCoroutine(ChangeFilesCoroutine(), this);
@@ -204,10 +203,12 @@ namespace PlayRecorder {
             WaitForSeconds waitForSeconds = new WaitForSeconds(0.1f);
 #endif
             byte[] tempBytes = null;
-            string tempName = "";            
+            string tempName = "";
+
+            _dataCache.Clear();
 
             for (int i = 0; i < _recordedFiles.Count; i++)
-            {
+            {                
                 tempBytes = _recordedFiles[i].bytes;
                 tempName = _recordedFiles[i].name;
                 _loadFilesThread = new Thread(() => {
@@ -215,7 +216,7 @@ namespace PlayRecorder {
                     Data d =  FileUtil.LoadSingleFile(tempBytes);
                     if(d != null)
                     {
-                        _data.Add(d);
+                        ChangeBinders(d);
                     }
                     else
                     {
@@ -232,80 +233,72 @@ namespace PlayRecorder {
                 {
                     _recordedFiles.RemoveAt(i);
                 }
-            }
-            _changeFilesThread = new Thread(ChangeFilesThread);
-            _changeFilesThread.Start();
-            while (_changeFilesThread.IsAlive)
-            {
-                yield return waitForSeconds;
-            }
-            _changingFiles = false;
-            ChangeCurrentFile(_currentFile);
-        }
-
-        private void ChangeFilesThread()
-        {
-
-            for (int i = 0; i < _binders.Count; i++)
-            {
-                _binders[i].count = 0;
-            }
-            int rCacheInd = -1, binderInd = -1;
-            for (int i = 0; i < _data.Count; i++)
-            {
-                for (int j = 0; j < _data[i].objects.Count; j++)
+                else
                 {
-                    binderInd = _binders.FindIndex(x => (x.descriptor == _data[i].objects[j].descriptor) && (x.type == _data[i].objects[j].type));
-                    if (binderInd != -1)
-                    {
-                        _binders[binderInd].count++;
-                        if(_binders[binderInd].recordComponent == null && _componentCache.Count > 0)
-                        {
-                            rCacheInd = _componentCache.FindIndex(x => x.descriptor == _binders[binderInd].descriptor);
-                            if(rCacheInd != -1)
-                            {
-                                _binders[binderInd].recordComponent = _componentCache[rCacheInd].recordComponent;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        RecordComponent rc = null;
-                        if(_componentCache.Count > 0)
-                        {
-                            rCacheInd = _componentCache.FindIndex(x => x.descriptor == _data[i].objects[j].descriptor);
-                            if(rCacheInd != -1)
-                            {
-                                rc = _componentCache[rCacheInd].recordComponent;
-                            }
-                        }
-                        _binders.Add(new PlaybackBinder
-                        {
-                            descriptor = _data[i].objects[j].descriptor,
-                            count = 1,
-                            type = _data[i].objects[j].type,
-                            recordComponent = rc,
-                        });
-                    }
+                    _loadedRecordedFiles.Add(_recordedFiles[i]);
+                    _dataCache.Add(_recordedFiles[i].name);
                 }
+
             }
             bool mismatch = false;
             for (int i = 0; i < _binders.Count; i++)
             {
-                if (_binders[i].count == 0)
+                if(_binders[i].count == 0)
                 {
                     _binders.RemoveAt(i);
                     i--;
                     continue;
                 }
-                if (_binders[i].count != _data.Count)
+                if(_binders[i].count != _recordedFiles.Count)
                 {
                     mismatch = true;
                 }
             }
-            if (mismatch)
+            if(mismatch)
             {
                 Debug.LogWarning("You have a mismatch between your recorded item count and your data files. This may mean certain objects do not have unique playback data.");
+            }
+            _changingFiles = false;
+            ChangeCurrentFile(_currentFile);
+        }
+
+        private void ChangeBinders(Data data)
+        {
+            int rCacheInd = -1, binderInd = -1;
+            for (int j = 0; j < data.objects.Count; j++)
+            {
+                binderInd = _binders.FindIndex(x => (x.descriptor == data.objects[j].descriptor) && (x.type == data.objects[j].type));
+                if (binderInd != -1)
+                {
+                    _binders[binderInd].count++;
+                    if (_binders[binderInd].recordComponent == null && _componentCache.Count > 0)
+                    {
+                        rCacheInd = _componentCache.FindIndex(x => x.descriptor == _binders[binderInd].descriptor);
+                        if (rCacheInd != -1)
+                        {
+                            _binders[binderInd].recordComponent = _componentCache[rCacheInd].recordComponent;
+                        }
+                    }
+                }
+                else
+                {
+                    RecordComponent rc = null;
+                    if (_componentCache.Count > 0)
+                    {
+                        rCacheInd = _componentCache.FindIndex(x => x.descriptor == data.objects[j].descriptor);
+                        if (rCacheInd != -1)
+                        {
+                            rc = _componentCache[rCacheInd].recordComponent;
+                        }
+                    }
+                    _binders.Add(new PlaybackBinder
+                    {
+                        descriptor = data.objects[j].descriptor,
+                        count = 1,
+                        type = data.objects[j].type,
+                        recordComponent = rc,
+                    });
+                }
             }
         }
 
@@ -317,21 +310,60 @@ namespace PlayRecorder {
             {
                 fileIndex = 0;
             }
-            if (fileIndex >= _data.Count)
+            if (fileIndex >= _dataCache.Count)
             {
-                _currentFile = _data.Count - 1;
+                _currentFile = _dataCache.Count - 1;
                 Debug.LogWarning("Currently selected data file exceeds maximum file count. Your current file choice has been changed.");
             }
             else
             {
                 _currentFile = fileIndex;
             }
+#if UNITY_EDITOR
+            EditorCoroutineUtility.StartCoroutine(ChangeSingleFileCoroutine(), this);
+#else
+            StartCoroutine(ChangeSingleFileCoroutine());
+#endif
+        }
+
+        IEnumerator ChangeSingleFileCoroutine()
+        {
+            _changingFiles = true;
+
+#if UNITY_EDITOR
+            EditorWaitForSeconds waitForSeconds = new EditorWaitForSeconds(0.1f);
+#else
+            WaitForSeconds waitForSeconds = new WaitForSeconds(0.1f);
+#endif
+
+            byte[] b = _recordedFiles[_currentFile].bytes;
+
+            _loadFilesThread = new Thread(() =>
+            {
+                _removeErrorFile = false;
+                Data d = FileUtil.LoadSingleFile(b);
+                if (d != null)
+                {
+                    _currentData = d;
+                }
+                else
+                {
+                    Debug.LogError(_dataCache[_currentFile] + " is an invalid recording file and has not been loaded.");
+                    _removeErrorFile = true;
+                }
+            });
+            _loadFilesThread.Start();
+            while(_loadFilesThread.IsAlive)
+            {
+                yield return waitForSeconds;
+            }
+
             for (int i = 0; i < _binders.Count; i++)
             {
-                int ind = _data[fileIndex].objects.FindIndex(x => (x.descriptor == _binders[i].descriptor) && (x.type == _binders[i].type));
+                int ind = _currentData.objects.FindIndex(x => (x.descriptor == _binders[i].descriptor) && (x.type == _binders[i].type));
                 if (ind != -1)
                 {
-                    _binders[i].recordItem = _data[fileIndex].objects[ind];
+                    _binders[i].recordItem = _currentData.objects[ind];
                     if (_binders[i].recordComponent != null)
                     {
                         _binders[i].recordComponent.SetPlaybackData(_binders[i].recordItem);
@@ -346,17 +378,24 @@ namespace PlayRecorder {
                     }
                 }
             }
-            _currentFrameRate = _data[fileIndex].frameRate;
-            _maxTickVal = _data[fileIndex].frameCount;
-            _tickRate = 1.0 / _data[fileIndex].frameRate;
-            OnDataFileChange?.Invoke(_data[fileIndex]);
-            if(_firstLoad && Application.isPlaying)
+
+            _currentFrameRate = _currentData.frameRate;
+            _maxTickVal = _currentData.frameCount;
+            _tickRate = 1.0 / _currentData.frameRate;
+            OnDataFileChange?.Invoke(_currentData);
+            if (_firstLoad && Application.isPlaying)
             {
                 StartPlayingAfterLoad();
             }
-            _changingFiles = false;
             _scrubbed = true;
             _ticked = true;
+            _changingFiles = false;
+        }
+
+        public void RevertFileChanges()
+        {
+            _awaitingFileRefresh = false;
+            _recordedFiles = new List<TextAsset>(_loadedRecordedFiles);
         }
 
         public void Awake()
@@ -414,14 +453,14 @@ namespace PlayRecorder {
 
         public void StartPlaying()
         {
-            if(_data.Count == 0)
+            if(_dataCache.Count == 0)
             {
                 Debug.LogError("No files to play.");
                 return;
             }
-            if (_data.Count > 0)
+            if (_dataCache.Count > 0)
             {
-                ChangeFiles();
+                ChangeCurrentFile(_currentFile);
                 _playing = true;
             }
         }
@@ -452,6 +491,11 @@ namespace PlayRecorder {
 
         public bool TogglePlaying()
         {
+            if(_awaitingFileRefresh)
+            {
+                Debug.LogError("Awaiting file update. Playback has been prevented. Please refresh files in Edit mode before trying to play.");
+                return false;
+            }
             if(_changingFiles)
             {
                 Debug.Log("Files currently changing.");
@@ -501,6 +545,12 @@ namespace PlayRecorder {
                         _scrubbed = true;
                     }
                 }
+
+                if(_paused && _scrubbed)
+                {
+                    PlaybackThreadTick(ref tempMessages);
+                }
+
                 if(_paused)
                 {
                     Thread.Sleep(1);
@@ -513,28 +563,34 @@ namespace PlayRecorder {
                     //Debug.Log("TC: " + tickCounter + " TR: " + _tickRate + " TD: " + tickDelta);
                     tickCounter -= _tickRate;
                     currentTick++;
-                    _ticked = true;
 
-                    for (int i = 0; i < _binders.Count; i++)
-                    {
-                        if (_binders[i].recordComponent == null || _binders[i].recordItem == null || _binders[i].recordItem.status == null)
-                            continue;
-
-                        _binders[i].recordComponent.PlayTick(currentTick);
-                        int status = _binders[i].recordItem.status.FindIndex(x => x.frame == currentTick);
-                        if (status != -1)
-                        {
-                            _binders[i].statusIndex.Add(status);
-                        }
-                        tempMessages = _binders[i].recordComponent.PlayMessages(currentTick);
-                        if(tempMessages != null && tempMessages.Count > 0)
-                        {
-                            OnPlayMessages?.Invoke(_binders[i].recordComponent,tempMessages);
-                        }
-                    }
+                    PlaybackThreadTick(ref tempMessages);
+                    
                 }
                 // Woh there cowboy not so fast
                 Thread.Sleep(1);
+            }
+        }
+
+        void PlaybackThreadTick(ref List<string> tempMessages)
+        {
+            _ticked = true;
+            for (int i = 0; i < _binders.Count; i++)
+            {
+                if (_binders[i].recordComponent == null || _binders[i].recordItem == null || _binders[i].recordItem.status == null)
+                    continue;
+
+                _binders[i].recordComponent.PlayTick(currentTick);
+                int status = _binders[i].recordItem.status.FindIndex(x => x.frame == currentTick);
+                if (status != -1)
+                {
+                    _binders[i].statusIndex.Add(status);
+                }
+                tempMessages = _binders[i].recordComponent.PlayMessages(currentTick);
+                if (tempMessages != null && tempMessages.Count > 0)
+                {
+                    OnPlayMessages?.Invoke(_binders[i].recordComponent, tempMessages);
+                }
             }
         }
 

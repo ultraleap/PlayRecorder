@@ -11,17 +11,19 @@ namespace PlayRecorder
     [CustomEditor(typeof(PlaybackManager), true)]
     public class PlaybackManagerEditor : Editor
     {
+        
+        Vector2 fileScrollPos,compopentScrollPos;
 
-        Vector2 scrollPos;
+        static string recordedFilesVariable = "_recordedFiles", loadedFilesVariables = "_loadedRecordedFiles", dataCacheVariable = "_dataCache", bindersVariable = "_binders", currentFileVariable = "_currentFile", awaitingRefreshVariable = "_awaitingFileRefresh";
+        static string playingVariable = "_playing", changingFilesVariable = "_changingFiles";
 
-        static string recordedFilesVariable = "_recordedFiles", bindersVariable = "_binders", currentFileVariable = "_currentFile", awaitingRefreshVariable = "_awaitingFileRefresh";
-        static string playingVariable = "_playing";
+        static string updateFilesDescription = "This can take a while to process depending on your system, the number of files, and the recording complexity. You may find certain features or options inaccessible until this button is pressed.";
 
         string componentFilter = "";
 
         GUIContent recordFoldoutGUI = new GUIContent("", "You can drag files onto this header to add them to the files list."),
-            loadingButtonGUI = new GUIContent("Loading...", "This can take a while to process depending on your system, the number of files, and the recording complexity."),
-            updateFilesGUI = new GUIContent("Update Files", "This can take a while to process depending on your system, the number of files, and the recording complexity."),
+            loadingButtonGUI = new GUIContent("Loading...", updateFilesDescription),
+            updateFilesGUI = new GUIContent("Update Files", updateFilesDescription),
             filterComponentsGUI = new GUIContent("Filter Components", "Filter to specific components based upon their descriptor and component type."),
             playbackRateGUI = new GUIContent("Playback Rate", "The rate/speed at which the recordings should play."),
             scrubWaitGUI = new GUIContent("Scrubbing Wait Time", "The amount of time to wait before jumping to a specific point on the timeline.");
@@ -40,16 +42,21 @@ namespace PlayRecorder
 
         public override void OnInspectorGUI()
         {
-            
+
+            PlaybackLocker.SetPlayModeEnabled(!serializedObject.FindProperty(changingFilesVariable).boolValue && !serializedObject.FindProperty(awaitingRefreshVariable).boolValue);
+
+            EditorGUI.BeginDisabledGroup(serializedObject.FindProperty(changingFilesVariable).boolValue);
+
             //EditorGUI.DrawRect(dragRect,Color.red);
             EditorGUILayout.BeginHorizontal();
 
             Rect dragRect = GUILayoutUtility.GetRect(0, 20, GUILayout.ExpandWidth(true));
+            //dragRect.width = dragRect.width - 40;
 
             recordFoldoutGUI.text = "Recorded Files (" + serializedObject.FindProperty(recordedFilesVariable).arraySize + ")";
             serializedObject.FindProperty(recordedFilesVariable).isExpanded = EditorGUI.Foldout(dragRect, serializedObject.FindProperty(recordedFilesVariable).isExpanded, recordFoldoutGUI, true, Styles.foldoutBold);
 
-            if(dragRect.Contains(Event.current.mousePosition))
+            if(dragRect.Contains(Event.current.mousePosition) && !serializedObject.FindProperty(changingFilesVariable).boolValue)
             {
                 if(Event.current.type == EventType.DragUpdated)
                 {
@@ -58,21 +65,36 @@ namespace PlayRecorder
                 }
                 else if(Event.current.type == EventType.DragPerform)
                 {
+                    int dragged = 0;
                     for (int i = 0; i < DragAndDrop.objectReferences.Length; i++)
                     {
                         if(DragAndDrop.objectReferences[i].GetType() == typeof(TextAsset))
                         {
                             serializedObject.FindProperty(recordedFilesVariable).InsertArrayElementAtIndex(serializedObject.FindProperty(recordedFilesVariable).arraySize);
                             serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(serializedObject.FindProperty(recordedFilesVariable).arraySize - 1).objectReferenceValue = DragAndDrop.objectReferences[i];
-                            serializedObject.FindProperty(recordedFilesVariable).isExpanded = true;
-                            serializedObject.FindProperty(awaitingRefreshVariable).boolValue = true;
+                            dragged++;
+                            
                         }
                     }
-                    serializedObject.ApplyModifiedProperties();
-                    ((PlaybackManager)serializedObject.targetObject).RemoveDuplicateFiles();
+
                     Event.current.Use();
-                    GUIUtility.ExitGUI();
+
+                    if(dragged > 0)
+                    {
+                        serializedObject.FindProperty(recordedFilesVariable).isExpanded = true;
+                        serializedObject.FindProperty(awaitingRefreshVariable).boolValue = true;
+                        serializedObject.ApplyModifiedProperties();
+                        ((PlaybackManager)serializedObject.targetObject).RemoveDuplicateFiles();
+                        GUIUtility.ExitGUI();
+                    }
+                    
                 }
+            }
+
+            if(serializedObject.FindProperty(changingFilesVariable).boolValue)
+            {
+                Rect progressRect = GUILayoutUtility.GetRect(0, 20, GUILayout.ExpandWidth(true));
+                EditorGUI.ProgressBar(progressRect, (float)((PlaybackManager)serializedObject.targetObject).dataCacheCount / serializedObject.FindProperty(recordedFilesVariable).arraySize, "Parsing files...");
             }
 
             EditorGUI.BeginDisabledGroup(Application.isPlaying);
@@ -106,6 +128,7 @@ namespace PlayRecorder
 
             if (serializedObject.FindProperty(recordedFilesVariable).isExpanded)
             {
+                fileScrollPos = EditorGUILayout.BeginScrollView(fileScrollPos, GUILayout.Height(200));
                 for (int i = 0; i < serializedObject.FindProperty(recordedFilesVariable).arraySize; i++)
                 {
                     if(serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue == null)
@@ -114,6 +137,8 @@ namespace PlayRecorder
                     }
 
                     EditorGUILayout.BeginHorizontal();
+
+                    EditorGUI.BeginDisabledGroup(serializedObject.FindProperty(awaitingRefreshVariable).boolValue);
 
                     if(GUILayout.Button(new GUIContent(serializedObject.FindProperty(currentFileVariable).intValue == i ? "▶" : " ","Change the currently selected file to this file."),GUILayout.Width(26)))
                     {
@@ -128,7 +153,17 @@ namespace PlayRecorder
                         }
                     }
 
-                    string recName = ((PlaybackManager)serializedObject.targetObject).GetData(i) != null ? ((PlaybackManager)serializedObject.targetObject).GetData(i).recordingName : "";
+                    EditorGUI.EndDisabledGroup();
+
+                    string recName = "";
+                    if (serializedObject.FindProperty(recordedFilesVariable).arraySize > i
+                        && serializedObject.FindProperty(loadedFilesVariables).arraySize > i
+                        && ((TextAsset)serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue) != null
+                        && ((TextAsset)serializedObject.FindProperty(loadedFilesVariables).GetArrayElementAtIndex(i).objectReferenceValue) != null
+                        && ((TextAsset)serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue).name == ((TextAsset)serializedObject.FindProperty(loadedFilesVariables).GetArrayElementAtIndex(i).objectReferenceValue).name)
+                    {
+                        recName = serializedObject.FindProperty(dataCacheVariable).GetArrayElementAtIndex(i).stringValue;
+                    }
 
                     serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue = EditorGUILayout.ObjectField(recName.Length > 0 ? new GUIContent("File " + (i + 1).ToString() + " ("+recName+")","Recording name: "+recName) : new GUIContent("File " + (i+1).ToString()), serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue, typeof(TextAsset), false);
 
@@ -139,36 +174,54 @@ namespace PlayRecorder
                         serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue = null;
                         serializedObject.FindProperty(recordedFilesVariable).DeleteArrayElementAtIndex(i);
                         serializedObject.FindProperty(awaitingRefreshVariable).boolValue = true;
+                        if(serializedObject.FindProperty(currentFileVariable).intValue >= serializedObject.FindProperty(recordedFilesVariable).arraySize)
+                        {
+                            serializedObject.FindProperty(currentFileVariable).intValue = serializedObject.FindProperty(recordedFilesVariable).arraySize - 1;
+                        }
                     }
 
                     EditorGUI.EndDisabledGroup();
 
                     EditorGUILayout.EndHorizontal();
                 }
+                EditorGUILayout.EndScrollView();
             }
 
 
-
-            if (serializedObject.FindProperty(currentFileVariable).intValue != -1 && serializedObject.FindProperty(recordedFilesVariable).arraySize != 0)
+            EditorGUILayout.BeginHorizontal();
+            if (serializedObject.FindProperty(currentFileVariable).intValue != -1 && serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(serializedObject.FindProperty(currentFileVariable).intValue).objectReferenceValue != null)
             {
-                EditorGUILayout.BeginHorizontal();
-                if (serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(serializedObject.FindProperty(currentFileVariable).intValue).objectReferenceValue != null)
-                {
-                    EditorGUILayout.LabelField("Current file: " + ((TextAsset)serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(serializedObject.FindProperty(currentFileVariable).intValue).objectReferenceValue).name);
-                }
-                else
-                {
-                    EditorGUILayout.LabelField("No files loaded");
-                }
-                if(GUILayout.Button("Clear Files",Styles.miniButton,GUILayout.Width(90)))
-                {
-                    serializedObject.FindProperty(recordedFilesVariable).ClearArray();
-                    serializedObject.FindProperty(awaitingRefreshVariable).boolValue = true;
-                    serializedObject.ApplyModifiedProperties();
-                    GUIUtility.ExitGUI();
-                }
-                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.LabelField("Current file: (" + (serializedObject.FindProperty(currentFileVariable).intValue+1) + ") " + ((TextAsset)serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(serializedObject.FindProperty(currentFileVariable).intValue).objectReferenceValue).name);
             }
+            else
+            {
+                EditorGUILayout.LabelField("No files loaded");
+            }
+
+            EditorGUI.BeginDisabledGroup(!serializedObject.FindProperty(awaitingRefreshVariable).boolValue || Application.isPlaying);
+
+            if(GUILayout.Button("Revert Changes",Styles.miniButton,GUILayout.Width(110)))
+            {
+                ((PlaybackManager)serializedObject.targetObject).RevertFileChanges();
+            }
+
+            EditorGUI.EndDisabledGroup();
+
+            EditorGUI.BeginDisabledGroup(serializedObject.FindProperty(recordedFilesVariable).arraySize == 0 || Application.isPlaying);
+
+            if(GUILayout.Button("Clear Files",Styles.miniButton,GUILayout.Width(90)))
+            {
+                serializedObject.FindProperty(recordedFilesVariable).ClearArray();
+                serializedObject.FindProperty(awaitingRefreshVariable).boolValue = true;
+                serializedObject.FindProperty(currentFileVariable).intValue = -1;
+                serializedObject.ApplyModifiedProperties();
+                GUIUtility.ExitGUI();
+            }
+
+            EditorGUI.EndDisabledGroup();
+
+
+            EditorGUILayout.EndHorizontal();
 
             EditorUtils.DrawUILine(Color.grey, 1, 4);
             
@@ -176,43 +229,63 @@ namespace PlayRecorder
 
             EditorUtils.DrawUILine(Color.grey, 1, 4);
 
-            EditorGUILayout.LabelField("Recorded Components ("+ serializedObject.FindProperty(bindersVariable).arraySize + ")", EditorStyles.boldLabel);
-            EditorGUILayout.BeginHorizontal();
-            componentFilter = EditorGUILayout.TextField(filterComponentsGUI, componentFilter);
-            if(GUILayout.Button("Clear Filter",Styles.miniButton,GUILayout.Width(90)))
-            {
-                componentFilter = "";
-            }
-            EditorGUILayout.EndHorizontal();
-            scrollPos = EditorGUILayout.BeginScrollView(scrollPos,GUILayout.Height(400));
-            int c = 0;
+            int gC = 0, rC = 0;
+
             for (int i = 0; i < serializedObject.FindProperty(bindersVariable).arraySize; i++)
             {
-                if (componentFilter == "" || serializedObject.FindProperty(bindersVariable).GetArrayElementAtIndex(i).FindPropertyRelative("descriptor").stringValue.Contains(componentFilter,StringComparison.InvariantCultureIgnoreCase) || serializedObject.FindProperty(bindersVariable).GetArrayElementAtIndex(i).FindPropertyRelative("type").stringValue.Contains(componentFilter,StringComparison.InvariantCultureIgnoreCase))
+                if(serializedObject.FindProperty(bindersVariable).GetArrayElementAtIndex(i).FindPropertyRelative("recordComponent").objectReferenceValue == null)
                 {
-                    if (c > 0)
-                    {
-                        EditorUtils.DrawUILine(Color.grey, 1, 4);
-                    }
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty(bindersVariable).GetArrayElementAtIndex(i));
-                    c++;
+                    rC++;
+                }
+                else
+                {
+                    gC++;
                 }
             }
-            if(c == 0 && serializedObject.FindProperty(bindersVariable).arraySize != 0)
+
+            GUIContent recordComponents = new GUIContent("Recorded Components - " + serializedObject.FindProperty(bindersVariable).arraySize + " / <size=20><color=#00B200>■</color></size> "+gC+" / <size=20><color=#D90000>■</color></size> "+rC,"The green cube signifies how many components are correctly assigned, while red is the number that are not currently assigned.");
+
+            serializedObject.FindProperty(bindersVariable).isExpanded = EditorGUILayout.Foldout(serializedObject.FindProperty(bindersVariable).isExpanded, recordComponents, true, Styles.foldoutBold);
+
+            if (serializedObject.FindProperty(bindersVariable).isExpanded)
             {
-                EditorGUILayout.LabelField("No component descriptors match your filter term.");
+                EditorGUILayout.BeginHorizontal();
+                componentFilter = EditorGUILayout.TextField(filterComponentsGUI, componentFilter);
+                if (GUILayout.Button("Clear Filter", Styles.miniButton, GUILayout.Width(90)))
+                {
+                    componentFilter = "";
+                }
+                EditorGUILayout.EndHorizontal();
+                compopentScrollPos = EditorGUILayout.BeginScrollView(compopentScrollPos, GUILayout.Height(400));
+                int c = 0;
+                for (int i = 0; i < serializedObject.FindProperty(bindersVariable).arraySize; i++)
+                {
+                    if (componentFilter == "" || serializedObject.FindProperty(bindersVariable).GetArrayElementAtIndex(i).FindPropertyRelative("descriptor").stringValue.Contains(componentFilter, StringComparison.InvariantCultureIgnoreCase) || serializedObject.FindProperty(bindersVariable).GetArrayElementAtIndex(i).FindPropertyRelative("type").stringValue.Contains(componentFilter, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        if (c > 0)
+                        {
+                            EditorUtils.DrawUILine(Color.grey, 1, 4);
+                        }
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty(bindersVariable).GetArrayElementAtIndex(i));
+                        c++;
+                    }
+                }
+                if (c == 0 && serializedObject.FindProperty(bindersVariable).arraySize != 0)
+                {
+                    EditorGUILayout.LabelField("No component descriptors match your filter term.");
+                }
+                EditorGUILayout.EndScrollView();
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("Expand All", Styles.miniButton))
+                {
+                    ToggleExpanded(true);
+                }
+                if (GUILayout.Button("Collapse All", Styles.miniButton))
+                {
+                    ToggleExpanded(false);
+                }
+                EditorGUILayout.EndHorizontal();
             }
-            EditorGUILayout.EndScrollView();
-            EditorGUILayout.BeginHorizontal();
-            if(GUILayout.Button("Expand All", Styles.miniButton))
-            {
-                ToggleExpanded(true);
-            }
-            if(GUILayout.Button("Collapse All", Styles.miniButton))
-            {
-                ToggleExpanded(false);
-            }
-            EditorGUILayout.EndHorizontal();
 
             EditorUtils.DrawUILine(Color.grey, 1, 4);
 
@@ -263,6 +336,8 @@ namespace PlayRecorder
             }
 
             EditorGUILayout.EndHorizontal();
+
+            EditorGUI.EndDisabledGroup();
 
             EditorGUI.EndDisabledGroup();
 
@@ -366,12 +441,13 @@ namespace PlayRecorder
                             serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue = textAssets[i];
                         }
 
+                        serializedObject.FindProperty(currentFileVariable).intValue = 0;
                         serializedObject.ApplyModifiedProperties();
 
+                        EditorUtility.DisplayDialog("Loaded", "Playlist loaded. " + textAssets.Count + " file(s) set.", "Ok");
                         ((PlaybackManager)serializedObject.targetObject).ChangeFiles();
                         serializedObject.FindProperty(awaitingRefreshVariable).boolValue = false;
 
-                        EditorUtility.DisplayDialog("Loaded", "Playlist loaded. " + textAssets.Count + " file(s) set.", "Ok");
                     }
                     catch
                     {
