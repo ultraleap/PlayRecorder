@@ -2,7 +2,7 @@
 using UnityEditor;
 
 
-namespace PlayRecorder
+namespace PlayRecorder.Tools
 {
 
     public static class EditorUtils

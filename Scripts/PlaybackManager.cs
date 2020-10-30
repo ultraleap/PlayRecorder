@@ -22,7 +22,7 @@ namespace PlayRecorder {
     }
 
     public class PlaybackManager : MonoBehaviour
-    {
+    { 
 
         public class ComponentCache
         {
@@ -42,14 +42,17 @@ namespace PlayRecorder {
         [SerializeField]
         List<TextAsset> _loadedRecordedFiles = new List<TextAsset>();
 
-        // TO BE ADDED
-        // CURRENT MULTI-FILE SUPPORT IS LAGGY AS HELL PAST LIKE 5 FILES
         [SerializeField]
-        List<string> _dataCache = new List<string>();
+        List<DataCache> _dataCache = new List<DataCache>();
 
         public int dataCacheCount { get { return _dataCache.Count; } }
 
-        public string GetDataCache(int i)
+        public List<DataCache> GetDataCache()
+        {
+            return _dataCache;
+        }
+
+        public DataCache GetDataCache(int i)
         {
             if(i >= _dataCache.Count)
             {
@@ -71,6 +74,8 @@ namespace PlayRecorder {
         [SerializeField]
         int _currentFile = -1;
 
+        public int currentFileIndex { get { return _currentFile; } }
+
         // Please use the custom inspector.
         [SerializeField]
         List<PlaybackBinder> _binders = new List<PlaybackBinder>();
@@ -87,6 +92,7 @@ namespace PlayRecorder {
 
         [SerializeField]
         float _timeCounter = 0f;
+
 
         double _tickRate = 0, tickCounter = 0, tickDelta = 0;
         float ticks = 0;
@@ -110,13 +116,16 @@ namespace PlayRecorder {
 
         [SerializeField]
         bool _changingFiles = false;
+        public bool changingFiles { get { return _changingFiles; } }
+
         bool _removeErrorFile = false;
         Thread _loadFilesThread = null, _changeFilesThread = null;
 
         #region Actions
 
         public Action<RecordComponent, List<string>> OnPlayMessages;
-        public Action<Data> OnDataFileChange;
+        public Action<Data> OnDataChange;
+        public Action<List<DataCache>> OnDataCacheChange;
 
         #endregion
 
@@ -217,6 +226,7 @@ namespace PlayRecorder {
                     if(d != null)
                     {
                         ChangeBinders(d);
+                        _dataCache.Add(new DataCache(d));
                     }
                     else
                     {
@@ -236,7 +246,6 @@ namespace PlayRecorder {
                 else
                 {
                     _loadedRecordedFiles.Add(_recordedFiles[i]);
-                    _dataCache.Add(_recordedFiles[i].name);
                 }
 
             }
@@ -258,6 +267,7 @@ namespace PlayRecorder {
             {
                 Debug.LogWarning("You have a mismatch between your recorded item count and your data files. This may mean certain objects do not have unique playback data.");
             }
+            OnDataCacheChange?.Invoke(_dataCache);
             _changingFiles = false;
             ChangeCurrentFile(_currentFile);
         }
@@ -348,7 +358,7 @@ namespace PlayRecorder {
                 }
                 else
                 {
-                    Debug.LogError(_dataCache[_currentFile] + " is an invalid recording file and has not been loaded.");
+                    Debug.LogError(_dataCache[_currentFile].name + " is an invalid recording file and has not been loaded.");
                     _removeErrorFile = true;
                 }
             });
@@ -382,7 +392,7 @@ namespace PlayRecorder {
             _currentFrameRate = _currentData.frameRate;
             _maxTickVal = _currentData.frameCount;
             _tickRate = 1.0 / _currentData.frameRate;
-            OnDataFileChange?.Invoke(_currentData);
+            OnDataChange?.Invoke(_currentData);
             if (_firstLoad && Application.isPlaying)
             {
                 StartPlayingAfterLoad();
@@ -522,7 +532,6 @@ namespace PlayRecorder {
         {
             ticks = _mainThreadTime;
             tickDelta = 0.0;
-            List<string> tempMessages = new List<string>();
             while (_playing)
             {
                 tickDelta = (_mainThreadTime - ticks);
@@ -548,7 +557,7 @@ namespace PlayRecorder {
 
                 if(_paused && _scrubbed)
                 {
-                    PlaybackThreadTick(ref tempMessages);
+                    PlaybackThreadTick();
                 }
 
                 if(_paused)
@@ -564,7 +573,7 @@ namespace PlayRecorder {
                     tickCounter -= _tickRate;
                     currentTick++;
 
-                    PlaybackThreadTick(ref tempMessages);
+                    PlaybackThreadTick();
                     
                 }
                 // Woh there cowboy not so fast
@@ -572,7 +581,7 @@ namespace PlayRecorder {
             }
         }
 
-        void PlaybackThreadTick(ref List<string> tempMessages)
+        void PlaybackThreadTick()
         {
             _ticked = true;
             for (int i = 0; i < _binders.Count; i++)
@@ -586,7 +595,7 @@ namespace PlayRecorder {
                 {
                     _binders[i].statusIndex.Add(status);
                 }
-                tempMessages = _binders[i].recordComponent.PlayMessages(currentTick);
+                List<string> tempMessages = _binders[i].recordComponent.PlayMessages(currentTick);
                 if (tempMessages != null && tempMessages.Count > 0)
                 {
                     OnPlayMessages?.Invoke(_binders[i].recordComponent, tempMessages);

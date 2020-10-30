@@ -6,6 +6,7 @@ namespace PlayRecorder.Tools
 
     public static class Styles
     {
+        public static GUIStyle textCentered = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleCenter };
         public static GUIStyle textBold = new GUIStyle(EditorStyles.boldLabel);
         public static GUIStyle textBoldRed = new GUIStyle(EditorStyles.boldLabel) { normal = new GUIStyleState() { textColor = new Color(255f * 0.8f, 0, 0) } };
         public static GUIStyle textDisabledBold = new GUIStyle(EditorStyles.boldLabel) { normal = new GUIStyleState() { textColor = Color.grey }, active = new GUIStyleState() { textColor = Color.grey }, hover = new GUIStyleState() { textColor = Color.grey } };
@@ -20,6 +21,7 @@ namespace PlayRecorder.Tools
         public static GUIStyle buttonIcon = new GUIStyle(EditorStyles.miniButton) { padding = new RectOffset(1, 1, 1, 1), fixedHeight = 18 };
 
         public static GUIStyle boxBorder = new GUIStyle(EditorStyles.helpBox);
+
 
     }
     

@@ -140,7 +140,7 @@ namespace PlayRecorder
 
                     EditorGUI.BeginDisabledGroup(serializedObject.FindProperty(awaitingRefreshVariable).boolValue);
 
-                    if(GUILayout.Button(new GUIContent(serializedObject.FindProperty(currentFileVariable).intValue == i ? "▶" : " ","Change the currently selected file to this file."),GUILayout.Width(26)))
+                    if(GUILayout.Button(new GUIContent(serializedObject.FindProperty(currentFileVariable).intValue == i ? "▶"+(i+1).ToString() : (i + 1).ToString(), "Change the currently selected file to this file."),GUILayout.Width(32)))
                     {
                         if(Application.isPlaying && serializedObject.FindProperty(playingVariable).boolValue)
                         {
@@ -158,14 +158,15 @@ namespace PlayRecorder
                     string recName = "";
                     if (serializedObject.FindProperty(recordedFilesVariable).arraySize > i
                         && serializedObject.FindProperty(loadedFilesVariables).arraySize > i
+                        && serializedObject.FindProperty(dataCacheVariable).arraySize > i
                         && ((TextAsset)serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue) != null
                         && ((TextAsset)serializedObject.FindProperty(loadedFilesVariables).GetArrayElementAtIndex(i).objectReferenceValue) != null
                         && ((TextAsset)serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue).name == ((TextAsset)serializedObject.FindProperty(loadedFilesVariables).GetArrayElementAtIndex(i).objectReferenceValue).name)
                     {
-                        recName = serializedObject.FindProperty(dataCacheVariable).GetArrayElementAtIndex(i).stringValue;
+                        recName = serializedObject.FindProperty(dataCacheVariable).GetArrayElementAtIndex(i).FindPropertyRelative("name").stringValue;
                     }
 
-                    serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue = EditorGUILayout.ObjectField(recName.Length > 0 ? new GUIContent("File " + (i + 1).ToString() + " ("+recName+")","Recording name: "+recName) : new GUIContent("File " + (i+1).ToString()), serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue, typeof(TextAsset), false);
+                    serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue = EditorGUILayout.ObjectField(recName.Length > 0 ? new GUIContent(recName,"Recording name: "+recName) : new GUIContent("File " + (i+1).ToString()), serializedObject.FindProperty(recordedFilesVariable).GetArrayElementAtIndex(i).objectReferenceValue, typeof(TextAsset), false);
 
                     EditorGUI.BeginDisabledGroup(Application.isPlaying);
 

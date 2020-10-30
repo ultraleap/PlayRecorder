@@ -5,19 +5,25 @@ using UnityEngine;
 namespace PlayRecorder
 {
     [System.Serializable]
-    public class PlaybackCache
+    public class DataCache
     {
 
-        string name;
+        public string name;
 
-        List<RecordMessage> messages = new List<RecordMessage>();
+        public int frameCount = 0, frameRate = 0;
 
-        public PlaybackCache(Data data)
+        public List<RecordMessage> messages = new List<RecordMessage>();
+
+        public DataCache(Data data)
         {
             if (data.objects == null || data.objects.Count == 0)
                 return;
 
             name = data.recordingName;
+
+            frameCount = data.frameCount;
+
+            frameRate = data.frameRate;
 
             for (int i = 0; i < data.objects.Count; i++)
             {
@@ -35,10 +41,12 @@ namespace PlayRecorder
                     }
                 }
             }
-
-            for (int i = 0; i < messages.Count; i++)
+            if(messages.Count > 0)
             {
-                messages[i].frames.Sort();
+                for (int i = 0; i < messages.Count; i++)
+                {
+                    messages[i].frames.Sort();
+                }
             }
         }
     }
