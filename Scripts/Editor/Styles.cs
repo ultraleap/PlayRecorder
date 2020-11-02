@@ -14,6 +14,9 @@ namespace PlayRecorder.Tools
         public static GUIStyle foldoutBold = new GUIStyle(EditorStyles.foldout) { fontStyle = FontStyle.Bold, richText = true };
 
         public static GUIStyle miniButton = new GUIStyle(EditorStyles.miniButton) { fontStyle = FontStyle.Normal, fixedHeight = 18 };
+        public static GUIStyle miniButtonLeft = new GUIStyle(EditorStyles.miniButtonLeft) { fontStyle = FontStyle.Normal, fixedHeight = 18 };
+        public static GUIStyle miniButtonRight = new GUIStyle(EditorStyles.miniButtonRight) { fontStyle = FontStyle.Normal, fixedHeight = 18 };
+        public static GUIStyle miniButtonMid = new GUIStyle(EditorStyles.miniButtonMid) { fontStyle = FontStyle.Normal, fixedHeight = 18 };
         public static GUIStyle miniButtonGrey = new GUIStyle(EditorStyles.miniButton) { fontStyle = FontStyle.Normal, normal = new GUIStyleState() { textColor = Color.grey }, fixedHeight = 18 };
         public static GUIStyle miniButtonBold = new GUIStyle(EditorStyles.miniButton) { fontStyle = FontStyle.Bold, fixedHeight = 18 };
         public static GUIStyle miniButtonBoldRed = new GUIStyle(EditorStyles.miniButton) { fontStyle = FontStyle.Bold, normal = new GUIStyleState() { textColor = new Color(255f * 0.8f, 0, 0) }, fixedHeight = 18 };
@@ -22,6 +25,11 @@ namespace PlayRecorder.Tools
 
         public static GUIStyle boxBorder = new GUIStyle(EditorStyles.helpBox);
 
+        public static Color red = new Color(217f / 255f, 0, 0);
+
+        public static Color green = new Color(0, 178f / 255f, 0);
+
+        
 
     }
     

@@ -42,8 +42,11 @@ namespace PlayRecorder {
         [SerializeField]
         List<TextAsset> _loadedRecordedFiles = new List<TextAsset>();
 
-        [SerializeField]
+        [SerializeField,HideInInspector]
         List<DataCache> _dataCache = new List<DataCache>();
+
+        [SerializeField]
+        List<string> _dataCacheNames = new List<string>();
 
         public int dataCacheCount { get { return _dataCache.Count; } }
 
@@ -88,6 +91,10 @@ namespace PlayRecorder {
         // Paused is to change whether time is progressing
         [SerializeField]
         bool _playing = false, _paused = false;
+        
+        public bool hasStarted {  get { return _playing; } }
+
+        public bool isPaused { get { return !_playing || _paused; } }
         bool _firstLoad = true;
 
         [SerializeField]
@@ -119,7 +126,7 @@ namespace PlayRecorder {
         public bool changingFiles { get { return _changingFiles; } }
 
         bool _removeErrorFile = false;
-        Thread _loadFilesThread = null, _changeFilesThread = null;
+        Thread _loadFilesThread = null;
 
         #region Actions
 
@@ -215,6 +222,7 @@ namespace PlayRecorder {
             string tempName = "";
 
             _dataCache.Clear();
+            _dataCacheNames.Clear();
 
             for (int i = 0; i < _recordedFiles.Count; i++)
             {                
@@ -227,6 +235,7 @@ namespace PlayRecorder {
                     {
                         ChangeBinders(d);
                         _dataCache.Add(new DataCache(d));
+                        _dataCacheNames.Add(d.recordingName);
                     }
                     else
                     {
@@ -329,6 +338,7 @@ namespace PlayRecorder {
             {
                 _currentFile = fileIndex;
             }
+
 #if UNITY_EDITOR
             EditorCoroutineUtility.StartCoroutine(ChangeSingleFileCoroutine(), this);
 #else
@@ -393,7 +403,7 @@ namespace PlayRecorder {
             _maxTickVal = _currentData.frameCount;
             _tickRate = 1.0 / _currentData.frameRate;
             OnDataChange?.Invoke(_currentData);
-            if (_firstLoad && Application.isPlaying)
+            if (_firstLoad && _playing && Application.isPlaying)
             {
                 StartPlayingAfterLoad();
             }
@@ -470,8 +480,8 @@ namespace PlayRecorder {
             }
             if (_dataCache.Count > 0)
             {
-                ChangeCurrentFile(_currentFile);
                 _playing = true;
+                ChangeCurrentFile(_currentFile);
             }
         }
 

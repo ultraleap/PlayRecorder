@@ -12,6 +12,7 @@ namespace PlayRecorder
 
         public int frameCount = 0, frameRate = 0;
 
+        [HideInInspector]
         public List<RecordMessage> messages = new List<RecordMessage>();
 
         public DataCache(Data data)
