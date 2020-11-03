@@ -42,7 +42,6 @@ namespace PlayRecorder {
 
         public Action OnTick;
 
-        [ContextMenu("Start")]
         public void StartRecording()
         {
             if(_duplicateItems)
@@ -82,7 +81,6 @@ namespace PlayRecorder {
             _recordingThread.Start();
         }
 
-        [ContextMenu("Stop")]
         public void StopRecording()
         {
             _recording = false;

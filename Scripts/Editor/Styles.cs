@@ -25,12 +25,11 @@ namespace PlayRecorder.Tools
 
         public static GUIStyle boxBorder = new GUIStyle(EditorStyles.helpBox);
 
+        public static GUIStyle boxBorderText = new GUIStyle(EditorStyles.helpBox) { fontSize = 12 , richText = true};
+
         public static Color red = new Color(217f / 255f, 0, 0);
 
         public static Color green = new Color(0, 178f / 255f, 0);
-
-        
-
     }
     
 
