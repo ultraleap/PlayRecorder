@@ -8,7 +8,10 @@ namespace PlayRecorder.Timeline {
     public class TimelineColors : ScriptableObject
     {
         public bool updateTimeline = true;
-        public List<TimelineColor> colours;
+
+        public bool overrideSelected = false, overridePassive = false, overrideBackground = false;
+        public Color selectedColour, passiveColour, backgroundColour;
+        public List<TimelineColor> colours = new List<TimelineColor>();
     }
 
 }
