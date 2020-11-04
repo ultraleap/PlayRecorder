@@ -12,8 +12,11 @@ namespace PlayRecorder.Timeline
     {
         public override void OnInspectorGUI()
         {
+
+            EditorGUI.BeginChangeCheck();
             EditorGUILayout.LabelField("This file acts as the key to the different message colours within the Timeline window.", Styles.boxBorderText);
             EditorGUILayout.LabelField("You can use a <b>*</b> operator as a wildcard at any point during your message. (E.g. my_*_* would find both my_cool_message and my_bad_event)", Styles.boxBorderText);
+            EditorGUILayout.LabelField("Setting a colour to fully transparent will hide it from the timeline.", Styles.boxBorderText);
             if(GUILayout.Button("Open Timeline"))
             {
                 TimelineWindow.Init();
@@ -22,7 +25,7 @@ namespace PlayRecorder.Timeline
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Messages",Styles.textBold);
 
-            if(GUILayout.Button("+",Styles.miniButtonBold,GUILayout.Width(26)))
+            if(GUILayout.Button("+",Styles.miniButtonBold,GUILayout.Width(22)))
             {
                 serializedObject.FindProperty("colours").InsertArrayElementAtIndex(serializedObject.FindProperty("colours").arraySize);
             }
@@ -33,11 +36,17 @@ namespace PlayRecorder.Timeline
             {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("colours").GetArrayElementAtIndex(i));
-                if (GUILayout.Button("-", Styles.miniButtonBold, GUILayout.Width(26)))
+                if (GUILayout.Button("-", Styles.miniButtonBold, GUILayout.Width(22)))
                 {
                     serializedObject.FindProperty("colours").DeleteArrayElementAtIndex(i);
                 }
                 EditorGUILayout.EndHorizontal();
+            }
+
+            if(EditorGUI.EndChangeCheck())
+            {
+                serializedObject.FindProperty("updateTimeline").boolValue = true;
+                serializedObject.ApplyModifiedProperties();
             }
 
         }

@@ -144,6 +144,10 @@ namespace PlayRecorder.Timeline
 
         private void OnGUI()
         {
+            if(_timelineColourObjects[_timelineColourIndex].updateTimeline)
+            {
+                GenerateTextures();
+            }
 
             if(Event.current.type == EventType.Repaint)
             {
@@ -153,7 +157,6 @@ namespace PlayRecorder.Timeline
                     _regenerateCounter = 0.3f;
                     _scrollbarWidth = GUI.skin.verticalScrollbar.fixedWidth;
                 }
-
             }
 
             if(playbackManager == null)
@@ -473,6 +476,8 @@ namespace PlayRecorder.Timeline
                 t2d.Apply();
                 _messageTextures.Add(t2d);
             }
+
+            _timelineColourObjects[_timelineColourIndex].updateTimeline = false;
         }
 
         private static void FillTextureWithTransparency(Texture2D texture)
