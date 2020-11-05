@@ -71,6 +71,22 @@ namespace PlayRecorder.Timeline
 
             EditorGUILayout.EndHorizontal();
 
+            EditorGUILayout.BeginHorizontal();
+
+            serializedObject.FindProperty("overrideTimeIndicator").boolValue = EditorGUILayout.Toggle("Override Time Indicator Colour", serializedObject.FindProperty("overrideTimeIndicator").boolValue);
+
+            if (serializedObject.FindProperty("overrideTimeIndicator").boolValue)
+            {
+                serializedObject.FindProperty("timeIndicatorColour").colorValue = EditorGUILayout.ColorField(serializedObject.FindProperty("timeIndicatorColour").colorValue);
+                serializedObject.FindProperty("timeIndicatorPausedColour").colorValue = EditorGUILayout.ColorField(serializedObject.FindProperty("timeIndicatorPausedColour").colorValue);
+            }
+            else
+            {
+                EditorGUILayout.LabelField("");
+            }
+
+            EditorGUILayout.EndHorizontal();
+
 
             if (EditorGUI.EndChangeCheck())
             {

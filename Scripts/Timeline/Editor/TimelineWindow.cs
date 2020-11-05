@@ -402,7 +402,14 @@ namespace PlayRecorder.Timeline
 
             if(Application.isPlaying)
             {
-                GUI.backgroundColor = playbackManager.isPaused ? Styles.red : Styles.green;
+                if(overrideColours && _timelineColourObjects[_timelineColourIndex].overrideTimeIndicator)
+                {
+                    GUI.backgroundColor = playbackManager.isPaused ? _timelineColourObjects[_timelineColourIndex].timeIndicatorPausedColour : _timelineColourObjects[_timelineColourIndex].timeIndicatorColour;
+                }
+                else
+                {
+                    GUI.backgroundColor = playbackManager.isPaused ? Styles.red : Styles.green;
+                }
                 GUI.Box(new Rect(36 + ((float)(_currentTimelineRect.width - 34) * ((float)playbackManager.currentTick / _maximumTick)),_currentTimelineRect.y,1,_currentTimelineRect.height),"");
             }
             GUI.backgroundColor = _normalBackground;
