@@ -166,7 +166,13 @@ namespace PlayRecorder
                 {
                     _recordItem.parts[i].currentFrameIndex = -1;
                 }
+                OnSetPlaybackData();
             }
+        }
+
+        protected virtual void OnSetPlaybackData()
+        {
+
         }
 
         public virtual void StartPlaying()

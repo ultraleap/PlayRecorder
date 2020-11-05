@@ -166,11 +166,14 @@ namespace PlayRecorder {
                 Debug.LogError("Null files were removed.");
             }
 
+            _dataCache.Clear();
+            _dataCacheNames.Clear();
 
             if (_recordedFiles.Count == 0)
             {
                 Debug.LogError("No files chosen. Aborting.");
                 _binders.Clear();
+                OnDataCacheChange?.Invoke(_dataCache);
                 return;
             }
 
@@ -220,9 +223,6 @@ namespace PlayRecorder {
 #endif
             byte[] tempBytes = null;
             string tempName = "";
-
-            _dataCache.Clear();
-            _dataCacheNames.Clear();
 
             for (int i = 0; i < _recordedFiles.Count; i++)
             {                
