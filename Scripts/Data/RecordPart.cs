@@ -38,23 +38,21 @@ namespace PlayRecorder
             {
                 currentFrameIndex = frames.Count - 1;
             }
+
+            if (frames[currentFrameIndex].tick <= tick)
+            {
+                // increase
+                while (tick > frames[currentFrameIndex].tick && currentFrameIndex < frames.Count - 1 && tick >= frames[currentFrameIndex + 1].tick)
+                {
+                    currentFrameIndex++;
+                }
+            }
             else
             {
-                if (frames[currentFrameIndex].tick <= tick)
+                // decrease or stay
+                while (tick < frames[currentFrameIndex].tick && currentFrameIndex > 0 && tick < frames[currentFrameIndex - 1].tick)
                 {
-                    // increase
-                    while (tick > frames[currentFrameIndex].tick && currentFrameIndex < frames.Count - 1 && tick >= frames[currentFrameIndex + 1].tick)
-                    {
-                        currentFrameIndex++;
-                    }
-                }
-                else
-                {
-                    // decrease or stay
-                    while (tick < frames[currentFrameIndex].tick && currentFrameIndex > 0 && tick < frames[currentFrameIndex - 1].tick)
-                    {
-                        currentFrameIndex--;
-                    }
+                    currentFrameIndex--;
                 }
             }
 

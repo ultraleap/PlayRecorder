@@ -287,7 +287,16 @@ namespace PlayRecorder.Timeline
             }
             EditorGUI.EndDisabledGroup();
 
-            EditorGUILayout.LabelField("0",GUILayout.Width(9));
+            EditorGUI.BeginDisabledGroup(!Application.isPlaying || !playbackManager.hasStarted);
+
+            GUIContent rsb = EditorGUIUtility.IconContent("Animation.FirstKey");
+            rsb.tooltip = "Jump back to the start of the file.";
+            if(GUILayout.Button(rsb,Styles.buttonIcon,GUILayout.Width(32)))
+            {
+                playbackManager.ScrubTick(0);
+            }
+
+            EditorGUI.EndDisabledGroup();
             
             if(Event.current.type == EventType.Repaint)
             {

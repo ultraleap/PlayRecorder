@@ -532,7 +532,7 @@ namespace PlayRecorder {
         {
             if(_playing)
             {
-                _desiredScrubTick = tick;
+                _desiredScrubTick = Mathf.Max(tick,0);
                 _countingScrub = true;
                 _scrubWaitCounter = _scrubWaitTime;
             }
@@ -559,7 +559,7 @@ namespace PlayRecorder {
                     if (_scrubWaitCounter <= 0)
                     {
                         _countingScrub = false;
-                        currentTick = (_desiredScrubTick - 1);
+                        currentTick = Mathf.Max(_desiredScrubTick - 1,0);
                         tickCounter =  _tickRate - (tickDelta * _playbackRate);
                         _scrubbed = true;
                     }
