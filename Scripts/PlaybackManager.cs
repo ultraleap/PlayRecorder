@@ -136,7 +136,7 @@ namespace PlayRecorder {
 
         #endregion
 
-        public int currentTick { get { return _currentTickVal; } private set { _currentTickVal = value; _timeCounter = _currentTickVal / _currentData.frameRate; } }
+        public int currentTick { get { return _currentTickVal; } private set { _currentTickVal = value; _timeCounter = (float)_currentTickVal / _currentData.frameRate; } }
         public float currentTime { get { return _timeCounter; } }
 
         public void ChangeFiles()
@@ -542,6 +542,7 @@ namespace PlayRecorder {
         {
             ticks = _mainThreadTime;
             tickDelta = 0.0;
+            PlaybackThreadTick();
             while (_playing)
             {
                 tickDelta = (_mainThreadTime - ticks);
@@ -562,12 +563,8 @@ namespace PlayRecorder {
                         currentTick = Mathf.Max(_desiredScrubTick - 1,0);
                         tickCounter =  _tickRate - (tickDelta * _playbackRate);
                         _scrubbed = true;
+                        PlaybackThreadTick();
                     }
-                }
-
-                if(_paused && _scrubbed)
-                {
-                    PlaybackThreadTick();
                 }
 
                 if(_paused)
