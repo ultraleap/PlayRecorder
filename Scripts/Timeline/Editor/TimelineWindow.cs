@@ -60,7 +60,7 @@ namespace PlayRecorder.Timeline
         [MenuItem("Tools/PlayRecorder/Timeline")]
         static public void Init()
         {
-            TimelineWindow window = (TimelineWindow)GetWindow(typeof(TimelineWindow));
+            TimelineWindow window = GetWindow<TimelineWindow>();
             window.titleContent = new GUIContent("Timeline", Resources.Load<Texture>("Images/playrecorder"));
 
             window.playbackManager = FindObjectOfType<PlaybackManager>();

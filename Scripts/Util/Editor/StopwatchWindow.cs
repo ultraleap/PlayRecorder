@@ -21,7 +21,7 @@ namespace PlayRecorder.Tools
         [MenuItem("Tools/PlayRecorder/Stopwatch")]
         static public void Init()
         {
-            StopwatchWindow window = (StopwatchWindow)GetWindow(typeof(StopwatchWindow));
+            StopwatchWindow window = GetWindow<StopwatchWindow>();
             window.titleContent = new GUIContent("Stopwatch", Resources.Load<Texture>("Images/playrecorder"));
 
             window.playbackManager = FindObjectOfType<PlaybackManager>();
