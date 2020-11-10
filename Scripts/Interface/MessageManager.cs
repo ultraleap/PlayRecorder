@@ -8,12 +8,6 @@ namespace PlayRecorder.Interface
     public class MessageManager : MonoBehaviour
     {
 
-        public class MessageCache
-        {
-            public RecordComponent component;
-            public List<string> messages = new List<string>();
-        }
-
         List<MessageCache> _awaitingMessages = new List<MessageCache>();
 
         [SerializeField]
@@ -62,35 +56,16 @@ namespace PlayRecorder.Interface
 
         void OnPlayMessages(RecordComponent component, List<string> strings)
         {
-            _awaitingMessages.Add(new MessageCache()
+            for (int i = 0; i < strings.Count; i++)
             {
-                component = component,
-                messages = strings
-            });
-        }
-
-        private void Update()
-        {
-            if(_awaitingMessages.Count > 0)
-            {
-                for (int i = 0; i < _awaitingMessages.Count; i++)
+                _messagePool[_messageIndex].CreateMessage(strings[i], _messageVisibleTime);
+                _messagePool[_messageIndex].transform.position = component.transform.position;
+                _messagePool[_messageIndex].transform.localScale = _messagePrefab.transform.localScale * _messageScale;
+                _messageIndex++;
+                if (_messageIndex >= _messagePool.Count)
                 {
-                    if (_awaitingMessages[i] == null)
-                        continue;
-
-                    for (int j = 0; j < _awaitingMessages[i].messages.Count; j++)
-                    {
-                        _messagePool[_messageIndex].CreateMessage(_awaitingMessages[i].messages[j], _messageVisibleTime);
-                        _messagePool[_messageIndex].transform.position = _awaitingMessages[i].component.transform.position;
-                        _messagePool[_messageIndex].transform.localScale = _messagePrefab.transform.localScale * _messageScale;
-                        _messageIndex++;
-                        if(_messageIndex >= _messagePool.Count)
-                        {
-                            _messageIndex = 0;
-                        }
-                    }
+                    _messageIndex = 0;
                 }
-                _awaitingMessages.Clear();
             }
         }
 

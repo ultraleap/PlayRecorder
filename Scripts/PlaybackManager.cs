@@ -21,6 +21,19 @@ namespace PlayRecorder {
         public RecordItem recordItem;
     }
 
+    [System.Serializable]
+    public class MessageCache
+    {
+        public RecordComponent component;
+        public List<string> messages = new List<string>();
+
+        public MessageCache(RecordComponent component, List<string> messages)
+        {
+            this.component = component;
+            this.messages = messages;
+        }
+    }
+
     public class PlaybackManager : MonoBehaviour
     { 
 
@@ -70,6 +83,8 @@ namespace PlayRecorder {
             get {
                 return _currentData;
             } }
+
+        public List<MessageCache> messageCache = new List<MessageCache>();
 
         [SerializeField]
         bool _awaitingFileRefresh = false;
@@ -133,11 +148,13 @@ namespace PlayRecorder {
         public Action<RecordComponent, List<string>> OnPlayMessages;
         public Action<Data> OnDataChange;
         public Action<List<DataCache>> OnDataCacheChange;
+        public Action<int> OnTick;
 
         #endregion
 
         public int currentTick { get { return _currentTickVal; } private set { _currentTickVal = value; _timeCounter = (float)_currentTickVal / _currentData.frameRate; } }
         public float currentTime { get { return _timeCounter; } }
+        public int currentFrameRate { get { if (_currentData != null) return _currentData.frameRate; return -1; } }
 
         public void ChangeFiles()
         {
@@ -448,6 +465,11 @@ namespace PlayRecorder {
                 UpdateComponentStatus();   
                 _ticked = false;
                 _scrubbed = false;
+                OnTick?.Invoke(currentTick);
+            }
+            if(messageCache.Count > 0)
+            {
+                UpdateMessages();
             }
         }
 
@@ -469,6 +491,15 @@ namespace PlayRecorder {
                 }
                 _binders[i].statusIndex.Clear();
             }
+        }
+
+        void UpdateMessages()
+        {
+            for (int i = 0; i < messageCache.Count; i++)
+            {
+                OnPlayMessages?.Invoke(messageCache[i].component, messageCache[i].messages);
+            }
+            messageCache.Clear();
         }
 
         public void StartPlaying()
@@ -605,7 +636,7 @@ namespace PlayRecorder {
                 List<string> tempMessages = _binders[i].recordComponent.PlayMessages(currentTick);
                 if (tempMessages != null && tempMessages.Count > 0)
                 {
-                    OnPlayMessages?.Invoke(_binders[i].recordComponent, tempMessages);
+                    messageCache.Add(new MessageCache(_binders[i].recordComponent, tempMessages));
                 }
             }
         }
