@@ -126,6 +126,15 @@ namespace PlayRecorder
         }
 #endif
 
+        protected override void OnRecordingEnable()
+        {
+            for (int i = 0; i < _transformCache.Count; i++)
+            {
+                _transformCache[i].Update();
+                _transformCache[i].hasChanged = true;
+            }
+        }
+
         public override void StartPlaying()
         {
             base.StartPlaying();

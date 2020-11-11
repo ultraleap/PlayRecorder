@@ -486,7 +486,7 @@ namespace PlayRecorder {
                     if (_binders[i].statusIndex.Count > 0)
                     {
                         // Can't modify gameObject status during a thread
-                        _binders[i].recordComponent.gameObject.SetActive(_binders[i].recordItem.status[_binders[i].statusIndex[_binders[i].statusIndex.Count - 1]].status);
+                        _binders[i].recordComponent.PlaybackStatusChange(_binders[i].recordItem.status[_binders[i].statusIndex[_binders[i].statusIndex.Count - 1]].status);
                     }
                 }
                 _binders[i].statusIndex.Clear();

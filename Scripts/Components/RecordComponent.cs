@@ -73,20 +73,46 @@ namespace PlayRecorder
             _manager?.RemoveComponent(this);
         }
 
-        protected virtual void OnEnable()
+        protected void OnEnable()
         {
             if (_recording)
             {
                 _currentTick = _manager.currentTick;
                 _recordItem.AddStatus(true, _currentTick);
+                OnRecordingEnable();
             }
         }
 
-        protected virtual void OnDisable()
+        protected void OnDisable()
         {
             if(_recording)
             {
                 _recordItem.AddStatus(false, _currentTick);
+                OnRecordingDisable();
+            }
+        }
+
+        protected virtual void OnRecordingEnable()
+        {
+
+        }
+
+        protected virtual void OnRecordingDisable()
+        {
+
+        }
+
+        public void PlaybackStatusChange(bool active)
+        {
+            gameObject.SetActive(active);
+
+            if (_playing && _recordItem != null && (_recordItem.parts.Count > 0 || _playUpdatedParts.Count > 0))
+            {
+                if (ValidPlayUpdate())
+                {
+                    PlayUpdate();
+                }
+                _playUpdatedParts.Clear();
             }
         }
 
