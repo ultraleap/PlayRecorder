@@ -540,6 +540,12 @@ namespace PlayRecorder {
 
         // 
 
+        public bool SetPaused(bool paused)
+        {
+            _paused = !paused;
+            return TogglePlaying();
+        }
+
         public bool TogglePlaying()
         {
             if(_awaitingFileRefresh)
