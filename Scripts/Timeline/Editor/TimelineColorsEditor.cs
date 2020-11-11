@@ -87,6 +87,22 @@ namespace PlayRecorder.Timeline
 
             EditorGUILayout.EndHorizontal();
 
+            EditorGUILayout.BeginHorizontal();
+
+            serializedObject.FindProperty("overrideMessageIndicatorWidth").boolValue = EditorGUILayout.Toggle("Override Message Indicator Width", serializedObject.FindProperty("overrideMessageIndicatorWidth").boolValue);
+
+            if (serializedObject.FindProperty("overrideMessageIndicatorWidth").boolValue)
+            {
+                serializedObject.FindProperty("messageIndicatorWidth").intValue = (int)EditorGUILayout.Slider(serializedObject.FindProperty("messageIndicatorWidth").intValue, 1, 10);
+                //serializedObject.FindProperty("messageIndicatorWidth").intValue = EditorGUILayout.IntField(serializedObject.FindProperty("messageIndicatorWidth").intValue);
+            }
+            else
+            {
+                EditorGUILayout.LabelField("");
+            }
+
+            EditorGUILayout.EndHorizontal();
+
 
             if (EditorGUI.EndChangeCheck())
             {

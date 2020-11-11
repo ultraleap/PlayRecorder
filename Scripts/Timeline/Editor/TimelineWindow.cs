@@ -448,6 +448,8 @@ namespace PlayRecorder.Timeline
             int fInd = -1;
 
             bool useColours = _timelineColourObjects != null && _timelineColourObjects.Count > 0 && _timelineColourObjects.Count > _timelineColourIndex;
+            bool customWidth = useColours && _timelineColourObjects[_timelineColourIndex].overrideMessageIndicatorWidth;
+            int messageWidth = customWidth ? _timelineColourObjects[_timelineColourIndex].messageIndicatorWidth : 2;
 
             for (int i = 0; i < _dataCache.Count; i++)
             {
@@ -477,6 +479,8 @@ namespace PlayRecorder.Timeline
                 }
 
                 tmcache.Sort((x, y) => x.px.CompareTo(y.px));
+
+                
 
                 int cH = 0;
                 for (int j = 0; j < tmcache.Count; j++)
@@ -508,9 +512,11 @@ namespace PlayRecorder.Timeline
                         }
                         
                         for (int l = 0; l < heights[k]; l++)
-                        { 
-                            t2d.SetPixel(tmcache[j].px, 1 + cH + l, c);
-                            t2d.SetPixel(tmcache[j].px + 1, 1 + cH + l, c);
+                        {
+                            for (int m = 0; m < messageWidth; m++)
+                            {
+                                t2d.SetPixel(tmcache[j].px + m, 1 + cH + l, c);
+                            }
                         }
                         cH += heights[k];
                     }
