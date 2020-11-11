@@ -257,7 +257,7 @@ namespace PlayRecorder.Timeline
                     DataSet();
                 }
             }
-            if(_dataCache.Count == 0)
+            if(_dataCache.Count == 0 || playbackManager.currentFileIndex == -1)
             {
                 EditorGUILayout.LabelField("No files currently loaded. Please add files to the PlaybackManager and press the Update Files button");
                 return false;
