@@ -181,7 +181,7 @@ namespace PlayRecorder.Leap
 
         }
 
-        protected override void PlayUpdate()
+        protected override void PlayUpdateLogic()
         {
             for (int i = 0; i < _playUpdatedParts.Count; i++)
             {

@@ -193,7 +193,7 @@ namespace PlayRecorder.SteamVR
             _recordItem.parts.Add(pinky);
         }
 
-        protected override void RecordUpdate()
+        protected override void RecordUpdateLogic()
         {
             _palmCache.Update(_rotationThreshold);
             _thumbCache.Update(_rotationThreshold);
@@ -278,7 +278,7 @@ namespace PlayRecorder.SteamVR
             base.StartPlaying();
         }
 
-        protected override void PlayUpdate()
+        protected override void PlayUpdateLogic()
         {
             for (int i = 0; i < _playUpdatedParts.Count; i++)
             {

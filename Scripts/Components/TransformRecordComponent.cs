@@ -99,7 +99,7 @@ namespace PlayRecorder
             }
         }
 
-        protected override void RecordUpdate()
+        protected override void RecordUpdateLogic()
         {
             for (int i = 0; i < _transformCache.Count; i++)
             {
@@ -153,7 +153,7 @@ namespace PlayRecorder
             }
         }
 
-        protected override void PlayUpdate()
+        protected override void PlayUpdateLogic()
         {
             for (int i = 0; i < _playUpdatedParts.Count; i++)
             {

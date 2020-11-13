@@ -25,6 +25,7 @@ namespace PlayRecorder {
 
         float _mainThreadTime = 0f;
 
+        bool _ticked = false;
         int _currentTickVal = 0;
         public int currentTick { get { return _currentTickVal; } }
 
@@ -40,7 +41,14 @@ namespace PlayRecorder {
 
         protected Thread _recordingThread, _savingThread;
 
-        public Action OnTick;
+        /// <summary>
+        /// Occurs on the recording thread.
+        /// </summary>
+        public Action<int> OnTick;
+        /// <summary>
+        /// Occurs on the Unity update thread after the most recent thread tick.
+        /// </summary>
+        public Action OnUpdateTick;
 
         public void StartRecording()
         {
@@ -122,7 +130,21 @@ namespace PlayRecorder {
             if(_recording)
             {
                 _mainThreadTime = Time.time;
+                if(_ticked)
+                {
+                    RecordingUpdate();
+                    _ticked = false;
+                }
             }
+        }
+
+        void RecordingUpdate()
+        {
+            for (int i = 0; i < _currentComponents.Count; i++)
+            {
+                _currentComponents[i].RecordUpdate();
+            }
+            OnUpdateTick?.Invoke();
         }
 
         public void AddComponent(RecordComponent component)
@@ -160,6 +182,8 @@ namespace PlayRecorder {
                     {
                         _currentComponents[i].RecordTick(_currentTickVal);
                     }
+                    _ticked = true;
+                    OnTick?.Invoke(_currentTickVal);
                 }
                 // Woh there cowboy not so fast
                 Thread.Sleep(1);

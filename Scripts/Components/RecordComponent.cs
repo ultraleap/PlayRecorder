@@ -49,18 +49,6 @@ namespace PlayRecorder
 
         private void Update()
         {
-            if(_recording)
-            {
-                RecordUpdate();
-            }
-            if(_playing && _recordItem != null && (_recordItem.parts.Count > 0 || _playUpdatedParts.Count > 0))
-            {
-                if(ValidPlayUpdate())
-                {
-                    PlayUpdate();
-                }
-                _playUpdatedParts.Clear();
-            }
         }
 
         [ExecuteInEditMode]
@@ -105,15 +93,6 @@ namespace PlayRecorder
         public void PlaybackStatusChange(bool active)
         {
             gameObject.SetActive(active);
-
-            if (_playing && _recordItem != null && (_recordItem.parts.Count > 0 || _playUpdatedParts.Count > 0))
-            {
-                if (ValidPlayUpdate())
-                {
-                    PlayUpdate();
-                }
-                _playUpdatedParts.Clear();
-            }
         }
 
         public virtual void StartRecording()
@@ -161,18 +140,20 @@ namespace PlayRecorder
             }
         }
 
-        protected virtual void RecordUpdate()
+        public void RecordUpdate()
+        {
+            RecordUpdateLogic();
+        }
+
+        protected virtual void RecordUpdateLogic()
         {
 
         }
       
         public void RecordTick(int tick)
         {
-            if(_recording)
-            {
-                _currentTick = tick;
-                RecordTickLogic();
-            }
+            _currentTick = tick;
+            RecordTickLogic();
         }
     
         protected virtual void RecordTickLogic()
@@ -208,9 +189,21 @@ namespace PlayRecorder
             OnStartPlayback?.Invoke();
         }
 
-        protected virtual void PlayUpdate()
+        public void PlayUpdate()
         {
-            _playUpdatedParts.Clear();
+            if (_recordItem != null && (_recordItem.parts.Count > 0 || _playUpdatedParts.Count > 0))
+            {
+                if (ValidPlayUpdate())
+                {
+                    PlayUpdateLogic();
+                }
+                _playUpdatedParts.Clear();
+            }
+        }
+
+        protected virtual void PlayUpdateLogic()
+        {
+
         }
 
         private bool ValidPlayUpdate()
