@@ -90,7 +90,7 @@ namespace PlayRecorder {
         bool _awaitingFileRefresh = false;
 
         [SerializeField]
-        int _currentFile = -1;
+        int _currentFile = -1,_oldFileIndex = -1;
 
         public int currentFileIndex { get { return _currentFile; } }
 
@@ -432,6 +432,7 @@ namespace PlayRecorder {
 
         public void RevertFileChanges()
         {
+            _currentFile = _oldFileIndex;
             _awaitingFileRefresh = false;
             _recordedFiles = new List<TextAsset>(_loadedRecordedFiles);
         }

@@ -14,7 +14,7 @@ namespace PlayRecorder
         
         Vector2 fileScrollPos,compopentScrollPos;
 
-        static string recordedFilesVariable = "_recordedFiles", loadedFilesVariables = "_loadedRecordedFiles", dataCacheVariable = "_dataCacheNames", bindersVariable = "_binders", currentFileVariable = "_currentFile", awaitingRefreshVariable = "_awaitingFileRefresh";
+        static string recordedFilesVariable = "_recordedFiles", loadedFilesVariables = "_loadedRecordedFiles", dataCacheVariable = "_dataCacheNames", bindersVariable = "_binders", currentFileVariable = "_currentFile", awaitingRefreshVariable = "_awaitingFileRefresh", oldFileIndex = "_oldFileIndex";
         static string playingVariable = "_playing", changingFilesVariable = "_changingFiles";
 
         static string updateFilesDescription = "This can take a while to process depending on your system, the number of files, and the recording complexity. You may find certain features or options inaccessible until this button is pressed.";
@@ -252,6 +252,7 @@ namespace PlayRecorder
             {
                 serializedObject.FindProperty(recordedFilesVariable).ClearArray();
                 serializedObject.FindProperty(awaitingRefreshVariable).boolValue = true;
+                serializedObject.FindProperty(oldFileIndex).intValue = serializedObject.FindProperty(currentFileVariable).intValue;
                 serializedObject.FindProperty(currentFileVariable).intValue = -1;
                 serializedObject.ApplyModifiedProperties();
                 GUIUtility.ExitGUI();
