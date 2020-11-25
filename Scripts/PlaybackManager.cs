@@ -148,7 +148,7 @@ namespace PlayRecorder {
         public Action<RecordComponent, List<string>> OnPlayMessages;
         public Action<Data> OnDataChange;
         public Action<List<DataCache>> OnDataCacheChange;
-        public Action<int> OnTick;
+        public Action<int> OnTick, OnScrub;
         public Action OnUpdateTick;
 
         #endregion
@@ -466,9 +466,13 @@ namespace PlayRecorder {
             {
                 UpdateComponentStatus();
                 PlaybackUpdate();
+                OnTick?.Invoke(currentTick);
+                if(_scrubbed)
+                {
+                    OnScrub?.Invoke(currentTick);
+                }
                 _ticked = false;
                 _scrubbed = false;
-                OnTick?.Invoke(currentTick);
             }
             if(messageCache.Count > 0)
             {
