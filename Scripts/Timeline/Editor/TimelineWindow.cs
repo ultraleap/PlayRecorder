@@ -373,6 +373,8 @@ namespace PlayRecorder.Timeline
                 overrideColours = true;
             }
 
+            bool customWidth = overrideColours && _timelineColourObjects[_timelineColourIndex].overrideMessageIndicatorWidth;
+
             GUI.backgroundColor = _darkerBackground;
             if(overrideColours && _timelineColourObjects[_timelineColourIndex].overrideBackground)
             {
@@ -402,8 +404,9 @@ namespace PlayRecorder.Timeline
                 {
                     playbackManager.ChangeCurrentFile(i);
                 }
-                GUI.Label(new Rect(36 + ((float)(_currentTimelineRect.width - 34) * ((float)_dataCache[i].frameCount / _maximumTick)), _currentTimelineRect.y + (i * (_timelineHeight + 2)), 100, _timelineHeight), TimeUtil.ConvertToTime((float)_dataCache[i].frameCount / _dataCache[i].frameRate));
-                if(_messageTextures[i] != null)
+                GUI.Label(new Rect(36 + ((float)(_currentTimelineRect.width - 34) * ((float)_dataCache[i].frameCount / _maximumTick)) + (customWidth ? _timelineColourObjects[_timelineColourIndex].messageIndicatorWidth : 2), _currentTimelineRect.y + (i * (_timelineHeight + 2)), 100, _timelineHeight), TimeUtil.ConvertToTime((float)_dataCache[i].frameCount / _dataCache[i].frameRate));
+                r.width += customWidth ? _timelineColourObjects[_timelineColourIndex].messageIndicatorWidth : 2;
+                if (_messageTextures[i] != null)
                 {
                     GUI.DrawTexture(r, _messageTextures[i]);
                 }
@@ -451,6 +454,8 @@ namespace PlayRecorder.Timeline
             bool customWidth = useColours && _timelineColourObjects[_timelineColourIndex].overrideMessageIndicatorWidth;
             int messageWidth = customWidth ? _timelineColourObjects[_timelineColourIndex].messageIndicatorWidth : 2;
 
+            int actualWidth = 0, texWidth = 0;
+
             for (int i = 0; i < _dataCache.Count; i++)
             {
                 if (_dataCache[i].messages.Count == 0)
@@ -458,7 +463,11 @@ namespace PlayRecorder.Timeline
                     _messageTextures.Add(null);
                     continue;
                 }
-                Texture2D t2d = new Texture2D((int)((_windowRect.width - (_scrollbarWidth + 38)) * ((float)_dataCache[i].frameCount / _maximumTick)), (int)_timelineHeight,TextureFormat.ARGB32,false);
+
+                actualWidth = (int)((_windowRect.width - (_scrollbarWidth + 38)) * ((float)_dataCache[i].frameCount / _maximumTick));
+                texWidth = actualWidth + messageWidth;
+
+                Texture2D t2d = new Texture2D(texWidth, (int)_timelineHeight,TextureFormat.ARGB32,false);
                 FillTextureWithTransparency(t2d);
                 List<TextureMessageCache> tmcache = new List<TextureMessageCache>();
                 
@@ -466,14 +475,14 @@ namespace PlayRecorder.Timeline
                 {
                     for (int k = 0; k < _dataCache[i].messages[j].frames.Count; k++)
                     {
-                        fInd = tmcache.FindIndex(x => x.px == (int)(t2d.width * ((float)_dataCache[i].messages[j].frames[k]/_dataCache[i].frameCount)) || x.px == ((int)(t2d.width * ((float)_dataCache[i].messages[j].frames[k] / _dataCache[i].frameCount)))+1);
+                        fInd = tmcache.FindIndex(x => x.px >= (int)(actualWidth * ((float)_dataCache[i].messages[j].frames[k]/_dataCache[i].frameCount))-messageWidth && x.px <= ((int)(actualWidth * ((float)_dataCache[i].messages[j].frames[k] / _dataCache[i].frameCount)))+messageWidth);
                         if(fInd != -1)
                         {
                             tmcache[fInd].messages.Add(_dataCache[i].messages[j].message);
                         }
                         else
                         {
-                            tmcache.Add(new TextureMessageCache() { px = (int)(t2d.width * ((float)_dataCache[i].messages[j].frames[k] / _dataCache[i].frameCount)), messages = new List<string>() { _dataCache[i].messages[j].message } });
+                            tmcache.Add(new TextureMessageCache() { px = (int)(actualWidth * ((float)_dataCache[i].messages[j].frames[k] / _dataCache[i].frameCount)), messages = new List<string>() { _dataCache[i].messages[j].message } });
                         }
                     }
                 }
@@ -496,6 +505,7 @@ namespace PlayRecorder.Timeline
                     {
                         if(useColours)
                         {
+                            
                             fInd = _timelineColourObjects[_timelineColourIndex].colours.FindIndex(x => x.message == tmcache[j].messages[k]);
                             if(fInd == -1)
                             {
@@ -510,7 +520,10 @@ namespace PlayRecorder.Timeline
                                 c = _timelineColourObjects[_timelineColourIndex].colours[fInd].color;
                             }
                         }
-                        
+
+                        if (c.a == 0)
+                            continue;
+
                         for (int l = 0; l < heights[k]; l++)
                         {
                             for (int m = 0; m < messageWidth; m++)
