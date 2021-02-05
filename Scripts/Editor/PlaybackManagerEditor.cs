@@ -14,16 +14,12 @@ namespace PlayRecorder
         
         Vector2 fileScrollPos,compopentScrollPos;
 
-        static string recordedFilesVariable = "_recordedFiles", loadedFilesVariables = "_loadedRecordedFiles", dataCacheVariable = "_dataCacheNames", bindersVariable = "_binders", currentFileVariable = "_currentFile", awaitingRefreshVariable = "_awaitingFileRefresh", oldFileIndex = "_oldFileIndex";
+        static string recordedFilesVariable = "_recordedFiles", dataCacheVariable = "_dataCacheNames", bindersVariable = "_binders", currentFileVariable = "_currentFile", awaitingRefreshVariable = "_awaitingFileRefresh", oldFileIndex = "_oldFileIndex";
         static string playingVariable = "_playing", changingFilesVariable = "_changingFiles";
 
         static string updateFilesDescription = "This can take a while to process depending on your system, the number of files, and the recording complexity. You may find certain features or options inaccessible until this button is pressed.";
 
         string componentFilter = "";
-
-        int _recordedFilesArraySize = -1;
-
-
 
         GUIContent recordFoldoutGUI = new GUIContent("", "You can drag files onto this header to add them to the files list."),
             loadingButtonGUI = new GUIContent("Loading...", updateFilesDescription),
@@ -459,7 +455,7 @@ namespace PlayRecorder
 
             EditorGUI.EndDisabledGroup();
 
-            EditorGUI.BeginDisabledGroup(!serializedObject.FindProperty("_playing").boolValue);
+            EditorGUI.BeginDisabledGroup(!serializedObject.FindProperty(playingVariable).boolValue);
             int value = (int)EditorGUILayout.Slider(new GUIContent("Frame", "The current frame being played back from the current file."), Mathf.Clamp(serializedObject.FindProperty("_currentTickVal").intValue, 0, serializedObject.FindProperty("_maxTickVal").intValue), 0, serializedObject.FindProperty("_maxTickVal").intValue);
 
             if (value != Mathf.Clamp(serializedObject.FindProperty("_currentTickVal").intValue, 0, serializedObject.FindProperty("_maxTickVal").intValue))

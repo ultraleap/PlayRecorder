@@ -494,10 +494,6 @@ namespace PlayRecorder.Timeline
                 int cH = 0;
                 for (int j = 0; j < tmcache.Count; j++)
                 {
-                    if(tmcache[j].messages.Count > 3)
-                    {
-                        string s = "";
-                    }
                     cH = 0;
                     List<int> heights = DistributeInteger((int)_timelineHeight - 2, tmcache[j].messages.Count).ToList();
                     Color c = Color.black;
