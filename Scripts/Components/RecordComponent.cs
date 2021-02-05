@@ -80,6 +80,15 @@ namespace PlayRecorder
             }
         }
 
+#if UNITY_EDITOR
+
+        protected virtual void Reset()
+        {
+            _descriptor = name +"_"+ this.GetType().ToString();
+        }
+
+#endif
+
         protected virtual void OnRecordingEnable()
         {
 

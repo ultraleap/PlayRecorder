@@ -124,6 +124,12 @@ namespace PlayRecorder
         {
             baseTransform = gameObject.transform;
         }
+
+        protected override void Reset()
+        {
+            base.Reset();
+            baseTransform = gameObject.transform;
+        }
 #endif
 
         protected override void OnRecordingEnable()
@@ -181,7 +187,7 @@ namespace PlayRecorder
             }
             catch
             {
-                Debug.Log("ah");
+                Debug.LogWarning("Transform unable to be updated on " + name + " at tick " + _currentTick.ToString());
             }
         }
 
