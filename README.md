@@ -1,14 +1,18 @@
 Current Unity Version: 2019.3
 
-Use this as a submodule within your project.
+Use this as a submodule within your project's assets folder.
+
 
 **Requirements**
 - [Odin Serializer](https://github.com/TeamSirenix/odin-serializer)
+- [Unity Editor Coroutines](https://docs.unity3d.com/Packages/com.unity.editorcoroutines@1.0/manual/index.html)
 
 **Getting Started**
 
+For a more fleshed out guide visit [PlayRecorder Overview](https://ultrahaptics.atlassian.net/wiki/spaces/CAP/pages/2058814234/PlayRecorder+Overview)
+
 - Add the RecordingManager script to a new empty gameobject.
-- Assign a RecordComponent to any object within your scene, for example a TransformRecordComponent to your camera, and give it a unique descriptor.
+- Assign a RecordComponent to any object within your scene, for example a TransformRecordComponent to your camera (which will record the transform), and give it a unique descriptor.
 - Hop into play mode and press Start Recording, once done press Stop Recording. (Both functions can be done through code)
 
 **Play Your Recording**
