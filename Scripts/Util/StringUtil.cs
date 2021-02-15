@@ -9,5 +9,4 @@ namespace PlayRecorder
             return source?.IndexOf(toCheck, comp) >= 0;
         }
     }
-
 }

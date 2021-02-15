@@ -26,22 +26,33 @@ namespace PlayRecorder
 
             EditorGUI.BeginProperty(position, label, property);
 
-            Rect foldoutRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+            GUIContent statusIcon;
+            GUIContent foldoutlabel = new GUIContent("Descriptor: " + property.FindPropertyRelative("descriptor").stringValue);
 
-            string col = "00B200";
+
             if (property.FindPropertyRelative("recordComponent").objectReferenceValue == null)
             {
-                col = "D90000";
-            }
-            GUIContent foldoutlabel = new GUIContent("<size=20><color=#" + col + ">■</color></size> Descriptor: " + property.FindPropertyRelative("descriptor").stringValue);
-            if (property.FindPropertyRelative("recordComponent").objectReferenceValue == null)
-            {
+                statusIcon = EditorGUIUtility.IconContent("redLight");
                 foldoutlabel.tooltip = "Component does not have a valid playback object assigned.";
             }
+            else
+            {
+                statusIcon = EditorGUIUtility.IconContent("greenLight");
+            }
+            
 
-            EditorGUI.indentLevel++;
+            Rect iconRect = new Rect(position.x, position.y, EditorGUIUtility.singleLineHeight, EditorGUIUtility.singleLineHeight);
+            Rect foldoutRect = new Rect(position.x + (EditorGUIUtility.singleLineHeight*1.75f), position.y, position.width - (EditorGUIUtility.singleLineHeight*1.75f), EditorGUIUtility.singleLineHeight);
 
-            if (property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, foldoutlabel, true, Styles.foldoutBold))
+            //EditorGUI.DrawRect(foldoutRect, Color.red);
+            EditorGUI.LabelField(iconRect, statusIcon);
+
+            //EditorGUI.indentLevel++;
+
+
+            property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, foldoutlabel, true, Styles.foldoutIconBold);
+
+            if (property.isExpanded)
             {
                 var typeRect = new Rect(position.x, position.y + EditorGUIUtility.singleLineHeight, position.width, 18);
                 var countRect = new Rect(position.x, position.y + (EditorGUIUtility.singleLineHeight * 2), position.width, 18);
@@ -70,7 +81,7 @@ namespace PlayRecorder
                 }
             }
 
-            EditorGUI.indentLevel--;
+            //EditorGUI.indentLevel--;
 
             property.serializedObject.ApplyModifiedProperties();
 

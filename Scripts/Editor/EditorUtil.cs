@@ -5,7 +5,7 @@ using UnityEditor;
 namespace PlayRecorder.Tools
 {
 
-    public static class EditorUtils
+    public static class EditorUtil
     {
 
         public static void DrawUILine(Color color, int thickness = 2, int padding = 10)

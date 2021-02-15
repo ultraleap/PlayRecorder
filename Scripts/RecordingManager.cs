@@ -17,7 +17,7 @@ namespace PlayRecorder {
         [SerializeField, HideInInspector]
         bool _recording = false, _recordingPaused = false;
 
-        [SerializeField] [Range(1, 100)]
+        [SerializeField] [Range(1, 120)]
         int _frameRateVal = 60;
         public int frameRate { get { return _frameRateVal; } }
 

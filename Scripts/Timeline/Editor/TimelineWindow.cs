@@ -175,7 +175,7 @@ namespace PlayRecorder.Timeline
                     RecordingInfo();
                     ColourDropdown();
                     EditorGUILayout.EndHorizontal();
-                    EditorUtils.DrawUILine(Color.grey, 1, 4);
+                    EditorUtil.DrawUILine(Color.grey, 1, 4);
                     TimelineHeader();
                     Timeline();
                 }
@@ -279,7 +279,7 @@ namespace PlayRecorder.Timeline
 
             GUI.backgroundColor = _normalBackground;
             EditorGUI.BeginDisabledGroup(!Application.isPlaying);
-            GUIContent pp = playbackManager.isPaused ? EditorGUIUtility.IconContent("PlayButton") : EditorGUIUtility.IconContent("PauseButton");
+            GUIContent pp = playbackManager.isPaused ? new GUIContent(EditorGUIUtility.IconContent("PlayButton")) : new GUIContent(EditorGUIUtility.IconContent("PauseButton"));
             pp.tooltip = Application.isPlaying ? "Play/pause the current file." : "Please enter play mode to play recording.";
             if (GUILayout.Button(pp, Styles.buttonIcon, GUILayout.Width(32)))
             {
@@ -289,7 +289,7 @@ namespace PlayRecorder.Timeline
 
             EditorGUI.BeginDisabledGroup(!Application.isPlaying || !playbackManager.hasStarted);
 
-            GUIContent rsb = EditorGUIUtility.IconContent("Animation.FirstKey");
+            GUIContent rsb = new GUIContent(EditorGUIUtility.IconContent("Animation.FirstKey"));
             rsb.tooltip = "Jump back to the start of the file.";
             if(GUILayout.Button(rsb,Styles.buttonIcon,GUILayout.Width(32)))
             {
@@ -323,7 +323,7 @@ namespace PlayRecorder.Timeline
         {
             if (_timelineColourObjects.Count == 0)
             {
-                GUIContent errGc = EditorGUIUtility.IconContent("console.erroricon.sml");
+                GUIContent errGc = new GUIContent(EditorGUIUtility.IconContent("console.erroricon.sml"));
                 errGc.tooltip = "Create a Timeline Color Asset in your project to edit colours.";
                 EditorGUILayout.LabelField(errGc, GUILayout.Width(18));
                 return;
@@ -337,7 +337,7 @@ namespace PlayRecorder.Timeline
                 EditorPrefs.SetString(_timelinePrefName, _timelineColourNames[_timelineColourIndex]);
                 GenerateTextures();
             }
-            GUIContent gc = EditorGUIUtility.IconContent("ScriptableObject Icon");
+            GUIContent gc = new GUIContent(EditorGUIUtility.IconContent("ScriptableObject Icon"));
             gc.tooltip = "Select the chosen asset in the Inspector window";
             if(GUILayout.Button(gc,Styles.buttonIcon,GUILayout.Width(26)))
             {

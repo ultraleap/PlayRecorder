@@ -1,5 +1,5 @@
 ﻿using OdinSerializer;
-using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 namespace PlayRecorder
@@ -46,6 +46,29 @@ namespace PlayRecorder
         {
             System.IO.File.WriteAllBytes(path, SerializationUtility.SerializeValue(items, DataFormat.JSON));
         }
+
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+        public static string MakeRelativePath(string fromPath, string toPath)
+        {
+            if (string.IsNullOrEmpty(fromPath)) throw new ArgumentNullException("fromPath");
+            if (string.IsNullOrEmpty(toPath)) throw new ArgumentNullException("toPath");
+
+            Uri fromUri = new Uri(fromPath);
+            Uri toUri = new Uri(toPath);
+
+            if (fromUri.Scheme != toUri.Scheme) { return toPath; } // path can't be made relative.
+
+            Uri relativeUri = fromUri.MakeRelativeUri(toUri);
+            string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+
+            if (toUri.Scheme.Equals("file", StringComparison.InvariantCultureIgnoreCase))
+            {
+                relativePath = relativePath.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);
+            }
+
+            return relativePath;
+        }
+#endif
 
     }
 
