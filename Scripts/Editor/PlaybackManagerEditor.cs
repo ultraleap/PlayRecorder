@@ -400,28 +400,28 @@ namespace PlayRecorder
 
             GUIContent recordComponents = new GUIContent("Recorded Components (" + serializedObject.FindProperty(bindersVariable).arraySize+")", recordComponentsInformation);
 
-            GUIContent greenLabel = new GUIContent(EditorGUIUtility.IconContent("greenLight"));
-            greenLabel.text = gC.ToString();
-            greenLabel.tooltip = recordComponentsInformation;
-
-            GUIContent redLabel = new GUIContent(EditorGUIUtility.IconContent("redLight"));
-            redLabel.text = rC.ToString();
-            redLabel.tooltip = recordComponentsInformation;
-
             EditorGUILayout.BeginHorizontal();
 
-            Rect foldoutRect = GUILayoutUtility.GetRect(0, 20, GUILayout.ExpandWidth(true));            
+            Rect foldoutRect = GUILayoutUtility.GetRect(0, 20, GUILayout.ExpandWidth(true));
 
-            //serializedObject.FindProperty(bindersVariable).isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(serializedObject.FindProperty(bindersVariable).isExpanded, "Recorded Components - " + serializedObject.FindProperty(bindersVariable).arraySize, Styles.foldoutBold);
-
+            GUIContent greenLabel = new GUIContent(EditorGUIUtility.IconContent("greenLight"));
+            greenLabel.tooltip = recordComponentsInformation;
+            GUIContent redLabel = new GUIContent(EditorGUIUtility.IconContent("redLight"));
+            redLabel.tooltip = recordComponentsInformation;
 
             serializedObject.FindProperty(bindersVariable).isExpanded = EditorGUI.Foldout(foldoutRect,serializedObject.FindProperty(bindersVariable).isExpanded, recordComponents, true, Styles.foldoutBold);
 
-            EditorGUILayout.LabelField(greenLabel,Styles.textIconBold,GUILayout.Width(Styles.textIconBold.CalcSize(greenLabel).x));
+            EditorGUILayout.LabelField(greenLabel,Styles.textIconBold,GUILayout.Width(18));
 
-            EditorGUILayout.LabelField(redLabel,Styles.textIconBold, GUILayout.Width(Styles.textIconBold.CalcSize(redLabel).x));
+            GUIContent gcLabel = new GUIContent(gC.ToString(), recordComponentsInformation);
 
-            //EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorGUILayout.LabelField(gcLabel,Styles.textBold, GUILayout.Width(Styles.textBold.CalcSize(gcLabel).x));
+
+            EditorGUILayout.LabelField(redLabel,Styles.textIconBold, GUILayout.Width(18));
+
+            GUIContent rcLabel = new GUIContent(rC.ToString(), recordComponentsInformation);
+
+            EditorGUILayout.LabelField(rcLabel, Styles.textBold,GUILayout.Width(Styles.textBold.CalcSize(rcLabel).x));
 
             EditorGUILayout.EndHorizontal();
 
