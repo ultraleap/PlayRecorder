@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
+// This class is used to prevent entering playmode while the manager refreshes the loaded files.
 // ensure class initializer is called whenever scripts recompile
 [InitializeOnLoadAttribute]
 public static class PlaybackLocker

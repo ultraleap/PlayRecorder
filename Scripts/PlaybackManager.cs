@@ -662,7 +662,6 @@ namespace PlayRecorder {
                 }
             }
         }
-
     }
 
 }

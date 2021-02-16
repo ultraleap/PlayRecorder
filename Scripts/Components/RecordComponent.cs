@@ -36,19 +36,10 @@ namespace PlayRecorder
 
         public Action OnStartRecording, OnStopRecording, OnStartPlayback;
 
+        #region Unity Events
         private void Awake()
         {
             AddToManager();
-        }
-
-        public void AddToManager()
-        {
-            _manager = FindObjectOfType<RecordingManager>();
-            _manager?.AddComponent(this);
-        }
-
-        private void Update()
-        {
         }
 
         [ExecuteInEditMode]
@@ -60,7 +51,6 @@ namespace PlayRecorder
             }
             _manager?.RemoveComponent(this);
         }
-
         protected void OnEnable()
         {
             if (_recording)
@@ -89,6 +79,16 @@ namespace PlayRecorder
 
 #endif
 
+        #endregion
+
+        #region Recording
+
+        public void AddToManager()
+        {
+            _manager = FindObjectOfType<RecordingManager>();
+            _manager?.AddComponent(this);
+        }
+
         protected virtual void OnRecordingEnable()
         {
 
@@ -97,11 +97,6 @@ namespace PlayRecorder
         protected virtual void OnRecordingDisable()
         {
 
-        }
-
-        public void PlaybackStatusChange(bool active)
-        {
-            gameObject.SetActive(active);
         }
 
         public virtual void StartRecording()
@@ -117,6 +112,30 @@ namespace PlayRecorder
             _recording = false;
             OnStopRecording?.Invoke();
             return _recordItem;
+        }
+
+        public void RecordUpdate()
+        {
+            RecordUpdateLogic();
+        }
+
+        protected virtual void RecordUpdateLogic()
+        {
+
+        }
+
+        public void RecordTick(int tick)
+        {
+            _currentTick = tick;
+            RecordTickLogic();
+        }
+
+        protected virtual void RecordTickLogic()
+        {
+            for (int i = 0; i < _recordItem.parts.Count; i++)
+            {
+                _recordItem.parts[i].AddFrame(new RecordFrame(_currentTick));
+            }
         }
 
         public void AddEmptyMessage(string message)
@@ -137,7 +156,7 @@ namespace PlayRecorder
                 return;
 
             int ind = _recordItem.messages.FindIndex(x => x.message == message);
-            if(ind == -1)
+            if (ind == -1)
             {
                 RecordMessage rm = new RecordMessage { message = message };
                 rm.frames.Add(_currentTick);
@@ -149,28 +168,13 @@ namespace PlayRecorder
             }
         }
 
-        public void RecordUpdate()
-        {
-            RecordUpdateLogic();
-        }
+        #endregion
 
-        protected virtual void RecordUpdateLogic()
-        {
+        #region Playback
 
-        }
-      
-        public void RecordTick(int tick)
+        public void PlaybackStatusChange(bool active)
         {
-            _currentTick = tick;
-            RecordTickLogic();
-        }
-    
-        protected virtual void RecordTickLogic()
-        {
-            for (int i = 0; i < _recordItem.parts.Count; i++)
-            {
-                _recordItem.parts[i].AddFrame(new RecordFrame(_currentTick));
-            }
+            gameObject.SetActive(active);
         }
 
         public void SetPlaybackData(RecordItem data)
@@ -217,13 +221,13 @@ namespace PlayRecorder
 
         private bool ValidPlayUpdate()
         {
-            if(_playUpdatedParts.Count > _recordItem.parts.Count)
+            if (_playUpdatedParts.Count > _recordItem.parts.Count)
             {
                 return false;
             }
             for (int i = 0; i < _playUpdatedParts.Count; i++)
             {
-                if(_recordItem.parts[_playUpdatedParts[i]].currentFrame == null)
+                if (_recordItem.parts[_playUpdatedParts[i]].currentFrame == null)
                     return false;
             }
             return true;
@@ -236,7 +240,7 @@ namespace PlayRecorder
 
         public void PlayTick(int tick)
         {
-            if(_playing)
+            if (_playing)
             {
                 _currentTick = tick;
                 if (_recordItem != null && _recordItem.parts != null)
@@ -248,7 +252,7 @@ namespace PlayRecorder
                         if (_oldFrame != _newFrame)
                         {
                             int j = i;
-                            if(!_playUpdatedParts.Contains(j))
+                            if (!_playUpdatedParts.Contains(j))
                                 _playUpdatedParts.Add(j);
                             PlayTickLogic(i);
                         }
@@ -265,7 +269,7 @@ namespace PlayRecorder
         public List<string> PlayMessages(int tick)
         {
             List<string> messages = new List<string>();
-            if(_playing && _recordItem != null && _recordItem.messages != null)
+            if (_playing && _recordItem != null && _recordItem.messages != null)
             {
                 for (int i = 0; i < _recordItem.messages.Count; i++)
                 {
@@ -275,6 +279,8 @@ namespace PlayRecorder
             }
             return messages;
         }
+
+        #endregion
 
         public void SetDescriptor(string descriptor)
         {

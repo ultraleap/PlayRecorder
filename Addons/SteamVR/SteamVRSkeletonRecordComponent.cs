@@ -1,5 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿// To enable this addon go to Edit -> Project Settings -> Player -> Scripting Define Symbols and add
+// PR_STEAMVR;
+#if PR_STEAMVR
 using UnityEngine;
 using PlayRecorder.Hands;
 using Valve.VR;
@@ -130,14 +131,29 @@ namespace PlayRecorder.SteamVR
         SteamVRPalmCache _palmCache;
         SteamVRFingerCache _thumbCache, _indexCache, _middleCache, _ringCache, _pinkyCache;
 
-        // Only used in playback
-        FingerCache _playbackCache;
+        #region Unity Events
+
+        private void OnValidate()
+        {
+            if (_handPose == null)
+            {
+                _handPose = GetComponent<SteamVR_Behaviour_Pose>();
+            }
+            if (_handSkeleton == null)
+            {
+                _handSkeleton = GetComponentInChildren<SteamVR_Behaviour_Skeleton>();
+            }
+        }
+
+        #endregion
+
+        #region Recording
 
         public override void StartRecording()
         {
             _handPose = GetComponent<SteamVR_Behaviour_Pose>();
 
-            if(_handPose == null)
+            if (_handPose == null)
             {
                 Debug.LogError("SteamVR hand recorder has no SteamVR Behaviour Pose on the current object.");
                 return;
@@ -203,18 +219,6 @@ namespace PlayRecorder.SteamVR
             _pinkyCache.Update(_rotationThreshold);
         }
 
-        private void SetCaches()
-        {
-            _palmCache = new SteamVRPalmCache(_handPose.transform,_handSkeleton.root,_handSkeleton.wrist);
-
-            _thumbCache = new SteamVRFingerCache(null, _handSkeleton.thumbProximal, _handSkeleton.thumbMiddle, _handSkeleton.thumbDistal, _handSkeleton.thumbAux);
-
-            _indexCache = new SteamVRFingerCache(_handSkeleton.indexMetacarpal, _handSkeleton.indexProximal, _handSkeleton.indexMiddle, _handSkeleton.indexDistal, _handSkeleton.indexAux);
-            _middleCache = new SteamVRFingerCache(_handSkeleton.middleMetacarpal, _handSkeleton.middleProximal, _handSkeleton.middleMiddle, _handSkeleton.middleDistal, _handSkeleton.middleAux);
-            _ringCache = new SteamVRFingerCache(_handSkeleton.ringMetacarpal, _handSkeleton.ringProximal, _handSkeleton.ringMiddle, _handSkeleton.ringDistal, _handSkeleton.ringAux);
-            _pinkyCache = new SteamVRFingerCache(_handSkeleton.pinkyMetacarpal, _handSkeleton.pinkyProximal, _handSkeleton.pinkyMiddle, _handSkeleton.pinkyDistal, _handSkeleton.pinkyAux);
-        }
-
         protected override void RecordTickLogic()
         {
             if (_palmCache.updated)
@@ -252,11 +256,15 @@ namespace PlayRecorder.SteamVR
                 cache.metaRot, cache.proxRot, cache.interRot, cache.distRot, cache.auxRot));
         }
 
+        #endregion
+
+        #region Playback
+
         public override void StartPlaying()
         {
             _handPose = GetComponent<SteamVR_Behaviour_Pose>();
             _handSkeleton = GetComponentInChildren<SteamVR_Behaviour_Skeleton>(true);
-            if(_handPose == null || _handSkeleton == null)
+            if (_handPose == null || _handSkeleton == null)
             {
                 Debug.LogError("SteamVR hand recorder does not included required components and will not be played back.");
                 return;
@@ -265,12 +273,12 @@ namespace PlayRecorder.SteamVR
             _handPose.enabled = false;
             _handSkeleton.enabled = false;
             Animator anim = _handPose.GetComponentInChildren<Animator>(true);
-            if(anim != null)
+            if (anim != null)
             {
                 anim.enabled = false;
             }
             SkinnedMeshRenderer smr = GetComponentInChildren<SkinnedMeshRenderer>(true);
-            if(smr != null)
+            if (smr != null)
             {
                 smr.gameObject.SetActive(true);
                 smr.enabled = true;
@@ -306,17 +314,19 @@ namespace PlayRecorder.SteamVR
             }
         }
 
-        private void OnValidate()
+        #endregion
+
+        private void SetCaches()
         {
-            if(_handPose == null)
-            {
-                _handPose = GetComponent<SteamVR_Behaviour_Pose>();
-            }
-            if(_handSkeleton == null)
-            {
-                _handSkeleton = GetComponentInChildren<SteamVR_Behaviour_Skeleton>();
-            }
+            _palmCache = new SteamVRPalmCache(_handPose.transform,_handSkeleton.root,_handSkeleton.wrist);
+
+            _thumbCache = new SteamVRFingerCache(null, _handSkeleton.thumbProximal, _handSkeleton.thumbMiddle, _handSkeleton.thumbDistal, _handSkeleton.thumbAux);
+
+            _indexCache = new SteamVRFingerCache(_handSkeleton.indexMetacarpal, _handSkeleton.indexProximal, _handSkeleton.indexMiddle, _handSkeleton.indexDistal, _handSkeleton.indexAux);
+            _middleCache = new SteamVRFingerCache(_handSkeleton.middleMetacarpal, _handSkeleton.middleProximal, _handSkeleton.middleMiddle, _handSkeleton.middleDistal, _handSkeleton.middleAux);
+            _ringCache = new SteamVRFingerCache(_handSkeleton.ringMetacarpal, _handSkeleton.ringProximal, _handSkeleton.ringMiddle, _handSkeleton.ringDistal, _handSkeleton.ringAux);
+            _pinkyCache = new SteamVRFingerCache(_handSkeleton.pinkyMetacarpal, _handSkeleton.pinkyProximal, _handSkeleton.pinkyMiddle, _handSkeleton.pinkyDistal, _handSkeleton.pinkyAux);
         }
     }
-
 }
+#endif

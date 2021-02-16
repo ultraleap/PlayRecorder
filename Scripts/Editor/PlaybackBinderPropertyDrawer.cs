@@ -9,7 +9,6 @@ namespace PlayRecorder
     [CustomPropertyDrawer(typeof(PlaybackBinder))]
     public class PlaybackBinderDrawer : PropertyDrawer
     {
-
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             if (property.isExpanded)

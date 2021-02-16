@@ -22,4 +22,9 @@ For a more fleshed out guide visit [PlayRecorder Overview](https://ultrahaptics.
 - Assign your recorded components to the ones in your scene (this should be done automatically based upon your descriptors).
 - Hop into play mode and press Play.
 
+**Enable Addons**
+
+- By default Leap, SteamVR, and any other addon is disabled.
+- To enable an addon go to Edit -> Project Settings -> Player -> Scripting Define Symbols and add PR_*plugin* (e.g. PR_LEAP)
+
 Note, features and names of types may change between commits/versions. If you record files in one version of PlayRecorder, use the same version to play it back or you may encounter errors.

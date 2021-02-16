@@ -73,6 +73,25 @@ namespace PlayRecorder
 
         protected List<TransformCache> _transformCache = new List<TransformCache>();
 
+        #region Unity Events
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            baseTransform = gameObject.transform;
+        }
+
+        protected override void Reset()
+        {
+            base.Reset();
+            baseTransform = gameObject.transform;
+        }
+#endif
+
+        #endregion
+
+        #region Recording
+
         public override void StartRecording()
         {
             base.StartRecording();
@@ -119,19 +138,6 @@ namespace PlayRecorder
             }
         }
 
-#if UNITY_EDITOR
-        private void OnValidate()
-        {
-            baseTransform = gameObject.transform;
-        }
-
-        protected override void Reset()
-        {
-            base.Reset();
-            baseTransform = gameObject.transform;
-        }
-#endif
-
         protected override void OnRecordingEnable()
         {
             for (int i = 0; i < _transformCache.Count; i++)
@@ -140,6 +146,10 @@ namespace PlayRecorder
                 _transformCache[i].hasChanged = true;
             }
         }
+
+        #endregion
+
+        #region Playback
 
         public override void StartPlaying()
         {
@@ -177,6 +187,8 @@ namespace PlayRecorder
             }
         }
 
+        #endregion
+
         void ApplyTransform(TransformFrame frame, Transform transform)
         {
             try
@@ -210,7 +222,6 @@ namespace PlayRecorder
                 }
             }
         }
-
     }
 
 }

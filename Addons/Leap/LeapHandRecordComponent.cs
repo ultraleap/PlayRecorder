@@ -1,5 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿// To enable this addon go to Edit -> Project Settings -> Player -> Scripting Define Symbols and add
+// PR_LEAP;
+#if PR_LEAP
 using UnityEngine;
 using Leap;
 using Leap.Unity;
@@ -18,10 +19,16 @@ namespace PlayRecorder.Leap
         PalmCache _palmCache;
         FingerCache _thumbCache, _indexCache, _middleCache, _ringCache, _pinkyCache;
 
+        #region Unity Events
+
+        #endregion
+
+        #region Recording
+
         public override void StartRecording()
         {
             _handModel = GetComponent<HandModel>();
-            
+
             if (_handModel == null)
             {
                 Debug.LogError("Leap Hand recorder has no Leap Hand model on object.");
@@ -37,7 +44,7 @@ namespace PlayRecorder.Leap
 
             HandItem.HandID lhi = HandItem.HandID.Left;
 
-            if(_handModel.Handedness == Chirality.Right)
+            if (_handModel.Handedness == Chirality.Right)
             {
                 lhi = HandItem.HandID.Right;
             }
@@ -94,43 +101,14 @@ namespace PlayRecorder.Leap
             _pinkyCache.Update(_rotationThreshold);
         }
 
-        private void SetCaches()
-        {
-            _palmCache = new PalmCache(_handModel.palm);
-            
-            FingerModel[] fingers = _handModel.palm.GetComponentsInChildren<FingerModel>();
-
-            for (int i = 0; i < fingers.Length; i++)
-            {
-                switch (fingers[i].fingerType)
-                {
-                    case Finger.FingerType.TYPE_THUMB:
-                        _thumbCache = new FingerCache(null, fingers[i].bones[1], fingers[i].bones[2], fingers[i].bones[3]);
-                        break;
-                    case Finger.FingerType.TYPE_INDEX:
-                        _indexCache = new FingerCache(fingers[i].bones[0], fingers[i].bones[1], fingers[i].bones[2], fingers[i].bones[3]);
-                        break;
-                    case Finger.FingerType.TYPE_MIDDLE:
-                        _middleCache = new FingerCache(fingers[i].bones[0], fingers[i].bones[1], fingers[i].bones[2], fingers[i].bones[3]);
-                        break;
-                    case Finger.FingerType.TYPE_RING:
-                        _ringCache = new FingerCache(fingers[i].bones[0], fingers[i].bones[1], fingers[i].bones[2], fingers[i].bones[3]);
-                        break;
-                    case Finger.FingerType.TYPE_PINKY:
-                        _pinkyCache = new FingerCache(fingers[i].bones[0], fingers[i].bones[1], fingers[i].bones[2], fingers[i].bones[3]);
-                        break;
-                }
-            }
-        }
-
         protected override void RecordTickLogic()
         {
-            if(_palmCache.updated)
+            if (_palmCache.updated)
             {
                 _palmCache.updated = false;
                 _recordItem.parts[0].AddFrame(new PalmFrame(_currentTick, _palmCache.localPosition, _palmCache.localRotation));
             }
-            if(_thumbCache.updated)
+            if (_thumbCache.updated)
             {
                 AddFingerFrame(1, ref _thumbCache);
             }
@@ -138,15 +116,15 @@ namespace PlayRecorder.Leap
             {
                 AddFingerFrame(2, ref _indexCache);
             }
-            if(_middleCache.updated)
+            if (_middleCache.updated)
             {
                 AddFingerFrame(3, ref _middleCache);
             }
-            if(_ringCache.updated)
+            if (_ringCache.updated)
             {
                 AddFingerFrame(4, ref _ringCache);
             }
-            if(_pinkyCache.updated)
+            if (_pinkyCache.updated)
             {
                 AddFingerFrame(5, ref _pinkyCache);
             }
@@ -160,20 +138,24 @@ namespace PlayRecorder.Leap
                 cache.metaRot, cache.proxRot, cache.interRot, cache.distRot));
         }
 
+        #endregion
+
+        #region Playback
+
         public override void StartPlaying()
         {
             LeapServiceProvider lsp = FindObjectOfType<LeapServiceProvider>();
-            if(lsp != null)
+            if (lsp != null)
             {
                 lsp.enabled = false;
             }
             HandEnableDisable hed = GetComponent<HandEnableDisable>();
-            if(hed != null)
+            if (hed != null)
             {
                 Destroy(hed);
             }
             _handModel = GetComponent<HandModel>();
-            if(_handModel != null)
+            if (_handModel != null)
             {
                 SetCaches();
                 base.StartPlaying();
@@ -209,6 +191,36 @@ namespace PlayRecorder.Leap
             }
         }
 
-    }
+        #endregion
 
+        private void SetCaches()
+        {
+            _palmCache = new PalmCache(_handModel.palm);
+            
+            FingerModel[] fingers = _handModel.palm.GetComponentsInChildren<FingerModel>();
+
+            for (int i = 0; i < fingers.Length; i++)
+            {
+                switch (fingers[i].fingerType)
+                {
+                    case Finger.FingerType.TYPE_THUMB:
+                        _thumbCache = new FingerCache(null, fingers[i].bones[1], fingers[i].bones[2], fingers[i].bones[3]);
+                        break;
+                    case Finger.FingerType.TYPE_INDEX:
+                        _indexCache = new FingerCache(fingers[i].bones[0], fingers[i].bones[1], fingers[i].bones[2], fingers[i].bones[3]);
+                        break;
+                    case Finger.FingerType.TYPE_MIDDLE:
+                        _middleCache = new FingerCache(fingers[i].bones[0], fingers[i].bones[1], fingers[i].bones[2], fingers[i].bones[3]);
+                        break;
+                    case Finger.FingerType.TYPE_RING:
+                        _ringCache = new FingerCache(fingers[i].bones[0], fingers[i].bones[1], fingers[i].bones[2], fingers[i].bones[3]);
+                        break;
+                    case Finger.FingerType.TYPE_PINKY:
+                        _pinkyCache = new FingerCache(fingers[i].bones[0], fingers[i].bones[1], fingers[i].bones[2], fingers[i].bones[3]);
+                        break;
+                }
+            }
+        }
+    }
 }
+#endif

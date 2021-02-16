@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace PlayRecorder
 {
-
     [System.Serializable]
     public class PlaylistItem
     {
@@ -19,5 +18,4 @@ namespace PlayRecorder
             this.guid = guid;
         }
     }
-
 }
