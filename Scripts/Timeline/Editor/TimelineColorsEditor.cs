@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using PlayRecorder.Tools;
@@ -13,8 +12,19 @@ namespace PlayRecorder.Timeline
     {
         ReorderableList colourList;
 
+        List<string> timelineMessages = new List<string>();
+        List<string> colourMessages = new List<string>();
+        List<string> nonAddedMessages = new List<string>();
+
+        int listSize = 0;
+
         public override void OnInspectorGUI()
         {
+            if(listSize != serializedObject.FindProperty("colours").arraySize)
+            {
+                RefreshMessageDifferences();
+                listSize = serializedObject.FindProperty("colours").arraySize;
+            }
 
             EditorGUILayout.LabelField("This file acts as the key to the different message colours within the Timeline window.", Styles.boxBorderText);
             EditorGUILayout.LabelField("You can use a <b>*</b> operator as a wildcard at any point during your message. (E.g. my_*_* would find both my_cool_message and my_bad_event)", Styles.boxBorderText);
@@ -23,7 +33,7 @@ namespace PlayRecorder.Timeline
             {
                 TimelineWindow.Init();
             }
-
+         
             EditorGUI.BeginChangeCheck();
 
             EditorGUILayout.BeginHorizontal();
@@ -104,6 +114,7 @@ namespace PlayRecorder.Timeline
             EditorGUILayout.EndHorizontal();
 
 
+
             if (EditorGUI.EndChangeCheck())
             {
                 EditorUtility.SetDirty(serializedObject.targetObject);
@@ -112,7 +123,31 @@ namespace PlayRecorder.Timeline
 
             EditorGUI.BeginChangeCheck();
             colourList.DoLayoutList();
-            if(EditorGUI.EndChangeCheck())
+
+            if (nonAddedMessages.Count > 0)
+            {
+                EditorUtil.DrawDividerLine();
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField(new GUIContent("Missing Messages", "These missing messages are based upon the currently loaded files present in the timeline window."), Styles.textBold);
+                if(GUILayout.Button(new GUIContent("Add All Missing","Adds all missing message to the colour list."), Styles.miniButton))
+                {
+                    while(nonAddedMessages.Count > 0)
+                    {
+                        AddMissingMessage(0);
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+
+                int selected = -1;
+                selected = GUILayout.SelectionGrid(selected, nonAddedMessages.ToArray(), 4, Styles.buttonIcon);
+
+                if (selected != -1)
+                {
+                    AddMissingMessage(selected);
+                }
+            }
+
+            if (EditorGUI.EndChangeCheck())
             {
                 EditorUtility.SetDirty(serializedObject.targetObject);
                 serializedObject.FindProperty("updateTimeline").boolValue = true;
@@ -124,14 +159,19 @@ namespace PlayRecorder.Timeline
         public void OnEnable()
         {
             TimelineWindow[] windows = Resources.FindObjectsOfTypeAll<TimelineWindow>();
+
             if (windows != null && windows.Length > 0)
             {
+                timelineMessages.Clear();
                 serializedObject.FindProperty("updateTimeline").boolValue = true;
                 serializedObject.ApplyModifiedProperties();
                 for (int i = 0; i < windows.Length; i++)
                 {
                     windows[i].ColourRefresh();
+                    timelineMessages.AddRange(windows[i].currentMessages);
                 }
+                RefreshMessageDifferences();
+                listSize = serializedObject.FindProperty("colours").arraySize;
             }
 
             colourList = new ReorderableList(serializedObject, serializedObject.FindProperty("colours"), true, true, true, true);
@@ -151,6 +191,37 @@ namespace PlayRecorder.Timeline
                         new Rect(rect.x + rect.width - 120, rect.y, 120, EditorGUIUtility.singleLineHeight),
                         element.FindPropertyRelative("color"), GUIContent.none);
                 };
+        }
+
+        void RefreshMessageDifferences()
+        {
+            colourMessages.Clear();
+            nonAddedMessages.Clear();
+            for (int i = 0; i < serializedObject.FindProperty("colours").arraySize; i++)
+            {
+                colourMessages.Add(serializedObject.FindProperty("colours").GetArrayElementAtIndex(i).FindPropertyRelative("message").stringValue);
+            }
+            for (int i = 0; i < timelineMessages.Count; i++)
+            {
+                int ind = colourMessages.IndexOf(timelineMessages[i]);
+                if(ind == -1)
+                {
+                    nonAddedMessages.Add(timelineMessages[i]);
+                }
+            }
+        }
+
+        void AddMissingMessage(int selected)
+        {
+            int ind = 0;
+            if (serializedObject.FindProperty("colours").arraySize > 0)
+            {
+                ind = serializedObject.FindProperty("colours").arraySize - 1;
+            }
+            serializedObject.FindProperty("colours").InsertArrayElementAtIndex(ind);
+            serializedObject.FindProperty("colours").GetArrayElementAtIndex(serializedObject.FindProperty("colours").arraySize - 1).FindPropertyRelative("message").stringValue = nonAddedMessages[selected];
+
+            nonAddedMessages.RemoveAt(selected);
         }
     }
 

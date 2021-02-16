@@ -181,7 +181,7 @@ namespace PlayRecorder
 
             EditorGUILayout.EndHorizontal();
 
-            EditorUtil.DrawUILine(Color.grey, 1, 4);
+            EditorUtil.DrawDividerLine();
 
             EditorGUILayout.BeginHorizontal();
 
@@ -211,7 +211,7 @@ namespace PlayRecorder
 
                     if(i > 0)
                     {
-                        EditorUtil.DrawUILine(Color.grey, 1, 4);
+                        EditorUtil.DrawDividerLine();
                     }
 
                     EditorGUILayout.BeginHorizontal();

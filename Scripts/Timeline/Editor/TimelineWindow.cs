@@ -16,6 +16,8 @@ namespace PlayRecorder.Timeline
 
         [SerializeField]
         List<DataCache> _dataCache = new List<DataCache>();
+        List<string> _currentMessages = new List<string>();
+        public List<string> currentMessages { get { return _currentMessages; } }
 
         [SerializeField]
         bool _emptyOnLoad = false;
@@ -175,7 +177,7 @@ namespace PlayRecorder.Timeline
                     RecordingInfo();
                     ColourDropdown();
                     EditorGUILayout.EndHorizontal();
-                    EditorUtil.DrawUILine(Color.grey, 1, 4);
+                    EditorUtil.DrawDividerLine();
                     TimelineHeader();
                     Timeline();
                 }
@@ -447,6 +449,7 @@ namespace PlayRecorder.Timeline
                     DestroyImmediate(_messageTextures[i]);
             }
             _messageTextures.Clear();
+            _currentMessages.Clear();
 
             int fInd = -1;
 
@@ -489,7 +492,16 @@ namespace PlayRecorder.Timeline
 
                 tmcache.Sort((x, y) => x.px.CompareTo(y.px));
 
-                
+                for (int j = 0; j < tmcache.Count; j++)
+                {
+                    for (int k = 0; k < tmcache[j].messages.Count; k++)
+                    {
+                        if(!_currentMessages.Contains(tmcache[j].messages[k]))
+                        {
+                            _currentMessages.Add(tmcache[j].messages[k]);
+                        }
+                    }
+                }
 
                 int cH = 0;
                 for (int j = 0; j < tmcache.Count; j++)

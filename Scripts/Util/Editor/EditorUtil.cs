@@ -18,6 +18,11 @@ namespace PlayRecorder.Tools
             EditorGUI.DrawRect(r, color);
         }
 
+        public static void DrawDividerLine()
+        {
+            DrawUILine(Color.grey, 1, 4);
+        }
+
     }
 
 }

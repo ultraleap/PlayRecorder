@@ -58,15 +58,15 @@ namespace PlayRecorder
 
             RecordedFiles();
 
-            EditorUtil.DrawUILine(Color.grey, 1, 4);
-            
+            EditorUtil.DrawDividerLine();
+
             Playlists();
 
-            EditorUtil.DrawUILine(Color.grey, 1, 4);
+            EditorUtil.DrawDividerLine();
 
             RecordComponents();
 
-            EditorUtil.DrawUILine(Color.grey, 1, 4);
+            EditorUtil.DrawDividerLine();
 
             PlaybackControls();
 
@@ -441,7 +441,7 @@ namespace PlayRecorder
                     {
                         if (c > 0)
                         {
-                            EditorUtil.DrawUILine(Color.grey, 1, 4);
+                            EditorUtil.DrawDividerLine();
                         }
                         EditorGUILayout.PropertyField(serializedObject.FindProperty(bindersVariable).GetArrayElementAtIndex(i));
                         c++;
