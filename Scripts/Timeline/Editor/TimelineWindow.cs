@@ -326,7 +326,7 @@ namespace PlayRecorder.Timeline
             if (_timelineColourObjects.Count == 0)
             {
                 GUIContent errGc = new GUIContent(EditorGUIUtility.IconContent("console.erroricon.sml"));
-                errGc.tooltip = "Create a Timeline Color Asset in your project to edit colours.";
+                errGc.tooltip = "Create a Timeline Color Asset in your project to edit colours. In your project assets, right click -> Create -> PlayRecorder -> Timeline Color Asset.";
                 EditorGUILayout.LabelField(errGc, GUILayout.Width(18));
                 return;
             }

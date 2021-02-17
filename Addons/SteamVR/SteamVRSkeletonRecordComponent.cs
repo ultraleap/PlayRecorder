@@ -1,4 +1,4 @@
-﻿// To enable this addon go to Edit -> Project Settings -> Player -> Scripting Define Symbols and add
+﻿// To enable this addon go to Edit -> Project Settings -> Player -> Other Settings -> Scripting Define Symbols and add
 // PR_STEAMVR;
 #if PR_STEAMVR
 using UnityEngine;

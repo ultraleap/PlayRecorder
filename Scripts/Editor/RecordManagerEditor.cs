@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.Text.RegularExpressions;
@@ -12,7 +11,8 @@ namespace PlayRecorder
     public class RecordManagerEditor : Editor
     {
 
-        static string componentString = "_components",recordingNameString = "recordingName", recordingFolderString = "recordingFolderName",frameRateString = "_frameRateVal";
+        static string componentString = "_components", recordingNameString = "recordingName", recordingFolderString = "recordingFolderName", frameRateString = "_frameRateVal";
+        static string recordingString = "_recording", recordOnStartupString = "_recordOnStartup", recordOnStartupDelayString = "_recordOnStartupDelay", recordOnStartupInProgressString = "_recordStartupInProgress";
 
         Vector2 scrollPos;
 
@@ -29,7 +29,7 @@ namespace PlayRecorder
 
             EditorGUILayout.BeginHorizontal();
 
-            EditorGUI.BeginDisabledGroup(!Application.isPlaying || serializedObject.FindProperty("_recording").boolValue);
+            EditorGUI.BeginDisabledGroup(!Application.isPlaying || serializedObject.FindProperty(recordingString).boolValue || serializedObject.FindProperty(recordOnStartupInProgressString).boolValue);
 
             if(GUILayout.Button("Start Recording"))
             {
@@ -38,7 +38,7 @@ namespace PlayRecorder
 
             EditorGUI.EndDisabledGroup();
 
-            EditorGUI.BeginDisabledGroup(!Application.isPlaying || !serializedObject.FindProperty("_recording").boolValue);
+            EditorGUI.BeginDisabledGroup(!Application.isPlaying || !serializedObject.FindProperty(recordingString).boolValue || serializedObject.FindProperty(recordOnStartupInProgressString).boolValue);
 
             if(GUILayout.Button("Stop Recording"))
             {
@@ -110,7 +110,7 @@ namespace PlayRecorder
                 }
             }
 
-            serializedObject.FindProperty(recordingNameString).stringValue = EditorGUILayout.TextField("Recording Name", serializedObject.FindProperty(recordingNameString).stringValue);
+            serializedObject.FindProperty(recordingNameString).stringValue = EditorGUILayout.TextField(new GUIContent("Recording Name","The name of the recording. All recordings are prefixed with a unix style timestamp."), serializedObject.FindProperty(recordingNameString).stringValue);
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
 
@@ -167,7 +167,7 @@ namespace PlayRecorder
 
             EditorGUILayout.BeginHorizontal();
 
-            serializedObject.FindProperty(frameRateString).intValue = EditorGUILayout.IntSlider("Recording Frame Rate",serializedObject.FindProperty(frameRateString).intValue, 0, 120);
+            serializedObject.FindProperty(frameRateString).intValue = EditorGUILayout.IntSlider(new GUIContent("Recording Frame Rate","How many times per second (FPS) in which the recording will try to record information"),serializedObject.FindProperty(frameRateString).intValue, 0, 120);
 
             if(GUILayout.Button("30",Styles.miniButton,GUILayout.Width(32)))
             {
@@ -180,6 +180,26 @@ namespace PlayRecorder
             }
 
             EditorGUILayout.EndHorizontal();
+
+            serializedObject.FindProperty(recordOnStartupString).boolValue = EditorGUILayout.Toggle(new GUIContent("Record On Play", "Starts recording as soon as play mode is entered."), serializedObject.FindProperty(recordOnStartupString).boolValue);
+
+            if(serializedObject.FindProperty(recordOnStartupString).boolValue)
+            {
+                EditorGUILayout.BeginHorizontal();
+                serializedObject.FindProperty(recordOnStartupDelayString).floatValue = EditorGUILayout.FloatField(new GUIContent("Record On Play Delay","How many seconds the recording manager will wait before starting recording once in play mode."),serializedObject.FindProperty(recordOnStartupDelayString).floatValue);
+
+                if(GUILayout.Button("-1s", GUILayout.Width(40)))
+                {
+                    serializedObject.FindProperty(recordOnStartupDelayString).floatValue = Mathf.Clamp(serializedObject.FindProperty(recordOnStartupDelayString).floatValue - 1, 0, float.MaxValue); ;
+                }
+
+                if (GUILayout.Button("+1s", GUILayout.Width(40)))
+                {
+                    serializedObject.FindProperty(recordOnStartupDelayString).floatValue++;
+                }
+
+                EditorGUILayout.EndHorizontal();
+            }
 
             EditorUtil.DrawDividerLine();
 

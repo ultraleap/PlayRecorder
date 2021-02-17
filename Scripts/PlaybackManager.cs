@@ -629,7 +629,6 @@ namespace PlayRecorder {
                 tickCounter += (tickDelta * _playbackRate);
                 if (tickCounter >= _tickRate)
                 {
-                    //Debug.Log("TC: " + tickCounter + " TR: " + _tickRate + " TD: " + tickDelta);
                     tickCounter -= _tickRate;
                     currentTick++;
 

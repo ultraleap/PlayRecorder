@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -29,6 +30,13 @@ namespace PlayRecorder {
         int _currentTickVal = 0;
         public int currentTick { get { return _currentTickVal; } }
 
+        [SerializeField]
+        bool _recordOnStartup = false;
+        [SerializeField]
+        float _recordOnStartupDelay = 0f;
+        [SerializeField]
+        bool _recordStartupInProgress = false;
+
         public string recordingFolderName = "Recordings";
         public string recordingName = "";
         string _recordingTimeDate = "";
@@ -49,6 +57,35 @@ namespace PlayRecorder {
         /// Occurs on the Unity update thread after the most recent thread tick.
         /// </summary>
         public Action OnUpdateTick;
+
+        private void Start()
+        {
+            if(_recordOnStartup)
+            {
+                if(_recordOnStartupDelay > 0)
+                {
+                    StartCoroutine(RecordingStartupDelay());
+                }
+                else
+                {
+                    StartRecording();
+                }
+            }
+        }
+
+        IEnumerator RecordingStartupDelay()
+        {
+            _recordStartupInProgress = true;
+            float time = _recordOnStartupDelay;
+            yield return null;
+            while(time > 0)
+            {
+                time -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+            _recordStartupInProgress = false;
+            StartRecording();
+        }
 
         public void StartRecording()
         {
@@ -86,6 +123,7 @@ namespace PlayRecorder {
                 Thread.CurrentThread.IsBackground = true;
                 RecordingThread(_frameRateVal);
             });
+            Debug.Log("Starting recording: " + _recordingTimeDate + " " + recordingName);
             _recordingThread.Start();
         }
 
@@ -104,14 +142,17 @@ namespace PlayRecorder {
                 Thread.CurrentThread.IsBackground = true;
                 FileUtil.SaveDataToFile(_unityDataPath + "/" + recordingFolderName + "/", _recordingTimeDate + " " + recordingName, _data);
             });
+            Debug.Log("Saving recording: " + _recordingTimeDate + " " + recordingName);
             _savingThread.Start();
         }
 
+        // Temporarily pause recording, without stopping it.
         public void PauseRecording()
         {
             _recordingPaused = true;
         }
 
+        // Resume recording, if already recording then nothing will change.
         public void ResumeRecording()
         {
             _recordingPaused = false;

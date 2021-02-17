@@ -72,7 +72,7 @@ Currently only verified to run on Windows and Standalone Windows builds. Other p
 PlayRecorder includes a few addons by default, including a [Leap HandModel](https://github.com/leapmotion/unitymodules) RecordComponent. Addons usually require specific extra plugins and are therefore disabled by default to prevent compilation errors.
 
 - By default Leap, SteamVR, and any other addon is disabled.
-- To enable an addon go to ```Edit -> Project Settings -> Player -> Scripting Define Symbols``` and add ```PR_*plugin*``` (e.g. ```PR_LEAP```).
+- To enable an addon go to ```Edit -> Project Settings -> Player -> Other Settings -> Scripting Define Symbols``` and add ```PR_*plugin*``` (e.g. ```PR_LEAP```).
 
 ## Expanding Your Components
 Every segment of the system can be expanded, from the components, right down to the individual frames that are being recorded. Make sure you expand off the base data structures and everything should be saved as long as the data can be serialised. You should not have to manually add the code to the system, it should all automatically understand what it is as long as it resides in your project with PlayRecorder.

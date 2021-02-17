@@ -119,6 +119,9 @@ namespace PlayRecorder
             RecordUpdateLogic();
         }
 
+        /// <summary>
+        /// This function fires during the Unity main thread. If you have logic that does not need Unity specific functionality, try to place it in RecordTickLogic.
+        /// </summary>
         protected virtual void RecordUpdateLogic()
         {
 
@@ -130,6 +133,9 @@ namespace PlayRecorder
             RecordTickLogic();
         }
 
+        /// <summary>
+        /// This function fires during the recording thread. If you are wanting to access Unity engine functions, refer to RecordUpdateLogic.
+        /// </summary>
         protected virtual void RecordTickLogic()
         {
             for (int i = 0; i < _recordItem.parts.Count; i++)
@@ -214,6 +220,9 @@ namespace PlayRecorder
             }
         }
 
+        /// <summary>
+        /// This function fires during the Unity main thread. If you have logic that does not need Unity specific functionality, try to place it in PlayTickLogic.
+        /// </summary>
         protected virtual void PlayUpdateLogic()
         {
 
@@ -261,9 +270,12 @@ namespace PlayRecorder
             }
         }
 
+        /// <summary>
+        /// This function fires during the playback thread. If you are wanting to access Unity engine functions, refer to PlayUpdateLogic.
+        /// </summary>
         protected virtual void PlayTickLogic(int index)
         {
-            //_recordItem.parts[index]
+            
         }
 
         public List<string> PlayMessages(int tick)

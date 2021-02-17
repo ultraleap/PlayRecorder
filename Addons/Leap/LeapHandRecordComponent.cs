@@ -1,4 +1,4 @@
-﻿// To enable this addon go to Edit -> Project Settings -> Player -> Scripting Define Symbols and add
+﻿// To enable this addon go to Edit -> Project Settings -> Player -> Other Settings -> Scripting Define Symbols and add
 // PR_LEAP;
 #if PR_LEAP
 using UnityEngine;

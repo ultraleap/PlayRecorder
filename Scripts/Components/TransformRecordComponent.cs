@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace PlayRecorder
@@ -212,7 +211,10 @@ namespace PlayRecorder
                 if (!(typeof(RecordComponent).IsSameOrSubclass(mb[i].GetType()) ||
                    mb[i].GetType() == typeof(Renderer) ||
                    mb[i].GetType() == typeof(MeshFilter) ||
-                   mb[i].GetType() == typeof(Camera)))
+                   mb[i].GetType() == typeof(Camera) ||
+                   mb[i].GetType() == typeof(Canvas) ||
+                   mb[i].GetType().ToString().Contains("UnityEngine.UI.")
+                   ))
                 {
                     mb[i].enabled = false;
                 }
