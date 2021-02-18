@@ -10,20 +10,53 @@ namespace PlayRecorder.Timeline
     [CustomEditor(typeof(TimelineColors))]
     public class TimelineColorsEditor : Editor
     {
-        ReorderableList colourList;
+        private ReorderableList colourList;
 
-        List<string> timelineMessages = new List<string>();
-        List<string> colourMessages = new List<string>();
-        List<string> nonAddedMessages = new List<string>();
+        private List<string> timelineMessages = new List<string>();
+        private List<string> colourMessages = new List<string>();
+        private List<string> nonAddedMessages = new List<string>();
 
-        int listSize = 0;
+        private int listSize = 0;
+
+        private SerializedProperty _colours;
+        private SerializedProperty _overrideSelected;
+        private SerializedProperty _selectedColour;
+        private SerializedProperty _overridePassive;
+        private SerializedProperty _passiveColour;
+        private SerializedProperty _overrideBackground;
+        private SerializedProperty _backgroundColour;
+        private SerializedProperty _overrideTimeIndicator;
+        private SerializedProperty _timeIndicatorColour;
+        private SerializedProperty _timeIndicatorPausedColour;
+        private SerializedProperty _overrideMessageIndicatorWidth;
+        private SerializedProperty _messageIndicatorWidth;
+        private SerializedProperty _updateTimeline;
+
+        private void SetProperties()
+        {
+            _colours = serializedObject.FindProperty("colours");
+            _overrideSelected = serializedObject.FindProperty("overrideSelected");
+            _selectedColour = serializedObject.FindProperty("selectedColour");
+            _overridePassive = serializedObject.FindProperty("overridePassive");
+            _passiveColour = serializedObject.FindProperty("passiveColour");
+            _overrideBackground = serializedObject.FindProperty("overrideBackground");
+            _backgroundColour = serializedObject.FindProperty("backgroundColour");
+            _overrideTimeIndicator = serializedObject.FindProperty("overrideTimeIndicator");
+            _timeIndicatorColour = serializedObject.FindProperty("timeIndicatorColour");
+            _timeIndicatorPausedColour = serializedObject.FindProperty("timeIndicatorPausedColour");
+            _overrideMessageIndicatorWidth = serializedObject.FindProperty("overrideMessageIndicatorWidth");
+            _messageIndicatorWidth = serializedObject.FindProperty("messageIndicatorWidth");
+            _updateTimeline = serializedObject.FindProperty("updateTimeline");
+    }
 
         public override void OnInspectorGUI()
         {
-            if(listSize != serializedObject.FindProperty("colours").arraySize)
+            SetProperties();
+
+            if(listSize != _colours.arraySize)
             {
                 RefreshMessageDifferences();
-                listSize = serializedObject.FindProperty("colours").arraySize;
+                listSize = _colours.arraySize;
             }
 
             EditorGUILayout.LabelField("This file acts as the key to the different message colours within the Timeline window.", Styles.boxBorderText);
@@ -38,11 +71,11 @@ namespace PlayRecorder.Timeline
 
             EditorGUILayout.BeginHorizontal();
 
-            serializedObject.FindProperty("overrideSelected").boolValue = EditorGUILayout.Toggle("Override Selected Colour", serializedObject.FindProperty("overrideSelected").boolValue);
+            _overrideSelected.boolValue = EditorGUILayout.Toggle("Override Selected Colour", _overrideSelected.boolValue);
 
-            if(serializedObject.FindProperty("overrideSelected").boolValue)
+            if(_overrideSelected.boolValue)
             {
-                serializedObject.FindProperty("selectedColour").colorValue = EditorGUILayout.ColorField(serializedObject.FindProperty("selectedColour").colorValue);
+                _selectedColour.colorValue = EditorGUILayout.ColorField(_selectedColour.colorValue);
             }
             else
             {
@@ -53,11 +86,11 @@ namespace PlayRecorder.Timeline
 
             EditorGUILayout.BeginHorizontal();
 
-            serializedObject.FindProperty("overridePassive").boolValue = EditorGUILayout.Toggle("Override Passive Colour", serializedObject.FindProperty("overridePassive").boolValue);
+            _overridePassive.boolValue = EditorGUILayout.Toggle("Override Passive Colour", _overridePassive.boolValue);
 
-            if (serializedObject.FindProperty("overridePassive").boolValue)
+            if (_overridePassive.boolValue)
             {
-                serializedObject.FindProperty("passiveColour").colorValue = EditorGUILayout.ColorField(serializedObject.FindProperty("passiveColour").colorValue);
+                _passiveColour.colorValue = EditorGUILayout.ColorField(_passiveColour.colorValue);
             }
             else
             {
@@ -68,11 +101,11 @@ namespace PlayRecorder.Timeline
 
             EditorGUILayout.BeginHorizontal();
 
-            serializedObject.FindProperty("overrideBackground").boolValue = EditorGUILayout.Toggle("Override Background Colour", serializedObject.FindProperty("overrideBackground").boolValue);
+            _overrideBackground.boolValue = EditorGUILayout.Toggle("Override Background Colour", _overrideBackground.boolValue);
 
-            if (serializedObject.FindProperty("overrideBackground").boolValue)
+            if (_overrideBackground.boolValue)
             {
-                serializedObject.FindProperty("backgroundColour").colorValue = EditorGUILayout.ColorField(serializedObject.FindProperty("backgroundColour").colorValue);
+                _backgroundColour.colorValue = EditorGUILayout.ColorField(_backgroundColour.colorValue);
             }
             else
             {
@@ -83,12 +116,12 @@ namespace PlayRecorder.Timeline
 
             EditorGUILayout.BeginHorizontal();
 
-            serializedObject.FindProperty("overrideTimeIndicator").boolValue = EditorGUILayout.Toggle("Override Time Indicator Colour", serializedObject.FindProperty("overrideTimeIndicator").boolValue);
+            _overrideTimeIndicator.boolValue = EditorGUILayout.Toggle("Override Time Indicator Colour", _overrideTimeIndicator.boolValue);
 
-            if (serializedObject.FindProperty("overrideTimeIndicator").boolValue)
+            if (_overrideTimeIndicator.boolValue)
             {
-                serializedObject.FindProperty("timeIndicatorColour").colorValue = EditorGUILayout.ColorField(serializedObject.FindProperty("timeIndicatorColour").colorValue);
-                serializedObject.FindProperty("timeIndicatorPausedColour").colorValue = EditorGUILayout.ColorField(serializedObject.FindProperty("timeIndicatorPausedColour").colorValue);
+                _timeIndicatorColour.colorValue = EditorGUILayout.ColorField(_timeIndicatorColour.colorValue);
+                _timeIndicatorPausedColour.colorValue = EditorGUILayout.ColorField(_timeIndicatorPausedColour.colorValue);
             }
             else
             {
@@ -99,12 +132,11 @@ namespace PlayRecorder.Timeline
 
             EditorGUILayout.BeginHorizontal();
 
-            serializedObject.FindProperty("overrideMessageIndicatorWidth").boolValue = EditorGUILayout.Toggle("Override Message Indicator Width", serializedObject.FindProperty("overrideMessageIndicatorWidth").boolValue);
+            _overrideMessageIndicatorWidth.boolValue = EditorGUILayout.Toggle("Override Message Indicator Width", _overrideMessageIndicatorWidth.boolValue);
 
-            if (serializedObject.FindProperty("overrideMessageIndicatorWidth").boolValue)
+            if (_overrideMessageIndicatorWidth.boolValue)
             {
-                serializedObject.FindProperty("messageIndicatorWidth").intValue = (int)EditorGUILayout.Slider(serializedObject.FindProperty("messageIndicatorWidth").intValue, 1, 10);
-                //serializedObject.FindProperty("messageIndicatorWidth").intValue = EditorGUILayout.IntField(serializedObject.FindProperty("messageIndicatorWidth").intValue);
+                _messageIndicatorWidth.intValue = (int)EditorGUILayout.Slider(_messageIndicatorWidth.intValue, 1, 10);
             }
             else
             {
@@ -150,7 +182,7 @@ namespace PlayRecorder.Timeline
             if (EditorGUI.EndChangeCheck())
             {
                 EditorUtility.SetDirty(serializedObject.targetObject);
-                serializedObject.FindProperty("updateTimeline").boolValue = true;
+                _updateTimeline.boolValue = true;
                 serializedObject.ApplyModifiedProperties();
             }
 
@@ -158,12 +190,13 @@ namespace PlayRecorder.Timeline
 
         public void OnEnable()
         {
+            SetProperties();
             TimelineWindow[] windows = Resources.FindObjectsOfTypeAll<TimelineWindow>();
 
             if (windows != null && windows.Length > 0)
             {
                 timelineMessages.Clear();
-                serializedObject.FindProperty("updateTimeline").boolValue = true;
+                _updateTimeline.boolValue = true;
                 serializedObject.ApplyModifiedProperties();
                 for (int i = 0; i < windows.Length; i++)
                 {
@@ -171,10 +204,10 @@ namespace PlayRecorder.Timeline
                     timelineMessages.AddRange(windows[i].currentMessages);
                 }
                 RefreshMessageDifferences();
-                listSize = serializedObject.FindProperty("colours").arraySize;
+                listSize = _colours.arraySize;
             }
 
-            colourList = new ReorderableList(serializedObject, serializedObject.FindProperty("colours"), true, true, true, true);
+            colourList = new ReorderableList(serializedObject, _colours, true, true, true, true);
             colourList.drawHeaderCallback = (Rect rect) =>
             {
                 EditorGUI.LabelField(rect, "Messages",Styles.textBold);
@@ -183,23 +216,23 @@ namespace PlayRecorder.Timeline
                 (Rect rect, int index, bool isActive, bool isFocused) =>
                 {
                     var element = colourList.serializedProperty.GetArrayElementAtIndex(index);
-                    rect.y += 2;
+                    rect.y += Sizes.padding;
                     EditorGUI.PropertyField(
-                        new Rect(rect.x, rect.y, rect.width - 121, EditorGUIUtility.singleLineHeight),
+                        new Rect(rect.x, rect.y, rect.width - (Sizes.Timeline.widthColorBox + Sizes.padding), EditorGUIUtility.singleLineHeight),
                         element.FindPropertyRelative("message"), GUIContent.none);
                     EditorGUI.PropertyField(
-                        new Rect(rect.x + rect.width - 120, rect.y, 120, EditorGUIUtility.singleLineHeight),
+                        new Rect(rect.x + rect.width - Sizes.Timeline.widthColorBox, rect.y, Sizes.Timeline.widthColorBox, EditorGUIUtility.singleLineHeight),
                         element.FindPropertyRelative("color"), GUIContent.none);
                 };
         }
 
-        void RefreshMessageDifferences()
+        private void RefreshMessageDifferences()
         {
             colourMessages.Clear();
             nonAddedMessages.Clear();
-            for (int i = 0; i < serializedObject.FindProperty("colours").arraySize; i++)
+            for (int i = 0; i < _colours.arraySize; i++)
             {
-                colourMessages.Add(serializedObject.FindProperty("colours").GetArrayElementAtIndex(i).FindPropertyRelative("message").stringValue);
+                colourMessages.Add(_colours.GetArrayElementAtIndex(i).FindPropertyRelative("message").stringValue);
             }
             for (int i = 0; i < timelineMessages.Count; i++)
             {
@@ -211,15 +244,15 @@ namespace PlayRecorder.Timeline
             }
         }
 
-        void AddMissingMessage(int selected)
+        private void AddMissingMessage(int selected)
         {
             int ind = 0;
-            if (serializedObject.FindProperty("colours").arraySize > 0)
+            if (_colours.arraySize > 0)
             {
-                ind = serializedObject.FindProperty("colours").arraySize - 1;
+                ind = _colours.arraySize - 1;
             }
-            serializedObject.FindProperty("colours").InsertArrayElementAtIndex(ind);
-            serializedObject.FindProperty("colours").GetArrayElementAtIndex(serializedObject.FindProperty("colours").arraySize - 1).FindPropertyRelative("message").stringValue = nonAddedMessages[selected];
+            _colours.InsertArrayElementAtIndex(ind);
+            _colours.GetArrayElementAtIndex(_colours.arraySize - 1).FindPropertyRelative("message").stringValue = nonAddedMessages[selected];
 
             nonAddedMessages.RemoveAt(selected);
         }

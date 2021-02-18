@@ -1,5 +1,6 @@
 ﻿// To enable this addon go to Edit -> Project Settings -> Player -> Other Settings -> Scripting Define Symbols and add
 // PR_STEAMVR;
+// This should be attached to a SteamVR_Behaviour_Pose and will require a SteamVR_Behaviour_Skeleton
 #if PR_STEAMVR
 using UnityEngine;
 using PlayRecorder.Hands;
@@ -40,30 +41,30 @@ namespace PlayRecorder.SteamVR
 
     public class SteamVRPalmCache : PalmCache
     {
-        Transform rootTransform, wristTransform;
+        private Transform _rootTransform, _wristTransform;
 
         public Vector3 rootPosition, wristPosition;
         public Quaternion rootRotation, wristRotation;
 
         public SteamVRPalmCache (Transform transform, Transform root, Transform wrist) : base(transform)
         {
-            this.rootTransform = root;
-            this.wristTransform = wrist;
+            this._rootTransform = root;
+            this._wristTransform = wrist;
         }
 
         public override void Update(float rotationThreshold)
         {
             base.Update(rotationThreshold);
-            rootPosition = rootTransform.localPosition;
-            if ((rootTransform.localRotation.eulerAngles - rootRotation.eulerAngles).sqrMagnitude > rotationThreshold)
+            rootPosition = _rootTransform.localPosition;
+            if ((_rootTransform.localRotation.eulerAngles - rootRotation.eulerAngles).sqrMagnitude > rotationThreshold)
             {
-                rootRotation = rootTransform.localRotation;
+                rootRotation = _rootTransform.localRotation;
                 updated = true;
             }
-            wristPosition = wristTransform.localPosition;
-            if ((wristTransform.localRotation.eulerAngles - wristRotation.eulerAngles).sqrMagnitude > rotationThreshold)
+            wristPosition = _wristTransform.localPosition;
+            if ((_wristTransform.localRotation.eulerAngles - wristRotation.eulerAngles).sqrMagnitude > rotationThreshold)
             {
-                wristRotation = wristTransform.localRotation;
+                wristRotation = _wristTransform.localRotation;
                 updated = true;
             }
         }
@@ -71,36 +72,36 @@ namespace PlayRecorder.SteamVR
         public override void PlayUpdate(PalmFrame frame)
         {
             base.PlayUpdate(frame);
-            rootTransform.localPosition = ((SteamVRPalmFrame)frame).rootPosition;
-            rootTransform.localRotation = ((SteamVRPalmFrame)frame).rootRotation;
+            _rootTransform.localPosition = ((SteamVRPalmFrame)frame).rootPosition;
+            _rootTransform.localRotation = ((SteamVRPalmFrame)frame).rootRotation;
 
-            wristTransform.localPosition = ((SteamVRPalmFrame)frame).wristPosition;
-            wristTransform.localRotation = ((SteamVRPalmFrame)frame).wristRotation;
+            _wristTransform.localPosition = ((SteamVRPalmFrame)frame).wristPosition;
+            _wristTransform.localRotation = ((SteamVRPalmFrame)frame).wristRotation;
         }
     }
 
     public class SteamVRFingerCache : FingerCache
     {
 
-        Transform aux;
+        private Transform _aux;
 
         public Vector3 auxPos;
         public Quaternion auxRot;
 
         public SteamVRFingerCache(Transform meta, Transform prox, Transform inter, Transform dist, Transform aux) : base(meta,prox,inter,dist)
         {
-            this.aux = aux;
+            this._aux = aux;
         }
 
         public override void Update(float rotationThreshold)
         {
             base.Update(rotationThreshold);
-            if(aux != null)
+            if(_aux != null)
             {
-                auxPos = aux.localPosition;
-                if ((aux.localRotation.eulerAngles - auxRot.eulerAngles).sqrMagnitude > rotationThreshold)
+                auxPos = _aux.localPosition;
+                if ((_aux.localRotation.eulerAngles - auxRot.eulerAngles).sqrMagnitude > rotationThreshold)
                 {
-                    auxRot = aux.localRotation;
+                    auxRot = _aux.localRotation;
                     updated = true;
                 }
             }
@@ -109,10 +110,10 @@ namespace PlayRecorder.SteamVR
         public override void PlayUpdate(FingerFrame frame)
         {
             base.PlayUpdate(frame);
-            if(aux != null)
+            if(_aux != null)
             {
-                aux.localPosition = ((SteamVRFingerFrame)frame).auxPos;
-                aux.localRotation = ((SteamVRFingerFrame)frame).auxRot;
+                _aux.localPosition = ((SteamVRFingerFrame)frame).auxPos;
+                _aux.localRotation = ((SteamVRFingerFrame)frame).auxRot;
             }
         }
     }
@@ -120,16 +121,18 @@ namespace PlayRecorder.SteamVR
     public class SteamVRSkeletonRecordComponent : RecordComponent
     {
         [SerializeField, Tooltip("This value is the square magnitude at which rotation changes will cause a frame to be stored.")]
-        float _rotationThreshold = 0.5f;
+        private float _rotationThreshold = 0.5f;
 
         [SerializeField]
-        SteamVR_Behaviour_Pose _handPose;
+        private SteamVR_Behaviour_Pose _handPose;
 
         [SerializeField]
-        SteamVR_Behaviour_Skeleton _handSkeleton;
+        private SteamVR_Behaviour_Skeleton _handSkeleton;
 
-        SteamVRPalmCache _palmCache;
-        SteamVRFingerCache _thumbCache, _indexCache, _middleCache, _ringCache, _pinkyCache;
+        private SteamVRPalmCache _palmCache;
+        private SteamVRFingerCache _thumbCache, _indexCache, _middleCache, _ringCache, _pinkyCache;
+
+        private const int _palmIndex = 0, _thumbIndex = 1, _indexIndex = 2, _middleIndex = 3, _ringIndex = 4, _pinkyIndex = 5;
 
         #region Unity Events
 
@@ -167,26 +170,25 @@ namespace PlayRecorder.SteamVR
                 return;
             }
 
-            HandItem.HandID shi = HandItem.HandID.Left;
-
-            switch (_handSkeleton.inputSource)
+            if(!(_handSkeleton.inputSource == SteamVR_Input_Sources.LeftHand || _handSkeleton.inputSource == SteamVR_Input_Sources.RightHand))
             {
-                case SteamVR_Input_Sources.LeftHand:
-                    shi = HandItem.HandID.Left;
-                    break;
-                case SteamVR_Input_Sources.RightHand:
-                    shi = HandItem.HandID.Right;
-                    break;
-                default:
-                    // Only record hands!
-                    Debug.LogError("SteamVR Behaviour Skeleton is not set to a hand and will be ignored.");
-                    return;
+                // Only record hands!
+                Debug.LogError("SteamVR Behaviour Skeleton is not set to a hand and will be ignored.");
+                return;
+            }
+
+
+            HandItem.HandID skeletonHandID = HandItem.HandID.Left;
+
+            if(_handSkeleton.inputSource == SteamVR_Input_Sources.RightHand)
+            {
+                skeletonHandID = HandItem.HandID.Right;
             }
 
             base.StartRecording();
 
             // Could just not use the base.StartRecording() but we don't know what's going to change there
-            _recordItem = new HandItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy, shi);
+            _recordItem = new HandItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy, skeletonHandID);
 
             SetCaches();
 
@@ -224,27 +226,27 @@ namespace PlayRecorder.SteamVR
             if (_palmCache.updated)
             {
                 _palmCache.updated = false;
-                _recordItem.parts[0].AddFrame(new SteamVRPalmFrame(_currentTick, _palmCache.localPosition, _palmCache.rootPosition, _palmCache.wristPosition, _palmCache.localRotation, _palmCache.rootRotation, _palmCache.wristRotation));
+                _recordItem.parts[_palmIndex].AddFrame(new SteamVRPalmFrame(_currentTick, _palmCache.localPosition, _palmCache.rootPosition, _palmCache.wristPosition, _palmCache.localRotation, _palmCache.rootRotation, _palmCache.wristRotation));
             }
             if (_thumbCache.updated)
             {
-                AddFingerFrame(1, ref _thumbCache);
+                AddFingerFrame(_thumbIndex, ref _thumbCache);
             }
             if (_indexCache.updated)
             {
-                AddFingerFrame(2, ref _indexCache);
+                AddFingerFrame(_indexIndex, ref _indexCache);
             }
             if (_middleCache.updated)
             {
-                AddFingerFrame(3, ref _middleCache);
+                AddFingerFrame(_middleIndex, ref _middleCache);
             }
             if (_ringCache.updated)
             {
-                AddFingerFrame(4, ref _ringCache);
+                AddFingerFrame(_ringIndex, ref _ringCache);
             }
             if (_pinkyCache.updated)
             {
-                AddFingerFrame(5, ref _pinkyCache);
+                AddFingerFrame(_pinkyIndex, ref _pinkyCache);
             }
         }
 
@@ -292,23 +294,23 @@ namespace PlayRecorder.SteamVR
             {
                 switch (_playUpdatedParts[i])
                 {
-                    case 0:
-                        _palmCache.PlayUpdate((SteamVRPalmFrame)_recordItem.parts[0].currentFrame);
+                    case _palmIndex:
+                        _palmCache.PlayUpdate((SteamVRPalmFrame)_recordItem.parts[_palmIndex].currentFrame);
                         break;
-                    case 1:
-                        _thumbCache.PlayUpdate((SteamVRFingerFrame)_recordItem.parts[1].currentFrame);
+                    case _thumbIndex:
+                        _thumbCache.PlayUpdate((SteamVRFingerFrame)_recordItem.parts[_thumbIndex].currentFrame);
                         break;
-                    case 2:
-                        _indexCache.PlayUpdate((SteamVRFingerFrame)_recordItem.parts[2].currentFrame);
+                    case _indexIndex:
+                        _indexCache.PlayUpdate((SteamVRFingerFrame)_recordItem.parts[_indexIndex].currentFrame);
                         break;
-                    case 3:
-                        _middleCache.PlayUpdate((SteamVRFingerFrame)_recordItem.parts[3].currentFrame);
+                    case _middleIndex:
+                        _middleCache.PlayUpdate((SteamVRFingerFrame)_recordItem.parts[_middleIndex].currentFrame);
                         break;
-                    case 4:
-                        _ringCache.PlayUpdate((SteamVRFingerFrame)_recordItem.parts[4].currentFrame);
+                    case _ringIndex:
+                        _ringCache.PlayUpdate((SteamVRFingerFrame)_recordItem.parts[_ringIndex].currentFrame);
                         break;
-                    case 5:
-                        _pinkyCache.PlayUpdate((SteamVRFingerFrame)_recordItem.parts[5].currentFrame);
+                    case _pinkyIndex:
+                        _pinkyCache.PlayUpdate((SteamVRFingerFrame)_recordItem.parts[_pinkyIndex].currentFrame);
                         break;
                 }
             }

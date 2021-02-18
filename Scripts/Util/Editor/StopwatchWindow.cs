@@ -13,10 +13,10 @@ namespace PlayRecorder.Tools
 
         private float _startTime, _stopTime, _differenceTime;
 
-        List<float> _previousTimes = new List<float>();
+        private List<float> _previousTimes = new List<float>();
 
         [SerializeField]
-        bool _expandedHistory = true;
+        private bool _expandedHistory = true;
 
         [MenuItem("Tools/PlayRecorder/Stopwatch")]
         static public void Init()
@@ -41,7 +41,7 @@ namespace PlayRecorder.Tools
             Startup();
         }
 
-        void Startup()
+        private void Startup()
         {
             playbackManager = FindObjectOfType<PlaybackManager>();
         }

@@ -1,20 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
 namespace PlayRecorder.Interface
 {
-
     public class PlayPauseButton : MonoBehaviour
     {
-        PlaybackManager _manager;
+        private PlaybackManager _manager;
 
-        Button _button;
-        TMP_Text _text;
+        private Button _button;
+        private TMP_Text _text;
 
-        bool _playing = false;
+        private bool _playing = false;
 
         private void Awake()
         {
@@ -34,12 +31,9 @@ namespace PlayRecorder.Interface
             }
         }
 
-        void UpdatePlaying()
+        private void UpdatePlaying()
         {
             _text.text = _playing ? "Play" : "Pause";
         }
-
-
     }
-
 }

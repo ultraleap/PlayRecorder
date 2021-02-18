@@ -9,6 +9,14 @@ namespace PlayRecorder
     [CustomPropertyDrawer(typeof(PlaybackBinder))]
     public class PlaybackBinderDrawer : PropertyDrawer
     {
+
+        private SerializedProperty _descriptor;
+        private SerializedProperty _recordComponent;
+        private SerializedProperty _count;
+        private SerializedProperty _type;
+
+        private RecordComponent _currentComponent = null;
+
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             if (property.isExpanded)
@@ -18,18 +26,25 @@ namespace PlayRecorder
             return EditorGUIUtility.singleLineHeight;
         }
 
-        private RecordComponent currentComponent = null;
+        private void SetProperties(SerializedProperty baseProperty)
+        {
+            _descriptor = baseProperty.FindPropertyRelative("descriptor");
+            _recordComponent = baseProperty.FindPropertyRelative("recordComponent");
+            _count = baseProperty.FindPropertyRelative("count");
+            _type = baseProperty.FindPropertyRelative("type");
+        }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            SetProperties(property);
 
             EditorGUI.BeginProperty(position, label, property);
 
             GUIContent statusIcon;
-            GUIContent foldoutlabel = new GUIContent("Descriptor: " + property.FindPropertyRelative("descriptor").stringValue);
+            GUIContent foldoutlabel = new GUIContent("Descriptor: " + _descriptor.stringValue);
 
 
-            if (property.FindPropertyRelative("recordComponent").objectReferenceValue == null)
+            if (_recordComponent.objectReferenceValue == null)
             {
                 statusIcon = EditorGUIUtility.IconContent("redLight");
                 foldoutlabel.tooltip = "Component does not have a valid playback object assigned.";
@@ -43,11 +58,7 @@ namespace PlayRecorder
             Rect iconRect = new Rect(position.x, position.y, EditorGUIUtility.singleLineHeight, EditorGUIUtility.singleLineHeight);
             Rect foldoutRect = new Rect(position.x + (EditorGUIUtility.singleLineHeight*1.75f), position.y, position.width - (EditorGUIUtility.singleLineHeight*1.75f), EditorGUIUtility.singleLineHeight);
 
-            //EditorGUI.DrawRect(foldoutRect, Color.red);
             EditorGUI.LabelField(iconRect, statusIcon);
-
-            //EditorGUI.indentLevel++;
-
 
             property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, foldoutlabel, true, Styles.foldoutIconBold);
 
@@ -57,30 +68,27 @@ namespace PlayRecorder
                 var countRect = new Rect(position.x, position.y + (EditorGUIUtility.singleLineHeight * 2), position.width, 18);
                 var recordRect = new Rect(position.x, position.y + (EditorGUIUtility.singleLineHeight * 3), position.width, 18);
 
-                string type = property.FindPropertyRelative("type").stringValue;
+                string type = _type.stringValue;
 
-                //EditorGUI.LabelField(descriptorRect, , s);
                 EditorGUI.LabelField(typeRect, "Type: " + type);
 
-                EditorGUI.LabelField(countRect,new GUIContent("Instances: " + property.FindPropertyRelative("count").intValue.ToString(),"The number of times this component appears in all files. If this number is different to the file count then you may have non-unique components in your save data."));
+                EditorGUI.LabelField(countRect,new GUIContent("Instances: " + _count.intValue.ToString(),"The number of times this component appears in all files. If this number is different to the file count then you may have non-unique components in your save data."));
 
                 EditorGUI.BeginDisabledGroup(Application.isPlaying);
-                EditorGUI.PropertyField(recordRect, property.FindPropertyRelative("recordComponent"), new GUIContent("Component","This will only accept components that have the same type as listed above."));
-                currentComponent = (RecordComponent)property.FindPropertyRelative("recordComponent").objectReferenceValue;
+                EditorGUI.PropertyField(recordRect, _recordComponent, new GUIContent("Component","This will only accept components that have the same type as listed above."));
+                _currentComponent = (RecordComponent)_recordComponent.objectReferenceValue;
                 EditorGUI.EndDisabledGroup();
-                if (currentComponent != null && currentComponent.GetType().ToString() != type)
+                if (_currentComponent != null && _currentComponent.GetType().ToString() != type)
                 {
                     Debug.LogError("RecordComponent type mismatch. Please assign the correct RecordComponent type.");
-                    currentComponent = null;
-                    property.FindPropertyRelative("recordComponent").objectReferenceValue = null;
+                    _currentComponent = null;
+                    _recordComponent.objectReferenceValue = null;
                 }
                 else
                 {
-                    property.FindPropertyRelative("recordComponent").objectReferenceValue = currentComponent;
+                    _recordComponent.objectReferenceValue = _currentComponent;
                 }
             }
-
-            //EditorGUI.indentLevel--;
 
             property.serializedObject.ApplyModifiedProperties();
 

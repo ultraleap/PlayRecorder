@@ -50,16 +50,16 @@ namespace PlayRecorder {
         }
 
         [SerializeField]
-        List<TextAsset> _recordedFiles = new List<TextAsset>();
+        private List<TextAsset> _recordedFiles = new List<TextAsset>();
 
         [SerializeField]
-        List<TextAsset> _loadedRecordedFiles = new List<TextAsset>();
+        private List<TextAsset> _loadedRecordedFiles = new List<TextAsset>();
 
         [SerializeField,HideInInspector]
-        List<DataCache> _dataCache = new List<DataCache>();
+        private List<DataCache> _dataCache = new List<DataCache>();
 
         [SerializeField]
-        List<string> _dataCacheNames = new List<string>();
+        private List<string> _dataCacheNames = new List<string>();
 
         public int dataCacheCount { get { return _dataCache.Count; } }
 
@@ -87,61 +87,59 @@ namespace PlayRecorder {
         public List<MessageCache> messageCache = new List<MessageCache>();
 
         [SerializeField]
-        bool _awaitingFileRefresh = false;
+        private bool _awaitingFileRefresh = false;
 
         [SerializeField]
-        int _currentFile = -1,_oldFileIndex = -1;
+        private int _currentFile = -1,_oldFileIndex = -1;
 
         public int currentFileIndex { get { return _currentFile; } }
 
         // Please use the custom inspector.
         [SerializeField]
-        List<PlaybackBinder> _binders = new List<PlaybackBinder>();
+        private List<PlaybackBinder> _binders = new List<PlaybackBinder>();
 
-        List<ComponentCache> _componentCache = new List<ComponentCache>();
+        private List<ComponentCache> _componentCache = new List<ComponentCache>();
 
-        float _mainThreadTime = -1;
+        private float _mainThreadTime = -1;
 
         // Playing is to say whether anything has started playing (e.g. the thread has been started)
         // Paused is to change whether time is progressing
         [SerializeField]
-        bool _playing = false, _paused = false;
+        private bool _playing = false, _paused = false;
         
         public bool hasStarted {  get { return _playing; } }
 
         public bool isPaused { get { return !_playing || _paused; } }
-        bool _firstLoad = true;
+        private bool _firstLoad = true;
 
         [SerializeField]
-        float _timeCounter = 0f;
+        private float _timeCounter = 0f;
 
-
-        double _tickRate = 0, tickCounter = 0, tickDelta = 0;
-        float ticks = 0;
-        bool _ticked = false, _scrubbed = false;
-
-        [SerializeField]
-        int _currentFrameRate = 0, _currentTickVal = 0, _maxTickVal = 0;
+        private double _tickRate = 0, tickCounter = 0, tickDelta = 0;
+        private float ticks = 0;
+        private bool _ticked = false, _scrubbed = false;
 
         [SerializeField]
-        float _playbackRate = 1.0f;
+        private int _currentFrameRate = 0, _currentTickVal = 0, _maxTickVal = 0;
+
+        [SerializeField]
+        private float _playbackRate = 1.0f;
 
         // Scrubbing Playback
-        int _desiredScrubTick = 0;
-        bool _countingScrub = false;
+        private int _desiredScrubTick = 0;
+        private bool _countingScrub = false;
         [SerializeField]
-        float _scrubWaitTime = 0.2f;
-        float _scrubWaitCounter = 0f;
+        private float _scrubWaitTime = 0.2f;
+        private float _scrubWaitCounter = 0f;
 
-        Thread _playbackThread = null;
-
+        private Thread _playbackThread = null;
 
         [SerializeField]
-        bool _changingFiles = false;
+        private bool _changingFiles = false;
         public bool changingFiles { get { return _changingFiles; } }
 
-        bool _removeErrorFile = false;
-        Thread _loadFilesThread = null;
+        private bool _removeErrorFile = false;
+        private Thread _loadFilesThread = null;
 
         #region Actions
 
@@ -161,7 +159,7 @@ namespace PlayRecorder {
         {
             if(_changingFiles)
             {
-                Debug.LogError("Unable to change files. Currently working.");
+                Debug.LogWarning("Unable to change files. Currently working.");
             }
 
             _loadedRecordedFiles.Clear();
@@ -181,7 +179,7 @@ namespace PlayRecorder {
 
             if(nulls)
             {
-                Debug.LogError("Null files were removed.");
+                Debug.LogWarning("Null files were removed.");
             }
 
             _dataCache.Clear();
@@ -189,7 +187,7 @@ namespace PlayRecorder {
 
             if (_recordedFiles.Count == 0)
             {
-                Debug.LogError("No files chosen. Aborting.");
+                Debug.LogWarning("No files chosen. Aborting.");
                 _binders.Clear();
                 OnDataCacheChange?.Invoke(_dataCache);
                 return;
@@ -341,7 +339,6 @@ namespace PlayRecorder {
 
         public void ChangeCurrentFile(int fileIndex)
         {
-            // implement coroutine and thread to change files
             _changingFiles = true;
             if (fileIndex == -1)
             {
@@ -480,7 +477,7 @@ namespace PlayRecorder {
             }
         }
 
-        void PlaybackUpdate()
+        private void PlaybackUpdate()
         {
             for (int i = 0; i < _binders.Count; i++)
             {
@@ -489,7 +486,7 @@ namespace PlayRecorder {
             OnUpdateTick?.Invoke();
         }
 
-        void UpdateComponentStatus()
+        private void UpdateComponentStatus()
         {
             for (int i = 0; i < _binders.Count; i++)
             {
@@ -509,7 +506,7 @@ namespace PlayRecorder {
             }
         }
 
-        void UpdateMessages()
+        private void UpdateMessages()
         {
             for (int i = 0; i < messageCache.Count; i++)
             {
@@ -532,7 +529,7 @@ namespace PlayRecorder {
             }
         }
 
-        void StartPlayingAfterLoad()
+        private void StartPlayingAfterLoad()
         {
             _firstLoad = false;
             _playbackThread = new Thread(() =>
@@ -553,8 +550,6 @@ namespace PlayRecorder {
             }
             _playbackThread.Start();
         }
-
-        // 
 
         public bool SetPaused(bool paused)
         {
@@ -640,7 +635,7 @@ namespace PlayRecorder {
             }
         }
 
-        void PlaybackThreadTick()
+        private void PlaybackThreadTick()
         {
             _ticked = true;
             for (int i = 0; i < _binders.Count; i++)

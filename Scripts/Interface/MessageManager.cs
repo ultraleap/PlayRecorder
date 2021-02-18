@@ -7,23 +7,20 @@ namespace PlayRecorder.Interface
 
     public class MessageManager : MonoBehaviour
     {
-
-        List<MessageCache> _awaitingMessages = new List<MessageCache>();
-
         [SerializeField]
-        GameObject _messagePrefab = null;
+        private GameObject _messagePrefab = null;
 
-        List<MessageController> _messagePool = new List<MessageController>();
+        private List<MessageController> _messagePool = new List<MessageController>();
 
         [SerializeField, Range(10, 200)]
-        int _messagePoolSize = 50;
-        int _messageIndex = 0;
+        private int _messagePoolSize = 50;
+        private int _messageIndex = 0;
 
         [SerializeField, Range(0.1f, 5f)]
-        float _messageVisibleTime = 0.5f;
+        private float _messageVisibleTime = 0.5f;
 
         [SerializeField, Range(0.1f, 5f)]
-        float _messageScale = 1f;
+        private float _messageScale = 1f;
 
         private void Start()
         {
@@ -68,7 +65,5 @@ namespace PlayRecorder.Interface
                 }
             }
         }
-
     }
-
 }

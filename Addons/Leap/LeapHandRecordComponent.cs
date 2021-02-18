@@ -1,5 +1,6 @@
 ﻿// To enable this addon go to Edit -> Project Settings -> Player -> Other Settings -> Scripting Define Symbols and add
 // PR_LEAP;
+// This records a HandModel object (e.g. RiggedHand), listening to the transform information. It does not record raw Leap frames (Leap frames are ~1k data points).
 #if PR_LEAP
 using UnityEngine;
 using Leap;
@@ -12,12 +13,12 @@ namespace PlayRecorder.Leap
     {
 
         [SerializeField,Tooltip("This value is the square magnitude at which rotation changes will cause a frame to be stored.")]
-        float _rotationThreshold = 0.5f;
+        private float _rotationThreshold = 0.5f;
 
-        HandModel _handModel;
+        private HandModel _handModel;
 
-        PalmCache _palmCache;
-        FingerCache _thumbCache, _indexCache, _middleCache, _ringCache, _pinkyCache;
+        private PalmCache _palmCache;
+        private FingerCache _thumbCache, _indexCache, _middleCache, _ringCache, _pinkyCache;
 
         #region Unity Events
 

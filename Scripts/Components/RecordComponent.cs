@@ -51,6 +51,7 @@ namespace PlayRecorder
             }
             _manager?.RemoveComponent(this);
         }
+
         protected void OnEnable()
         {
             if (_recording)

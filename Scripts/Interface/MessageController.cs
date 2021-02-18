@@ -9,11 +9,11 @@ namespace PlayRecorder.Interface
     public class MessageController : MonoBehaviour
     {
 
-        TextMeshPro _textmesh;
+        private TextMeshPro _textmesh;
 
-        float _timeRemaining = 1f;
+        private float _timeRemaining = 1f;
 
-        Transform _camera;
+        private Transform _camera;
 
         private void Awake()
         {

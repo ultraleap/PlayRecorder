@@ -22,7 +22,16 @@ namespace PlayRecorder
         /// </summary>
         [System.NonSerialized, HideInInspector]
         public int currentFrameIndex = -1;
-        public RecordFrame currentFrame { get { if (currentFrameIndex != -1 && frames.Count > 0) return frames[Mathf.Clamp(currentFrameIndex,0,frames.Count-1)]; return null; } }
+        public RecordFrame currentFrame {
+            get
+            {
+                if (currentFrameIndex != -1 && frames.Count > 0)
+                {
+                    return frames[Mathf.Clamp(currentFrameIndex, 0, frames.Count - 1)];
+                }
+                return null;
+            }
+        }
 
         public int SetCurrentFrame(int tick)
         {

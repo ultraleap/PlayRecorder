@@ -10,11 +10,17 @@ namespace PlayRecorder
     [CustomEditor(typeof(RecordingManager), true)]
     public class RecordManagerEditor : Editor
     {
+        private Vector2 scrollPos;
 
-        static string componentString = "_components", recordingNameString = "recordingName", recordingFolderString = "recordingFolderName", frameRateString = "_frameRateVal";
-        static string recordingString = "_recording", recordOnStartupString = "_recordOnStartup", recordOnStartupDelayString = "_recordOnStartupDelay", recordOnStartupInProgressString = "_recordStartupInProgress";
-
-        Vector2 scrollPos;
+        private SerializedProperty _recording;
+        private SerializedProperty _recordingOnStartup;
+        private SerializedProperty _recordingOnStartupInProgress;
+        private SerializedProperty _recordingOnStartupDelay;
+        private SerializedProperty _components;
+        private SerializedProperty _recordingName;
+        private SerializedProperty _recordingFolder;
+        private SerializedProperty _frameRate;
+        private SerializedProperty _duplicateItems;
 
         public class RecordManagerDuplicates
         {
@@ -24,23 +30,58 @@ namespace PlayRecorder
 
         List<RecordManagerDuplicates> componentNames = new List<RecordManagerDuplicates>();
 
+        private void SetProperties()
+        {
+            _recording = serializedObject.FindProperty("_recording");
+            _recordingOnStartup = serializedObject.FindProperty("_recordOnStartup");
+            _recordingOnStartupInProgress = serializedObject.FindProperty("_recordStartupInProgress");
+            _recordingOnStartupDelay = serializedObject.FindProperty("_recordOnStartupDelay");
+            _components = serializedObject.FindProperty("_components");
+            _recordingName = serializedObject.FindProperty("recordingName");
+            _recordingFolder = serializedObject.FindProperty("recordingFolderName");
+            _duplicateItems = serializedObject.FindProperty("_duplicateItems");
+            _frameRate = serializedObject.FindProperty("_frameRateVal");
+        }
+
         public override void OnInspectorGUI()
         {
+            SetProperties();
 
+            RecordingStartStopButtons();
+
+            ComponentDuplicateChecks();
+
+            RecordingName();
+
+            RecordingFolder();
+
+            RecordingFrameRate();
+
+            RecordingOnStartup();
+
+            EditorUtil.DrawDividerLine();
+
+            RecordingComponents();
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private void RecordingStartStopButtons()
+        {
             EditorGUILayout.BeginHorizontal();
 
-            EditorGUI.BeginDisabledGroup(!Application.isPlaying || serializedObject.FindProperty(recordingString).boolValue || serializedObject.FindProperty(recordOnStartupInProgressString).boolValue);
+            EditorGUI.BeginDisabledGroup(!Application.isPlaying || _recording.boolValue || _recordingOnStartupInProgress.boolValue);
 
-            if(GUILayout.Button("Start Recording"))
+            if (GUILayout.Button("Start Recording"))
             {
                 ((RecordingManager)serializedObject.targetObject).StartRecording();
             }
 
             EditorGUI.EndDisabledGroup();
 
-            EditorGUI.BeginDisabledGroup(!Application.isPlaying || !serializedObject.FindProperty(recordingString).boolValue || serializedObject.FindProperty(recordOnStartupInProgressString).boolValue);
+            EditorGUI.BeginDisabledGroup(!Application.isPlaying || !_recording.boolValue || _recordingOnStartupInProgress.boolValue);
 
-            if(GUILayout.Button("Stop Recording"))
+            if (GUILayout.Button("Stop Recording"))
             {
                 ((RecordingManager)serializedObject.targetObject).StopRecording();
             }
@@ -48,49 +89,53 @@ namespace PlayRecorder
             EditorGUI.EndDisabledGroup();
 
             EditorGUILayout.EndHorizontal();
+        }
 
-            for (int i = 0; i < serializedObject.FindProperty(componentString).arraySize; i++)
+        private void ComponentDuplicateChecks()
+        {
+            for (int i = 0; i < _components.arraySize; i++)
             {
-                if (serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue == null)
+                if (_components.GetArrayElementAtIndex(i).objectReferenceValue == null)
                 {
-                    serializedObject.FindProperty(componentString).DeleteArrayElementAtIndex(i);
+                    _components.DeleteArrayElementAtIndex(i);
                     serializedObject.ApplyModifiedProperties();
                     i--;
                 }
             }
 
             componentNames.Clear();
-            for (int i = 0; i < serializedObject.FindProperty(componentString).arraySize; i++)
+
+            for (int i = 0; i < _components.arraySize; i++)
             {
-                string d = ((RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue).descriptor;
+                string d = ((RecordComponent)_components.GetArrayElementAtIndex(i).objectReferenceValue).descriptor;
 
                 int ind = componentNames.FindIndex(x => x.descriptor == d);
 
-                if(ind != -1)
+                if (ind != -1)
                 {
-                    componentNames[ind].components.Add((RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue);
+                    componentNames[ind].components.Add((RecordComponent)_components.GetArrayElementAtIndex(i).objectReferenceValue);
                 }
                 else
                 {
                     componentNames.Add(new RecordManagerDuplicates()
                     {
                         descriptor = d,
-                        components = new List<RecordComponent>() { (RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue }
+                        components = new List<RecordComponent>() { (RecordComponent)_components.GetArrayElementAtIndex(i).objectReferenceValue }
                     });
                 }
-
             }
+
             bool duplicates = false;
             for (int i = 0; i < componentNames.Count; i++)
             {
-                if(componentNames[i].components.Count > 1 || Regex.Replace(componentNames[i].descriptor, @"\s+", "") == "")
+                if (componentNames[i].components.Count > 1 || Regex.Replace(componentNames[i].descriptor, @"\s+", "") == "")
                 {
                     duplicates = true;
-                    serializedObject.FindProperty("_duplicateItems").boolValue = duplicates;
+                    _duplicateItems.boolValue = duplicates;
                 }
             }
 
-            if(duplicates)
+            if (duplicates)
             {
                 EditorGUILayout.HelpBox("You have duplicate or invalid descriptors for some components. Please fix, you will not be able to start recording until all issues are rectified.", MessageType.Error);
                 for (int i = 0; i < componentNames.Count; i++)
@@ -98,7 +143,7 @@ namespace PlayRecorder
                     if (componentNames[i].components.Count > 1 || Regex.Replace(componentNames[i].descriptor, @"\s+", "") == "")
                     {
                         EditorGUILayout.BeginHorizontal();
-                        EditorGUILayout.LabelField(componentNames[i].descriptor,EditorStyles.helpBox);
+                        EditorGUILayout.LabelField(componentNames[i].descriptor, EditorStyles.helpBox);
 
                         EditorGUILayout.LabelField("(" + componentNames[i].components.Count + ")", EditorStyles.boldLabel);
                         EditorGUILayout.EndHorizontal();
@@ -109,28 +154,34 @@ namespace PlayRecorder
                     }
                 }
             }
+        }
 
-            serializedObject.FindProperty(recordingNameString).stringValue = EditorGUILayout.TextField(new GUIContent("Recording Name","The name of the recording. All recordings are prefixed with a unix style timestamp."), serializedObject.FindProperty(recordingNameString).stringValue);
+        private void RecordingName()
+        {
+            _recordingName.stringValue = EditorGUILayout.TextField(new GUIContent("Recording Name", "The name of the recording. All recordings are prefixed with a unix style timestamp."), _recordingName.stringValue);
+        }
 
+        private void RecordingFolder()
+        {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
 
             EditorGUILayout.BeginHorizontal();
 
-            EditorGUILayout.LabelField(new GUIContent("Recording Folder: <b>" + serializedObject.FindProperty(recordingFolderString).stringValue+"</b>","Recording folders are relative to the project Assets folder in the Editor or the "+Application.productName+"_Data folder in builds."),Styles.textRich);
-            
+            EditorGUILayout.LabelField(new GUIContent("Recording Folder: <b>" + _recordingFolder.stringValue + "</b>", "Recording folders are relative to the project Assets folder in the Editor or the " + Application.productName + "_Data folder in builds."), Styles.textRich);
+
             GUIContent chooseFolder = new GUIContent(EditorGUIUtility.IconContent("FolderEmpty Icon"));
             chooseFolder.text = " Choose Folder";
             chooseFolder.tooltip = "Select a folder to store recordings.";
 
-            if (GUILayout.Button(chooseFolder, Styles.buttonIcon,GUILayout.Height(20),GUILayout.Width(112)))
+            if (GUILayout.Button(chooseFolder, Styles.buttonIcon, GUILayout.Height(20), GUILayout.Width(112)))
             {
-                var path = EditorUtility.OpenFolderPanel("Select Recording Storage Folder", "","");
-                if(path.Length != 0)
+                var path = EditorUtility.OpenFolderPanel("Select Recording Storage Folder", "", "");
+                if (path.Length != 0)
                 {
                     path = path + "\\";
                     string relPath = FileUtil.MakeRelativePath(Application.dataPath + "\\", path).Replace(@"\", "/");
                     relPath = relPath.Remove(relPath.Length - 1);
-                    serializedObject.FindProperty(recordingFolderString).stringValue = relPath;
+                    _recordingFolder.stringValue = relPath;
                     serializedObject.ApplyModifiedProperties();
                 }
                 GUIUtility.ExitGUI();
@@ -138,12 +189,12 @@ namespace PlayRecorder
 
             GUIContent showFolder = new GUIContent(EditorGUIUtility.IconContent("FolderFavorite Icon", "| Ping the current recording folder for recordings. If the folder is outside the project, then that folder will be opened (and created if it does not exist)."));
 
-            if (GUILayout.Button(showFolder, Styles.buttonIcon,GUILayout.Height(20),GUILayout.Width(20)))
+            if (GUILayout.Button(showFolder, Styles.buttonIcon, GUILayout.Height(20), GUILayout.Width(20)))
             {
-                if(serializedObject.FindProperty(recordingFolderString).stringValue.StartsWith("../"))
+                if (_recordingFolder.stringValue.StartsWith("../"))
                 {
-                    string path = (Application.dataPath + "/" +serializedObject.FindProperty(recordingFolderString).stringValue).Replace("/", @"\");
-                    if(!System.IO.Directory.Exists(path))
+                    string path = (Application.dataPath + "/" + _recordingFolder.stringValue).Replace("/", @"\");
+                    if (!System.IO.Directory.Exists(path))
                     {
                         System.IO.Directory.CreateDirectory(path);
                     }
@@ -151,61 +202,68 @@ namespace PlayRecorder
                 }
                 else
                 {
-                    Object obj = AssetDatabase.LoadAssetAtPath("Assets/" + serializedObject.FindProperty(recordingFolderString).stringValue, typeof(Object));
+                    Object obj = AssetDatabase.LoadAssetAtPath("Assets/" + _recordingFolder.stringValue, typeof(Object));
 
                     Selection.activeObject = obj;
 
                     EditorGUIUtility.PingObject(obj);
                 }
-                
+
             }
 
             EditorGUILayout.EndHorizontal();
 #else
-            serializedObject.FindProperty(recordingFolderString).stringValue = EditorGUILayout.TextField(new GUIContent("Recording Folder","Recording folders are relative to the project Assets folder in the Editor or the "+Application.productName+"_Data folder in builds."), serializedObject.FindProperty(recordingFolderString).stringValue);
+            _recordingFolder.stringValue = EditorGUILayout.TextField(new GUIContent("Recording Folder","Recording folders are relative to the project Assets folder in the Editor or the "+Application.productName+"_Data folder in builds."), _recordingFolder.stringValue);
 #endif
+        }
 
+        private void RecordingFrameRate()
+        {
             EditorGUILayout.BeginHorizontal();
 
-            serializedObject.FindProperty(frameRateString).intValue = EditorGUILayout.IntSlider(new GUIContent("Recording Frame Rate","How many times per second (FPS) in which the recording will try to record information"),serializedObject.FindProperty(frameRateString).intValue, 0, 120);
+            _frameRate.intValue = EditorGUILayout.IntSlider(new GUIContent("Recording Frame Rate", "How many times per second (FPS) in which the recording will try to record information"), _frameRate.intValue, 0, 120);
 
-            if(GUILayout.Button("30",Styles.miniButton,GUILayout.Width(32)))
+            if (GUILayout.Button("30", Styles.miniButton, GUILayout.Width(32)))
             {
-                serializedObject.FindProperty(frameRateString).intValue = 30;
+                _frameRate.intValue = 30;
             }
 
             if (GUILayout.Button("60", Styles.miniButton, GUILayout.Width(32)))
             {
-                serializedObject.FindProperty(frameRateString).intValue = 60;
+                _frameRate.intValue = 60;
             }
 
             EditorGUILayout.EndHorizontal();
+        }
 
-            serializedObject.FindProperty(recordOnStartupString).boolValue = EditorGUILayout.Toggle(new GUIContent("Record On Play", "Starts recording as soon as play mode is entered."), serializedObject.FindProperty(recordOnStartupString).boolValue);
+        private void RecordingOnStartup()
+        {
+            _recordingOnStartup.boolValue = EditorGUILayout.Toggle(new GUIContent("Record On Play", "Starts recording as soon as play mode is entered."), _recordingOnStartup.boolValue);
 
-            if(serializedObject.FindProperty(recordOnStartupString).boolValue)
+            if (_recordingOnStartup.boolValue)
             {
                 EditorGUILayout.BeginHorizontal();
-                serializedObject.FindProperty(recordOnStartupDelayString).floatValue = EditorGUILayout.FloatField(new GUIContent("Record On Play Delay","How many seconds the recording manager will wait before starting recording once in play mode."),serializedObject.FindProperty(recordOnStartupDelayString).floatValue);
+                _recordingOnStartupDelay.floatValue = EditorGUILayout.FloatField(new GUIContent("Record On Play Delay", "How many seconds the recording manager will wait before starting recording once in play mode."), _recordingOnStartupDelay.floatValue);
 
-                if(GUILayout.Button("-1s", GUILayout.Width(40)))
+                if (GUILayout.Button("-1s", GUILayout.Width(40)))
                 {
-                    serializedObject.FindProperty(recordOnStartupDelayString).floatValue = Mathf.Clamp(serializedObject.FindProperty(recordOnStartupDelayString).floatValue - 1, 0, float.MaxValue); ;
+                    _recordingOnStartupDelay.floatValue = Mathf.Clamp(_recordingOnStartupDelay.floatValue - 1, 0, float.MaxValue); ;
                 }
 
                 if (GUILayout.Button("+1s", GUILayout.Width(40)))
                 {
-                    serializedObject.FindProperty(recordOnStartupDelayString).floatValue++;
+                    _recordingOnStartupDelay.floatValue++;
                 }
 
                 EditorGUILayout.EndHorizontal();
             }
+        }
 
-            EditorUtil.DrawDividerLine();
-
+        private void RecordingComponents()
+        {
             EditorGUILayout.BeginHorizontal();
 
-            if(serializedObject.FindProperty(componentString).isExpanded = EditorGUILayout.Foldout(serializedObject.FindProperty(componentString).isExpanded,new GUIContent("Recording Components ("+ serializedObject.FindProperty(componentString).arraySize+")", "All recording components currently found within the scene."),true,Styles.foldoutBold))
+            if (_components.isExpanded = EditorGUILayout.Foldout(_components.isExpanded, new GUIContent("Recording Components (" + _components.arraySize + ")", "All recording components currently found within the scene."), true, Styles.foldoutBold))
             {
                 RefreshComponentsButton();
                 EditorGUILayout.EndHorizontal();
@@ -215,44 +273,42 @@ namespace PlayRecorder
 
                 GUIContent recordLabel = new GUIContent("Record", "Decides whether this component will be used during the next recording. Does not affect playback.");
 
-                GUIStyle s = new GUIStyle(EditorStyles.boldLabel);
-
                 scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Height(400));
-                for (int i = 0; i < serializedObject.FindProperty(componentString).arraySize; i++)
+                for (int i = 0; i < _components.arraySize; i++)
                 {
-                    RecordComponent r = (RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue;
+                    RecordComponent recordComponent = (RecordComponent)_components.GetArrayElementAtIndex(i).objectReferenceValue;
 
-                    if (serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue == null)
+                    if (_components.GetArrayElementAtIndex(i).objectReferenceValue == null)
                     {
-                        serializedObject.FindProperty(componentString).DeleteArrayElementAtIndex(i);
+                        _components.DeleteArrayElementAtIndex(i);
                         i--;
                         continue;
                     }
 
-                    if(i > 0)
+                    if (i > 0)
                     {
                         EditorUtil.DrawDividerLine();
                     }
 
                     EditorGUILayout.BeginHorizontal();
-                    if(GUILayout.Button(hierarchyButton, Styles.buttonIcon, GUILayout.Width(20)))
+                    if (GUILayout.Button(hierarchyButton, Styles.buttonIcon, GUILayout.Width(20)))
                     {
-                        EditorGUIUtility.PingObject(serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue);
+                        EditorGUIUtility.PingObject(_components.GetArrayElementAtIndex(i).objectReferenceValue);
                     }
-                    if(GUILayout.Button(((RecordComponent)serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue).descriptor + " ("+ serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue.name+")", r.required ? Styles.textBold : Styles.textDisabledBold))
+                    if (GUILayout.Button(((RecordComponent)_components.GetArrayElementAtIndex(i).objectReferenceValue).descriptor + " (" + _components.GetArrayElementAtIndex(i).objectReferenceValue.name + ")", recordComponent.required ? Styles.textBold : Styles.textDisabledBold))
                     {
-                        EditorGUIUtility.PingObject(serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue);
+                        EditorGUIUtility.PingObject(_components.GetArrayElementAtIndex(i).objectReferenceValue);
                     }
 
-                    if(GUILayout.Button(recordLabel,EditorStyles.label,GUILayout.Width(46)))
+                    if (GUILayout.Button(recordLabel, EditorStyles.label, GUILayout.Width(46)))
                     {
-                        r.required = !r.required;
+                        recordComponent.required = !recordComponent.required;
                     }
-                    r.required = EditorGUILayout.Toggle(r.required,GUILayout.Width(14));
+                    recordComponent.required = EditorGUILayout.Toggle(recordComponent.required, GUILayout.Width(14));
 
                     EditorGUILayout.EndHorizontal();
 
-                    EditorGUILayout.LabelField(new GUIContent("Type: " + serializedObject.FindProperty(componentString).GetArrayElementAtIndex(i).objectReferenceValue.GetType().ToString()));
+                    EditorGUILayout.LabelField(new GUIContent("Type: " + _components.GetArrayElementAtIndex(i).objectReferenceValue.GetType().ToString()));
                 }
                 EditorGUILayout.EndScrollView();
             }
@@ -261,11 +317,9 @@ namespace PlayRecorder
                 RefreshComponentsButton();
                 EditorGUILayout.EndHorizontal();
             }
-
-            serializedObject.ApplyModifiedProperties();
         }
 
-        void RefreshComponentsButton()
+        private void RefreshComponentsButton()
         {
             GUIContent rf = new GUIContent(EditorGUIUtility.IconContent("Refresh"));
             rf.text = " Refresh";
@@ -275,6 +329,5 @@ namespace PlayRecorder
                 ((RecordingManager)serializedObject.targetObject).RefreshComponents();
             }
         }
-
     }
 }

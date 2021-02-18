@@ -12,13 +12,26 @@ namespace PlayRecorder
     public class RecordComponentEditor : Editor
     {
 
-        bool descriptorCheck = true;
-        string currentDescriptor = "";
+        private bool descriptorCheck = true;
+        private string currentDescriptor = "";
 
-        RecordingManager manager = null;
+        private RecordingManager manager = null;
+
+        private SerializedProperty _descriptor;
+        private SerializedProperty _uniqueDescriptor;
+        private SerializedProperty _required;
+
+        private void SetProperties()
+        {
+            _descriptor = serializedObject.FindProperty("_descriptor");
+            _uniqueDescriptor = serializedObject.FindProperty("_uniqueDescriptor");
+            _required = serializedObject.FindProperty("_required");
+        }
 
         public override void OnInspectorGUI()
         {
+            SetProperties();
+
             if (((RecordComponent)serializedObject.targetObject).gameObject.scene.name == null)
             {
                 EditorGUILayout.LabelField("Please add object to scene to enable this inspector.");
@@ -30,7 +43,7 @@ namespace PlayRecorder
             }
             else
             {
-                currentDescriptor = serializedObject.FindProperty("_descriptor").stringValue;
+                currentDescriptor = _descriptor.stringValue;
 
                 if (manager == null)
                 {
@@ -44,7 +57,7 @@ namespace PlayRecorder
                 if (descriptorCheck && manager != null)
                 {
                     descriptorCheck = false;
-                    serializedObject.FindProperty("_uniqueDescriptor").boolValue = manager.CheckUniqueDescriptor((RecordComponent)serializedObject.targetObject);
+                    _uniqueDescriptor.boolValue = manager.CheckUniqueDescriptor((RecordComponent)serializedObject.targetObject);
                 }
 
                 if (manager == null)
@@ -52,18 +65,18 @@ namespace PlayRecorder
                     EditorGUILayout.LabelField("No recording manager in scene. Please add one.",Styles.textBoldRed);
                 }
 
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("_descriptor"), new GUIContent("Descriptor", "This needs to be unique."));
+                EditorGUILayout.PropertyField(_descriptor, new GUIContent("Descriptor", "This needs to be unique."));
 
-                if (!serializedObject.FindProperty("_uniqueDescriptor").boolValue || Regex.Replace(serializedObject.FindProperty("_descriptor").stringValue, @"\s+", "") == "")
+                if (!_uniqueDescriptor.boolValue || Regex.Replace(_descriptor.stringValue, @"\s+", "") == "")
                 {
                     EditorGUILayout.LabelField("Current descriptor is not unique. Please change this to make it unique.", Styles.textBoldRed);
                 }
 
-                serializedObject.FindProperty("_required").boolValue = EditorGUILayout.Toggle(new GUIContent("Required for Recording", "Decides whether this component will be used during the next recording. Does not affect playback."), serializedObject.FindProperty("_required").boolValue);
+                _required.boolValue = EditorGUILayout.Toggle(new GUIContent("Required for Recording", "Decides whether this component will be used during the next recording. Does not affect playback."), _required.boolValue);
 
                 serializedObject.ApplyModifiedProperties();
                 DrawDefaultInspector();
-                if (currentDescriptor != serializedObject.FindProperty("_descriptor").stringValue)
+                if (currentDescriptor != _descriptor.stringValue)
                 {
                     descriptorCheck = true;
                 }

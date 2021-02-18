@@ -7,7 +7,7 @@ Unlike traditional recording methods, such as video or audio, PlayRecorder allow
 
 PlayRecorder includes the ability to record messages (or events in another word), allowing you to save small snippets of information very quickly. This allows for quickly assessing different stages or parts of your file without having to watch the entire thing or scrub through it.
 
-The idea behind the overall structure is that PlayRecorder is it's mostly own contained module. There should be next to no impact on your current project, be it code wise, pre-requirements, and overall performance overhead.
+The idea behind the overall structure is that PlayRecorder is its mostly own contained module. There should be next to no impact on your current project, be it code wise, pre-requirements, and overall performance overhead.
 
 ## How It Works
 PlayRecorder has a component (called ```RecordComponent```) and data (called ```RecordFrame```) layout, where individual components are attached to your objects and control their own data stores and logic.
@@ -58,7 +58,7 @@ Currently only verified to run on Windows and Standalone Windows builds. Other p
   - All recording folders are relative to the Unity [dataPath](https://docs.unity3d.com/ScriptReference/Application-dataPath.html) location.
 - Assign a RecordComponent to any object within your scene, for example a TransformRecordComponent to your camera (which will record the transform), and give it a unique descriptor.
   - By default an empty RecordComponent will only record the enable/disable events and any messages fed to it.
-- Go into play mode and press Start Recording, once done press Stop Recording. (Both functions can be trigger through through code)
+- Go into play mode and press Start Recording, once done press Stop Recording. (Both functions can be triggered through through code)
 
 ## Playing Your Recording
 
@@ -67,6 +67,8 @@ Currently only verified to run on Windows and Standalone Windows builds. Other p
   - Binary files are automatically found by Unity, as long as they are within your Assets folder they should be found with any Asset Database refresh.
 - Assign your recorded components to the ones in your scene (this should be done automatically based upon your descriptors).
 - Go into play mode and press Play.
+  - To access the Timeline go to ```Tools -> PlayRecorder -> Timeline```
+  - Note that by default, no ```RecordComponent``` will record any messages. These have to be defined in your code, and often outside of the ```RecordComponents```.
 
 ## Addons
 PlayRecorder includes a few addons by default, including a [Leap HandModel](https://github.com/leapmotion/unitymodules) RecordComponent. Addons usually require specific extra plugins and are therefore disabled by default to prevent compilation errors.

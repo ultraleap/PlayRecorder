@@ -22,7 +22,7 @@ namespace PlayRecorder
 
     public class TransformCache
     {
-        Transform transform;
+        private Transform _transform;
 
         // Used in main thread
         public Vector3 localPosition;
@@ -33,7 +33,7 @@ namespace PlayRecorder
 
         public TransformCache(Transform transform)
         {
-            this.transform = transform;
+            this._transform = transform;
             localPosition = transform.localPosition;
             localRotation = transform.localRotation;
             localScale = transform.localScale;
@@ -42,19 +42,19 @@ namespace PlayRecorder
         public void Update()
         {
             hasChanged = false;
-            if (transform.localPosition != localPosition)
+            if (_transform.localPosition != localPosition)
             {
-                localPosition = transform.localPosition;
+                localPosition = _transform.localPosition;
                 hasChanged = true;
             }
-            if (transform.localRotation != localRotation)
+            if (_transform.localRotation != localRotation)
             {
-                localRotation = transform.localRotation;
+                localRotation = _transform.localRotation;
                 hasChanged = true;
             }
-            if (transform.localScale != localScale)
+            if (_transform.localScale != localScale)
             {
-                localScale = transform.localScale;
+                localScale = _transform.localScale;
                 hasChanged = true;
             }
         }
@@ -65,7 +65,7 @@ namespace PlayRecorder
     {
 
         [SerializeField, Tooltip("Automatically assigned to the current object transform, changes will be ignored and reset once recording starts.")]
-        protected Transform baseTransform = null;
+        protected Transform _baseTransform = null;
 
         [SerializeField]
         protected List<Transform> _extraTransforms = new List<Transform>();
@@ -77,13 +77,13 @@ namespace PlayRecorder
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            baseTransform = gameObject.transform;
+            _baseTransform = gameObject.transform;
         }
 
         protected override void Reset()
         {
             base.Reset();
-            baseTransform = gameObject.transform;
+            _baseTransform = gameObject.transform;
         }
 #endif
 
@@ -95,10 +95,10 @@ namespace PlayRecorder
         {
             base.StartRecording();
 
-            baseTransform = gameObject.transform;
+            _baseTransform = gameObject.transform;
 
             _transformCache.Clear();
-            _transformCache.Add(new TransformCache(baseTransform));
+            _transformCache.Add(new TransformCache(_baseTransform));
             for (int i = 0; i < _extraTransforms.Count; i++)
             {
                 if (_extraTransforms[i] == null)
@@ -153,9 +153,9 @@ namespace PlayRecorder
         public override void StartPlaying()
         {
             base.StartPlaying();
-            if (baseTransform != null)
+            if (_baseTransform != null)
             {
-                DisableAllComponents(baseTransform);
+                DisableAllComponents(_baseTransform);
             }
 
 
@@ -175,8 +175,8 @@ namespace PlayRecorder
                 switch (_playUpdatedParts[i])
                 {
                     case 0:
-                        if (baseTransform != null && _recordItem.parts[0].currentFrame != null)
-                            ApplyTransform((TransformFrame)_recordItem.parts[0].currentFrame, baseTransform);
+                        if (_baseTransform != null && _recordItem.parts[0].currentFrame != null)
+                            ApplyTransform((TransformFrame)_recordItem.parts[0].currentFrame, _baseTransform);
                         break;
                     default:
                         if (_extraTransforms[_playUpdatedParts[i] - 1] != null && _recordItem.parts[_playUpdatedParts[i]].currentFrame != null)
@@ -188,7 +188,7 @@ namespace PlayRecorder
 
         #endregion
 
-        void ApplyTransform(TransformFrame frame, Transform transform)
+        private void ApplyTransform(TransformFrame frame, Transform transform)
         {
             try
             {
@@ -202,7 +202,7 @@ namespace PlayRecorder
             }
         }
 
-        void DisableAllComponents(Transform transform)
+        private void DisableAllComponents(Transform transform)
         {
             Behaviour[] mb = transform.GetComponents<Behaviour>();
             for (int i = 0; i < mb.Length; i++)

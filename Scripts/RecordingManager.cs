@@ -13,34 +13,34 @@ namespace PlayRecorder {
         protected Data _data;
 
         [SerializeField, HideInInspector]
-        bool _duplicateItems = false;
+        private bool _duplicateItems = false;
 
         [SerializeField, HideInInspector]
-        bool _recording = false, _recordingPaused = false;
+        private bool _recording = false, _recordingPaused = false;
 
         [SerializeField] [Range(1, 120)]
-        int _frameRateVal = 60;
+        private int _frameRateVal = 60;
         public int frameRate { get { return _frameRateVal; } }
 
-        float _timeCounter = 0f;
+        private float _timeCounter = 0f;
 
-        float _mainThreadTime = 0f;
+        private float _mainThreadTime = 0f;
 
-        bool _ticked = false;
-        int _currentTickVal = 0;
+        private bool _ticked = false;
+        private int _currentTickVal = 0;
         public int currentTick { get { return _currentTickVal; } }
 
         [SerializeField]
-        bool _recordOnStartup = false;
+        private bool _recordOnStartup = false;
         [SerializeField]
-        float _recordOnStartupDelay = 0f;
+        private float _recordOnStartupDelay = 0f;
         [SerializeField]
-        bool _recordStartupInProgress = false;
+        private bool _recordStartupInProgress = false;
 
         public string recordingFolderName = "Recordings";
         public string recordingName = "";
-        string _recordingTimeDate = "";
-        string _unityDataPath;
+        private string _recordingTimeDate = "";
+        private string _unityDataPath;
 
         [SerializeField, HideInInspector]
         protected List<RecordComponent> _components = new List<RecordComponent>();
@@ -73,7 +73,7 @@ namespace PlayRecorder {
             }
         }
 
-        IEnumerator RecordingStartupDelay()
+        private IEnumerator RecordingStartupDelay()
         {
             _recordStartupInProgress = true;
             float time = _recordOnStartupDelay;
@@ -89,9 +89,15 @@ namespace PlayRecorder {
 
         public void StartRecording()
         {
+            if(_recordStartupInProgress)
+            {
+                Debug.LogError("A queued recording is about to start. Unable to start recording.");
+                return;
+            }
             if(_duplicateItems)
             {
                 Debug.LogError("There are duplicate descriptors in your current setup. Please fix before trying to record.");
+                return;
             }
             _unityDataPath = Application.dataPath;
             _data = new Data()
@@ -179,7 +185,7 @@ namespace PlayRecorder {
             }
         }
 
-        void RecordingUpdate()
+        private void RecordingUpdate()
         {
             for (int i = 0; i < _currentComponents.Count; i++)
             {

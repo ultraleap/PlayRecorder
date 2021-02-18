@@ -3,7 +3,6 @@ using UnityEditor;
 
 namespace PlayRecorder.Tools
 {
-
     public static class Styles
     {
         public static GUIStyle textCentered = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleCenter };
@@ -36,6 +35,4 @@ namespace PlayRecorder.Tools
 
         public static Color green = new Color(0, 178f / 255f, 0);
     }
-    
-
 }
