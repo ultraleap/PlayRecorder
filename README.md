@@ -67,14 +67,18 @@ Currently only verified to run on Windows and Standalone Windows builds. Other p
   - Binary files are automatically found by Unity, as long as they are within your Assets folder they should be found with any Asset Database refresh.
 - Assign your recorded components to the ones in your scene (this should be done automatically based upon your descriptors).
 - Go into play mode and press Play.
-  - To access the Timeline go to ```Tools -> PlayRecorder -> Timeline```
-  - Note that by default, no ```RecordComponent``` will record any messages. These have to be defined in your code, and often outside of the ```RecordComponents```.
+  - To access the Timeline and see your messages go to ```Tools -> PlayRecorder -> Timeline```.
+  - Note that by default, no ```RecordComponent``` will record any messages. These have to be defined in your code, and are advised to be outside of ```RecordComponents```.
 
 ## Addons
-PlayRecorder includes a few addons by default, including a [Leap HandModel](https://github.com/leapmotion/unitymodules) RecordComponent. Addons usually require specific extra plugins and are therefore disabled by default to prevent compilation errors.
+PlayRecorder includes a few addons by default, including a [LeapMotion HandModel](https://github.com/leapmotion/unitymodules) RecordComponent. Addons usually require specific extra plugins and are therefore disabled by default to prevent compilation errors.
 
-- By default Leap, SteamVR, and any other addon is disabled.
+- By default all addons are disabled.
 - To enable an addon go to ```Edit -> Project Settings -> Player -> Other Settings -> Scripting Define Symbols``` and add ```PR_*plugin*``` (e.g. ```PR_LEAP```).
+
+### Current Addons
+- [LeapMotion HandModel recorder](Addons/Leap)
+- [SteamVR Skeletal Hand recorder](Addons/SteamVR)
 
 ## Expanding Your Components
 Every segment of the system can be expanded, from the components, right down to the individual frames that are being recorded. Make sure you expand off the base data structures and everything should be saved as long as the data can be serialised. You should not have to manually add the code to the system, it should all automatically understand what it is as long as it resides in your project with PlayRecorder.
@@ -83,6 +87,8 @@ Every segment of the system can be expanded, from the components, right down to 
 - A simple ```Stopwatch``` editor window example is included to show how to hook into the PlaybackManager for playback analytics.
 
 ## Disclaimers
+PlayRecorder is licensed under [Apache 2.0](license).
+
 PlayRecorder is not actively maintained or managed, and provided as is. Changes and fixes have no ETA.
 
 Although unlikely, features and names of types may change between commits/versions. If you record files in one version of PlayRecorder, use the same version to play it back or you may encounter errors.
