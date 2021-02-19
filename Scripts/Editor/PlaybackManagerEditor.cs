@@ -295,7 +295,7 @@ namespace PlayRecorder
 
         private void RecordedFileListArrowButton(int i)
         {
-            if (GUILayout.Button(new GUIContent(_currentFile.intValue == i ? ">" + (i + 1).ToString() : (i + 1).ToString(), "Change the currently selected file to this file."), GUILayout.Width(32)))
+            if (GUILayout.Button(new GUIContent(_currentFile.intValue == i ? ">" + (i + 1).ToString() : (i + 1).ToString(), "Change the currently selected file to this file."), _currentFile.intValue == i ? Styles.miniButtonBold : Styles.miniButton, GUILayout.Width(32)))
             {
                 ((PlaybackManager)serializedObject.targetObject).ChangeCurrentFile(i);
                 GUIUtility.ExitGUI();

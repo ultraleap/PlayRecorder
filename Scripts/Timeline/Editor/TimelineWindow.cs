@@ -399,7 +399,8 @@ namespace PlayRecorder.Timeline
                     _currentTimelineRect.y + timelineButtonHeight,
                     Sizes.Timeline.widthFileButton,
                     Sizes.Timeline.heightItem),
-                    new GUIContent(playbackManager.currentFileIndex == i ? ">" + (i + 1).ToString() : (i + 1).ToString(), "Change the currently selected file to this file.")
+                    new GUIContent(playbackManager.currentFileIndex == i ? ">" + (i + 1).ToString() : (i + 1).ToString(), "Change the currently selected file to this file."),
+                    playbackManager.currentFileIndex == i ? Styles.miniButtonBold : Styles.miniButton
                     ))
                 {
                     playbackManager.ChangeCurrentFile(i);
@@ -488,19 +489,21 @@ namespace PlayRecorder.Timeline
                 Texture2D t2d = new Texture2D(texWidth, (int)Sizes.Timeline.heightItem,TextureFormat.ARGB32,false);
                 FillTextureWithTransparency(t2d);
                 List<TextureMessageCache> tMCache = new List<TextureMessageCache>();
-                
+
+                float frame = 0;
                 for (int j = 0; j < _dataCache[i].messages.Count; j++)
                 {
                     for (int k = 0; k < _dataCache[i].messages[j].frames.Count; k++)
                     {
-                        fInd = tMCache.FindIndex(x => x.px >= (int)(actualWidth * ((float)_dataCache[i].messages[j].frames[k]/_dataCache[i].frameCount))-messageWidth && x.px <= ((int)(actualWidth * ((float)_dataCache[i].messages[j].frames[k] / _dataCache[i].frameCount)))+messageWidth);
+                        frame = _dataCache[i].messages[j].frames[k];
+                        fInd = tMCache.FindIndex(x => x.px >= (int)(actualWidth * (frame/_dataCache[i].frameCount))-messageWidth && x.px <= ((int)(actualWidth * (frame / _dataCache[i].frameCount)))+messageWidth);
                         if(fInd != -1)
                         {
                             tMCache[fInd].messages.Add(_dataCache[i].messages[j].message);
                         }
                         else
                         {
-                            tMCache.Add(new TextureMessageCache() { px = (int)(actualWidth * ((float)_dataCache[i].messages[j].frames[k] / _dataCache[i].frameCount)), messages = new List<string>() { _dataCache[i].messages[j].message } });
+                            tMCache.Add(new TextureMessageCache() { px = (int)(actualWidth * (frame / _dataCache[i].frameCount)), messages = new List<string>() { _dataCache[i].messages[j].message } });
                         }
                     }
                 }
