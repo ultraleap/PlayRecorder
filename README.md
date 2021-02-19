@@ -87,7 +87,7 @@ Every segment of the system can be expanded, from the components, right down to 
 - A simple ```Stopwatch``` editor window example is included to show how to hook into the PlaybackManager for playback analytics.
 
 ## Disclaimers
-PlayRecorder is licensed under [Apache 2.0](license).
+PlayRecorder is licensed under [Apache 2.0](LICENSE).
 
 PlayRecorder is not actively maintained or managed, and provided as is. Changes and fixes have no ETA.
 
