@@ -204,7 +204,7 @@ namespace PlayRecorder
 
         private void DisableAllComponents(Transform transform)
         {
-            Behaviour[] mb = transform.GetComponents<Behaviour>();
+            Component[] mb = transform.GetComponents<Component>();
             for (int i = 0; i < mb.Length; i++)
             {
                 // This may need more items to be added
@@ -216,11 +216,19 @@ namespace PlayRecorder
                    mb[i].GetType().ToString().Contains("UnityEngine.UI.")
                    ))
                 {
-                    mb[i].enabled = false;
+                    ((Behaviour)mb[i]).enabled = false;
                 }
                 if (mb[i].GetType() == typeof(Camera))
                 {
                     ((Camera)mb[i]).stereoTargetEye = StereoTargetEyeMask.None;
+                }
+                if (mb[i].GetType() == typeof(Rigidbody))
+                {
+                    ((Rigidbody)mb[i]).isKinematic = true;
+                }
+                if (mb[i].GetType() == typeof(Rigidbody2D))
+                {
+                    ((Rigidbody2D)mb[i]).isKinematic = true;
                 }
             }
         }
