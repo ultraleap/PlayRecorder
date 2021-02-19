@@ -204,31 +204,35 @@ namespace PlayRecorder
 
         private void DisableAllComponents(Transform transform)
         {
-            Component[] mb = transform.GetComponents<Component>();
-            for (int i = 0; i < mb.Length; i++)
+            Behaviour[] behaviours = transform.GetComponents<Behaviour>();
+            for (int i = 0; i < behaviours.Length; i++)
             {
                 // This may need more items to be added
-                if (!(typeof(RecordComponent).IsSameOrSubclass(mb[i].GetType()) ||
-                   mb[i].GetType() == typeof(Renderer) ||
-                   mb[i].GetType() == typeof(MeshFilter) ||
-                   mb[i].GetType() == typeof(Camera) ||
-                   mb[i].GetType() == typeof(Canvas) ||
-                   mb[i].GetType().ToString().Contains("UnityEngine.UI.")
+                if (!(typeof(RecordComponent).IsSameOrSubclass(behaviours[i].GetType()) ||
+                   behaviours[i].GetType() == typeof(Renderer) ||
+                   behaviours[i].GetType() == typeof(MeshFilter) ||
+                   behaviours[i].GetType() == typeof(Camera) ||
+                   behaviours[i].GetType() == typeof(Canvas) ||
+                   behaviours[i].GetType().ToString().Contains("UnityEngine.UI.")
                    ))
                 {
-                    ((Behaviour)mb[i]).enabled = false;
+                    (behaviours[i]).enabled = false;
                 }
-                if (mb[i].GetType() == typeof(Camera))
+                if (behaviours[i].GetType() == typeof(Camera))
                 {
-                    ((Camera)mb[i]).stereoTargetEye = StereoTargetEyeMask.None;
+                    ((Camera)behaviours[i]).stereoTargetEye = StereoTargetEyeMask.None;
                 }
-                if (mb[i].GetType() == typeof(Rigidbody))
+            }
+            Component[] components = transform.GetComponents<Component>();
+            for (int i = 0; i < components.Length; i++)
+            {
+                if (components[i].GetType() == typeof(Rigidbody))
                 {
-                    ((Rigidbody)mb[i]).isKinematic = true;
+                    ((Rigidbody)components[i]).isKinematic = true;
                 }
-                if (mb[i].GetType() == typeof(Rigidbody2D))
+                if (components[i].GetType() == typeof(Rigidbody2D))
                 {
-                    ((Rigidbody2D)mb[i]).isKinematic = true;
+                    ((Rigidbody2D)components[i]).isKinematic = true;
                 }
             }
         }

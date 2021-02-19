@@ -10,7 +10,7 @@ PlayRecorder includes the ability to record messages (or events in another word)
 The idea behind the overall structure is that PlayRecorder is its mostly own contained module. There should be next to no impact on your current project, be it code wise, pre-requirements, and overall performance overhead.
 
 ## How It Works
-PlayRecorder has a component (called ```RecordComponent```) and data (called ```RecordFrame```) layout, where individual components are attached to your objects and control their own data stores and logic.
+PlayRecorder has a component (called ```RecordComponent```) and data (called ```RecordFrame```) layout, where individual components are attached to your objects and control their own data stores and logic. Components only ever records information when there is a change, or are explictly told to do so, reducing the overall recording size.
 
 The ```RecordingManager``` controls when components record their updates, and eventually collates all the data from the components and saves it into binary files.
 - ```RecordComponent```s control a ```RecordItem``` (the raw data).
