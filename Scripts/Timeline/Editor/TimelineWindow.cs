@@ -38,7 +38,7 @@ namespace PlayRecorder.Timeline
         private Vector2 _scrollPos;
 
         [SerializeField]
-        private Color _normalBackground, _darkerBackground, _lighterBackground;
+        private Color _normalBackground, _darkerBackground, _lighterBackground, _backgroundDefault;
 
         private double _oldTime, _newTime, _deltaTime, _regenerateCounter;
 
@@ -48,6 +48,7 @@ namespace PlayRecorder.Timeline
         private List<Texture2D> _messageTextures = new List<Texture2D>();
 
         private Texture2D _timelineBG;
+        private Texture2D _timelineColourBG;
 
         private List<TimelineColors> _timelineColourObjects = new List<TimelineColors>();
         private string[] _timelineColourNames;
@@ -119,6 +120,7 @@ namespace PlayRecorder.Timeline
             float h, s, v;
             Color.RGBToHSV(_normalBackground, out h, out s, out v);
             _darkerBackground = Color.HSVToRGB(h, s, v * 0.75f);
+            _backgroundDefault = Color.HSVToRGB(h, s, v * 0.15f);
             _lighterBackground = Color.HSVToRGB(h, s, v * 1f);
             
             if (_dataCache.Count == 0)
@@ -376,10 +378,11 @@ namespace PlayRecorder.Timeline
             if(overrideColours && _timelineColourObjects[_timelineColourIndex].overrideBackground)
             {
                 GUI.backgroundColor = _timelineColourObjects[_timelineColourIndex].backgroundColour;
-                GUI.Box(_timelineScrubRect, "");
+                
             }
-
-            GUI.DrawTextureWithTexCoords(_timelineScrubRect, _timelineBG, new Rect(0, 0, _timelineScrubRect.width / _timelineBG.width, _timelineScrubRect.height / _timelineBG.height));
+            Rect timelineBGSize = new Rect(0, 0, _timelineScrubRect.width / _timelineBG.width, _timelineScrubRect.height / _timelineBG.height);
+            GUI.DrawTextureWithTexCoords(_timelineScrubRect,_timelineColourBG, timelineBGSize);
+            GUI.DrawTextureWithTexCoords(_timelineScrubRect, _timelineBG, timelineBGSize);
 
             float timelineButtonWidth = _currentTimelineRect.width - (Sizes.padding + Sizes.Timeline.widthFileButton);
             float timelineButtonHeight = 0;
@@ -474,6 +477,10 @@ namespace PlayRecorder.Timeline
             int messageWidth = customWidth ? _timelineColourObjects[_timelineColourIndex].messageIndicatorWidth : 2;
 
             int actualWidth = 0, texWidth = 0;
+
+            _timelineColourBG = new Texture2D(1, 1);
+            _timelineColourBG.SetPixel(0, 0, _timelineColourObjects[_timelineColourIndex].overrideBackground ? _timelineColourObjects[_timelineColourIndex].backgroundColour : _backgroundDefault);
+            _timelineColourBG.Apply();
 
             for (int i = 0; i < _dataCache.Count; i++)
             {
