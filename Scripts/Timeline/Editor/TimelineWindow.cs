@@ -49,6 +49,7 @@ namespace PlayRecorder.Timeline
 
         private Texture2D _timelineBG;
         private Texture2D _timelineColourBG;
+        private Texture2D _timelineIndicator, _timelineIndicatorPaused;
 
         private List<TimelineColors> _timelineColourObjects = new List<TimelineColors>();
         private string[] _timelineColourNames;
@@ -276,14 +277,14 @@ namespace PlayRecorder.Timeline
         {
             EditorGUILayout.BeginHorizontal();
 
-            GUI.backgroundColor = playbackManager.isPaused ? Styles.red : Styles.green;
+            GUI.backgroundColor = playbackManager.isPaused ? Colors.red : Colors.green;
             GUI.Box(new Rect(_timelineTickerRect.x, _timelineTickerRect.y+18, _timelineTickerRect.width * (playbackManager.currentTick / _maximumTick), 1),"");
 
             GUI.backgroundColor = _normalBackground;
             EditorGUI.BeginDisabledGroup(!Application.isPlaying);
             GUIContent pp = playbackManager.isPaused ? new GUIContent(EditorGUIUtility.IconContent("PlayButton")) : new GUIContent(EditorGUIUtility.IconContent("PauseButton"));
             pp.tooltip = Application.isPlaying ? "Play/pause the current file." : "Please enter play mode to play recording.";
-            if (GUILayout.Button(pp, Styles.buttonIcon, GUILayout.Width(32)))
+            if (GUILayout.Button(pp, Styles.buttonIcon, GUILayout.Width(Sizes.Timeline.widthFileButton)))
             {
                 playbackManager.TogglePlaying();
             }
@@ -293,12 +294,14 @@ namespace PlayRecorder.Timeline
 
             GUIContent rsb = new GUIContent(EditorGUIUtility.IconContent("Animation.FirstKey"));
             rsb.tooltip = "Jump back to the start of the file.";
-            if(GUILayout.Button(rsb,Styles.buttonIcon,GUILayout.Width(32)))
+            if(GUILayout.Button(rsb,Styles.buttonIcon,GUILayout.Width(Sizes.Timeline.widthFileButton)))
             {
                 playbackManager.ScrubTick(0);
             }
 
             EditorGUI.EndDisabledGroup();
+
+            playbackManager.playbackRate = EditorGUILayout.Slider(playbackManager.playbackRate, 0, 3.0f, GUILayout.MaxWidth(150));
             
             if(Event.current.type == EventType.Repaint)
             {
@@ -307,7 +310,9 @@ namespace PlayRecorder.Timeline
 
             EditorGUILayout.LabelField(new GUIContent(playbackManager.currentTick + " - " + TimeUtil.ConvertToTime((double)playbackManager.currentTime) + " / " + TimeUtil.ConvertToTime(_maximumTime),"The end time value shown here is the end time of the longest file loaded."), Styles.textCentered,GUILayout.ExpandWidth(true));
 
-            EditorGUILayout.LabelField(_maximumTick.ToString(), GUILayout.Width(9 + ((_maximumTick.ToString().Length-1) * 7)));
+            GUIContent maxTickLabel = new GUIContent(_maximumTick.ToString(),"The maximum tick of all currently loaded files.");
+
+            EditorGUILayout.LabelField(maxTickLabel, GUILayout.Width(GUI.skin.label.CalcSize(maxTickLabel).x));
 
             if (Event.current.type == EventType.Repaint)
             {
@@ -355,11 +360,11 @@ namespace PlayRecorder.Timeline
             {
                 _currentTimelineWrapperRect = tempRect;
                 _currentTimelineRect = _currentTimelineWrapperRect;
-                _currentTimelineRect.height = _dataCache.Count * 22;
-                _currentTimelineRect.width -= _scrollbarWidth + 4;
+                _currentTimelineRect.height = _dataCache.Count * (Sizes.Timeline.heightItem + Sizes.padding);
+                _currentTimelineRect.width -= _scrollbarWidth + (Sizes.padding*2);
                 _timelineScrubRect = _currentTimelineRect;
-                _timelineScrubRect.width -= _scrollbarWidth + 4;
-                _timelineScrubRect.x += 36;
+                _timelineScrubRect.width -= _scrollbarWidth + (Sizes.padding * 2);
+                _timelineScrubRect.x += Sizes.Timeline.widthFileButton + (Sizes.padding * 2);
             }
             if(playbackManager.hasStarted && Event.current.type == EventType.MouseUp && _timelineScrubRect.Contains(Event.current.mousePosition) && (Event.current.mousePosition.x - 36 <= (_timelineScrubRect.width - (_scrollbarWidth + 4))))
             {
@@ -381,10 +386,10 @@ namespace PlayRecorder.Timeline
                 
             }
             Rect timelineBGSize = new Rect(0, 0, _timelineScrubRect.width / _timelineBG.width, _timelineScrubRect.height / _timelineBG.height);
-            GUI.DrawTextureWithTexCoords(_timelineScrubRect,_timelineColourBG, timelineBGSize);
+            GUI.DrawTexture(_timelineScrubRect, _timelineColourBG);
             GUI.DrawTextureWithTexCoords(_timelineScrubRect, _timelineBG, timelineBGSize);
 
-            float timelineButtonWidth = _currentTimelineRect.width - (Sizes.padding + Sizes.Timeline.widthFileButton);
+            float timelineButtonWidth = _currentTimelineRect.width - ((Sizes.padding*2) + Sizes.Timeline.widthFileButton);
             float timelineButtonHeight = 0;
 
             for (int i = 0; i < _dataCache.Count; i++)
@@ -392,7 +397,7 @@ namespace PlayRecorder.Timeline
                 timelineButtonHeight = i * (Sizes.Timeline.heightItem + Sizes.padding);
                 GUI.backgroundColor = _normalBackground;
                 Rect currentRect = new Rect(
-                    Sizes.padding + Sizes.Timeline.widthFileButton,
+                    (Sizes.padding*2) + Sizes.Timeline.widthFileButton,
                     _currentTimelineWrapperRect.y + timelineButtonHeight,
                     (timelineButtonWidth * ((float)_dataCache[i].frameCount / _maximumTick)),
                     Sizes.Timeline.heightItem);
@@ -427,6 +432,7 @@ namespace PlayRecorder.Timeline
                     Sizes.Timeline.heightItem),
                     TimeUtil.ConvertToTime((float)_dataCache[i].frameCount / _dataCache[i].frameRate));
                 currentRect.width += customWidth ? _timelineColourObjects[_timelineColourIndex].messageIndicatorWidth : 2;
+                currentRect.width = (int)currentRect.width - Sizes.padding;
                 if (_messageTextures[i] != null)
                 {
                     GUI.DrawTexture(currentRect, _messageTextures[i]);
@@ -435,15 +441,12 @@ namespace PlayRecorder.Timeline
 
             if(Application.isPlaying)
             {
-                if(overrideColours && _timelineColourObjects[_timelineColourIndex].overrideTimeIndicator)
-                {
-                    GUI.backgroundColor = playbackManager.isPaused ? _timelineColourObjects[_timelineColourIndex].timeIndicatorPausedColour : _timelineColourObjects[_timelineColourIndex].timeIndicatorColour;
-                }
-                else
-                {
-                    GUI.backgroundColor = playbackManager.isPaused ? Styles.red : Styles.green;
-                }
-                GUI.Box(new Rect(36 + (timelineButtonWidth * ((float)playbackManager.currentTick / _maximumTick)),_currentTimelineRect.y,1,_currentTimelineRect.height),"");
+                GUI.DrawTexture(new Rect(
+                    (Sizes.padding * 2) + Sizes.Timeline.widthFileButton + (timelineButtonWidth * ((float)playbackManager.currentTick / _maximumTick)),
+                    _currentTimelineRect.y,
+                    (overrideColours && _timelineColourObjects[_timelineColourIndex].overrideTimeIndicatorWidth) ? _timelineColourObjects[_timelineColourIndex].timeIndicatorWidth : 2,
+                    _currentTimelineRect.height),
+                    playbackManager.isPaused ? _timelineIndicatorPaused : _timelineIndicator);
             }
             GUI.backgroundColor = _normalBackground;
             GUI.EndScrollView();
@@ -478,9 +481,11 @@ namespace PlayRecorder.Timeline
 
             int actualWidth = 0, texWidth = 0;
 
-            _timelineColourBG = new Texture2D(1, 1);
-            _timelineColourBG.SetPixel(0, 0, _timelineColourObjects[_timelineColourIndex].overrideBackground ? _timelineColourObjects[_timelineColourIndex].backgroundColour : _backgroundDefault);
-            _timelineColourBG.Apply();
+            _timelineColourBG = Generate1pxTexture((useColours && _timelineColourObjects[_timelineColourIndex].overrideBackground) ? _timelineColourObjects[_timelineColourIndex].backgroundColour : _backgroundDefault);
+
+            _timelineIndicator = Generate1pxTexture((useColours && _timelineColourObjects[_timelineColourIndex].overrideTimeIndicator) ? _timelineColourObjects[_timelineColourIndex].timeIndicatorColour : Colors.green);
+
+            _timelineIndicatorPaused = Generate1pxTexture((useColours && _timelineColourObjects[_timelineColourIndex].overrideTimeIndicator) ? _timelineColourObjects[_timelineColourIndex].timeIndicatorPausedColour : Colors.red);
 
             for (int i = 0; i < _dataCache.Count; i++)
             {
@@ -490,7 +495,7 @@ namespace PlayRecorder.Timeline
                     continue;
                 }
 
-                actualWidth = (int)((_windowRect.width - (_scrollbarWidth + 38)) * ((float)_dataCache[i].frameCount / _maximumTick));
+                actualWidth = (int)((_windowRect.width - (_scrollbarWidth + (Sizes.Timeline.widthFileButton + (Sizes.padding * 6)))) * ((float)_dataCache[i].frameCount / _maximumTick));
                 texWidth = actualWidth + messageWidth;
 
                 Texture2D t2d = new Texture2D(texWidth, (int)Sizes.Timeline.heightItem,TextureFormat.ARGB32,false);
@@ -575,6 +580,14 @@ namespace PlayRecorder.Timeline
             {
                 _timelineColourObjects[_timelineColourIndex].updateTimeline = false;
             }
+        }
+
+        private Texture2D Generate1pxTexture(Color color)
+        {
+            Texture2D t2d = new Texture2D(1, 1);
+            t2d.SetPixel(0, 0, color);
+            t2d.Apply();
+            return t2d;
         }
 
         private static void FillTextureWithTransparency(Texture2D texture)

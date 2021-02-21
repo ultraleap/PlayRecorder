@@ -28,6 +28,8 @@ namespace PlayRecorder.Timeline
         private SerializedProperty _overrideTimeIndicator;
         private SerializedProperty _timeIndicatorColour;
         private SerializedProperty _timeIndicatorPausedColour;
+        private SerializedProperty _overrideTimeIndicatorWidth;
+        private SerializedProperty _timeIndicatorWidth;
         private SerializedProperty _overrideMessageIndicatorWidth;
         private SerializedProperty _messageIndicatorWidth;
         private SerializedProperty _updateTimeline;
@@ -44,6 +46,8 @@ namespace PlayRecorder.Timeline
             _overrideTimeIndicator = serializedObject.FindProperty("overrideTimeIndicator");
             _timeIndicatorColour = serializedObject.FindProperty("timeIndicatorColour");
             _timeIndicatorPausedColour = serializedObject.FindProperty("timeIndicatorPausedColour");
+            _overrideTimeIndicatorWidth = serializedObject.FindProperty("overrideTimeIndicatorWidth");
+            _timeIndicatorWidth = serializedObject.FindProperty("timeIndicatorWidth");
             _overrideMessageIndicatorWidth = serializedObject.FindProperty("overrideMessageIndicatorWidth");
             _messageIndicatorWidth = serializedObject.FindProperty("messageIndicatorWidth");
             _updateTimeline = serializedObject.FindProperty("updateTimeline");
@@ -132,6 +136,21 @@ namespace PlayRecorder.Timeline
 
             EditorGUILayout.BeginHorizontal();
 
+            _overrideTimeIndicatorWidth.boolValue = EditorGUILayout.Toggle("Override Time Indicator Width", _overrideTimeIndicatorWidth.boolValue);
+
+            if (_overrideTimeIndicatorWidth.boolValue)
+            {
+                _timeIndicatorWidth.intValue = (int)EditorGUILayout.Slider(_timeIndicatorWidth.intValue, 1, 10);
+            }
+            else
+            {
+                EditorGUILayout.LabelField("");
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+
             _overrideMessageIndicatorWidth.boolValue = EditorGUILayout.Toggle("Override Message Indicator Width", _overrideMessageIndicatorWidth.boolValue);
 
             if (_overrideMessageIndicatorWidth.boolValue)
@@ -144,8 +163,6 @@ namespace PlayRecorder.Timeline
             }
 
             EditorGUILayout.EndHorizontal();
-
-
 
             if (EditorGUI.EndChangeCheck())
             {

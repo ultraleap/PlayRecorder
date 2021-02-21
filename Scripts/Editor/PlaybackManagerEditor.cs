@@ -35,7 +35,7 @@ namespace PlayRecorder
         GUIContent loadingButtonGUI = new GUIContent("Loading...", _updateFilesDescription);
         GUIContent updateFilesGUI = new GUIContent("Update Files", _updateFilesDescription);
         GUIContent filterComponentsGUI = new GUIContent("Filter Components", "Filter to specific components based upon their descriptor and component type.");
-        GUIContent playbackRateGUI = new GUIContent("Playback Rate", "The rate/speed at which the recordings should play.");
+        GUIContent playbackRateGUI = new GUIContent("Playback Rate", "The rate/speed at which the recordings should play (1 = standard).");
         GUIContent scrubWaitGUI = new GUIContent("Scrubbing Wait Time", "The amount of time to wait before jumping to a specific point on the timeline.");
 
         private const string _updateFilesDescription = "This can take a while to process depending on your system, the number of files, and the recording complexity. You may find certain features or options inaccessible until this button is pressed.";

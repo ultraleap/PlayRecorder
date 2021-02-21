@@ -124,6 +124,7 @@ namespace PlayRecorder {
 
         [SerializeField]
         private float _playbackRate = 1.0f;
+        public float playbackRate { get { return _playbackRate; } set { _playbackRate = value; } }
 
         // Scrubbing Playback
         private int _desiredScrubTick = 0;
