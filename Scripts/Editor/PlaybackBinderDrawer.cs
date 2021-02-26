@@ -70,7 +70,7 @@ namespace PlayRecorder
 
                 string type = _type.stringValue;
 
-                EditorGUI.LabelField(typeRect, "Type: " + type);
+                EditorGUI.LabelField(typeRect, new GUIContent("Type: " + type.FormatType(), type));
 
                 EditorGUI.LabelField(countRect,new GUIContent("Instances: " + _count.intValue.ToString(),"The number of times this component appears in all files. If this number is different to the file count then you may have non-unique components in your save data."));
 

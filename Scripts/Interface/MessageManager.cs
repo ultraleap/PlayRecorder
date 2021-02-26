@@ -22,8 +22,25 @@ namespace PlayRecorder.Interface
         [SerializeField, Range(0.1f, 5f)]
         private float _messageScale = 1f;
 
+        private Transform _mainCameraTransform;
+
         private void Start()
         {
+            Camera[] cameras = Resources.FindObjectsOfTypeAll<Camera>();
+            bool foundMainCamera = false;
+            for (int i = 0; i < cameras.Length; i++)
+            {
+                if(cameras[i].tag == "MainCamera" || cameras[i].name.Contains("Main"))
+                {
+                    _mainCameraTransform = cameras[i].transform;
+                    foundMainCamera = true;
+                    break;
+                }
+            }
+            if (!foundMainCamera && cameras.Length > 0)
+            {
+                _mainCameraTransform = cameras[0].transform;
+            }
             for (int i = 0; i < _messagePoolSize; i++)
             {
                 GameObject go = Instantiate(_messagePrefab, transform);
@@ -55,7 +72,7 @@ namespace PlayRecorder.Interface
         {
             for (int i = 0; i < strings.Count; i++)
             {
-                _messagePool[_messageIndex].CreateMessage(strings[i], _messageVisibleTime);
+                _messagePool[_messageIndex].CreateMessage(_mainCameraTransform, strings[i], _messageVisibleTime);
                 _messagePool[_messageIndex].transform.position = component.transform.position;
                 _messagePool[_messageIndex].transform.localScale = _messagePrefab.transform.localScale * _messageScale;
                 _messageIndex++;

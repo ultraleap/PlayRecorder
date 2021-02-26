@@ -24,12 +24,12 @@ namespace PlayRecorder.Interface
             }
         }
 
-        public void CreateMessage(string message, float time)
+        public void CreateMessage(Transform camera, string message, float time)
         {
-            CreateMessage(message, time, Color.white);
+            CreateMessage(camera, message, time, Color.white);
         }
 
-        public void CreateMessage(string message, float time, Color textColor)
+        public void CreateMessage(Transform camera, string message, float time, Color textColor)
         {
             if(_textmesh == null)
             {
@@ -39,7 +39,7 @@ namespace PlayRecorder.Interface
             _textmesh.color = textColor;
             _textmesh.text = message;
             _timeRemaining = time;
-            _camera = Camera.main.transform;
+            _camera = FindObjectOfType<Camera>().transform;
             gameObject.SetActive(true);
         }
 

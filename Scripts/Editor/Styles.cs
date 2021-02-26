@@ -22,6 +22,8 @@ namespace PlayRecorder.Tools
         public static GUIStyle miniButtonBold = new GUIStyle(EditorStyles.miniButton) { fontStyle = FontStyle.Bold, fixedHeight = 18 };
         public static GUIStyle miniButtonBoldRed = new GUIStyle(EditorStyles.miniButton) { fontStyle = FontStyle.Bold, normal = new GUIStyleState() { textColor = new Color(255f * 0.8f, 0, 0) }, fixedHeight = 18 };
 
+        public static GUIStyle boldObjectField = new GUIStyle(EditorStyles.objectField) { fontStyle = FontStyle.Bold };
+
         public static GUIStyle buttonIcon = new GUIStyle(EditorStyles.miniButton) { padding = new RectOffset(1, 1, 1, 1), fixedHeight = EditorGUIUtility.singleLineHeight };
 
         public static GUIStyle textIcon = new GUIStyle(EditorStyles.label) { padding = new RectOffset(1, 1, 1, 1), fixedHeight = EditorGUIUtility.singleLineHeight };

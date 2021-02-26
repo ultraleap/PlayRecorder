@@ -379,14 +379,12 @@ namespace PlayRecorder.Timeline
 
             bool customWidth = overrideColours && _timelineColourObjects[_timelineColourIndex].overrideMessageIndicatorWidth;
 
-            GUI.backgroundColor = _darkerBackground;
             if(overrideColours && _timelineColourObjects[_timelineColourIndex].overrideBackground)
             {
-                GUI.backgroundColor = _timelineColourObjects[_timelineColourIndex].backgroundColour;
-                
+                GUI.DrawTexture(_timelineScrubRect, _timelineColourBG);
             }
+
             Rect timelineBGSize = new Rect(0, 0, _timelineScrubRect.width / _timelineBG.width, _timelineScrubRect.height / _timelineBG.height);
-            GUI.DrawTexture(_timelineScrubRect, _timelineColourBG);
             GUI.DrawTextureWithTexCoords(_timelineScrubRect, _timelineBG, timelineBGSize);
 
             float timelineButtonWidth = _currentTimelineRect.width - ((Sizes.padding*2) + Sizes.Timeline.widthFileButton);

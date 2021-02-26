@@ -34,6 +34,7 @@ namespace PlayRecorder {
         }
     }
 
+    [AddComponentMenu("PlayRecorder/PlaybackManager",2)]
     public class PlaybackManager : MonoBehaviour
     { 
 
@@ -101,6 +102,9 @@ namespace PlayRecorder {
         private List<ComponentCache> _componentCache = new List<ComponentCache>();
 
         private float _mainThreadTime = -1;
+
+        [SerializeField]
+        private PlaybackIgnoreComponentsObject _ignoresObject = null;
 
         // Playing is to say whether anything has started playing (e.g. the thread has been started)
         // Paused is to change whether time is progressing
@@ -542,10 +546,21 @@ namespace PlayRecorder {
             _scrubbed = true;
             _ticked = true;
             UpdateComponentStatus();
+            int ignoreIndex = -1;
             for (int i = 0; i < _binders.Count; i++)
             {
                 if (_binders[i].recordComponent != null)
                 {
+                    PlaybackIgnoreItem pbi = null;
+                    if(_ignoresObject != null)
+                    {
+                        ignoreIndex = _ignoresObject.ignoreItems.FindIndex(x => x.recordComponent == _binders[i].recordComponent.GetType().ToString());
+                        if(ignoreIndex != -1)
+                        {
+                            pbi = _ignoresObject.ignoreItems[ignoreIndex];
+                        }
+                    }
+                    _binders[i].recordComponent.SetPlaybackIgnores(pbi);
                     _binders[i].recordComponent.StartPlaying();
                 }
             }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace PlayRecorder
 {
-
+    [AddComponentMenu("PlayRecorder/RecordComponents/RecordComponent")]
     public class RecordComponent : MonoBehaviour
     {
 
@@ -30,6 +30,9 @@ namespace PlayRecorder
 
         protected bool _recordUpdated = false;
         protected List<int> _playUpdatedParts = new List<int>();
+
+        protected PlaybackIgnoreItem _playbackIgnoreItem;
+        protected List<Transform> _playbackIgnoreTransforms = new List<Transform>();
 
         // Playback temp variables
         private int _oldFrame, _newFrame;
@@ -202,10 +205,115 @@ namespace PlayRecorder
 
         }
 
+        public void SetPlaybackIgnores(PlaybackIgnoreItem playbackIgnore)
+        {
+            if(playbackIgnore != null)
+            {
+                _playbackIgnoreItem = playbackIgnore;
+            }
+            else
+            {
+                _playbackIgnoreItem = SetDefaultPlaybackIgnores(GetType().ToString());
+            }
+            // This allows for empty ignores to not affect other components
+            if(_playbackIgnoreItem != null)
+            {
+                SetPlaybackIgnoreTransforms();
+                PlaybackIgnore();
+            }
+        }
+
+        protected virtual PlaybackIgnoreItem SetDefaultPlaybackIgnores(string type)
+        {
+            return null;
+        }
+
+        protected virtual void SetPlaybackIgnoreTransforms()
+        {
+            _playbackIgnoreTransforms.Add(transform);
+        }
+
+        protected void PlaybackIgnore()
+        {
+            for (int i = 0; i < _playbackIgnoreTransforms.Count; i++)
+            {
+                Component[] components = transform.GetComponents<Component>();
+                for (int j = 0; j < components.Length; j++)
+                {
+                    // Can't switch a type
+                    if (typeof(Rigidbody).IsSameOrSubclass(components[j].GetType()) && _playbackIgnoreItem.makeKinematic)
+                    {
+                        ((Rigidbody)components[j]).isKinematic = true;
+                        continue;
+                    }
+                    if (typeof(Rigidbody2D).IsSameOrSubclass(components[j].GetType()) && _playbackIgnoreItem.makeKinematic)
+                    {
+                        ((Rigidbody2D)components[j]).isKinematic = true;
+                        continue;
+                    }
+
+                    if(typeof(Collider).IsSameOrSubclass(components[j].GetType()) && _playbackIgnoreItem.disableCollisions)
+                    {
+                        ((Collider)components[j]).enabled = false;
+                        continue;
+                    }
+                    if (typeof(Collider2D).IsSameOrSubclass(components[j].GetType()) && _playbackIgnoreItem.disableCollisions)
+                    {
+                        ((Collider2D)components[j]).enabled = false;
+                        continue;
+                    }
+
+                    if (typeof(Renderer).IsSameOrSubclass(components[j].GetType()) && _playbackIgnoreItem.disableRenderer)
+                    {
+                        ((Renderer)components[j]).enabled = false;
+                        continue;
+                    }
+                    
+                }
+
+                Behaviour[] behaviours = transform.GetComponents<Behaviour>();
+                bool found = false;
+                for (int j = 0; j < behaviours.Length; j++)
+                {
+                    // Don't disable ourselves
+                    if (typeof(RecordComponent).IsSameOrSubclass(behaviours[j].GetType()))
+                        continue;
+
+                    // Enforce the settings for the specific defined items
+                    if (behaviours[j].GetType() == typeof(Camera))
+                    {
+                        if(_playbackIgnoreItem.disableCamera)
+                        {
+                            behaviours[j].enabled = false;
+                        }
+                        if(_playbackIgnoreItem.disableVRCamera)
+                        {
+                            ((Camera)behaviours[j]).stereoTargetEye = StereoTargetEyeMask.None;
+                        }
+                        continue;
+                    }
+
+                    found = false;
+                    for (int k = 0; k < _playbackIgnoreItem.enabledComponents.Count; k++)
+                    {
+                        if(behaviours[j].GetType().ToString().Contains(_playbackIgnoreItem.enabledComponents[k],StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            found = true;
+                        }
+                    }
+
+                    if(!found)
+                    {
+                        behaviours[j].enabled = false;
+                    }
+                }
+            }
+        }
+
         public virtual void StartPlaying()
         {
             _playing = true;
-
+            
             OnStartPlayback?.Invoke();
         }
 

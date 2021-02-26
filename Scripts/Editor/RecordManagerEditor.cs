@@ -308,7 +308,8 @@ namespace PlayRecorder
 
                     EditorGUILayout.EndHorizontal();
 
-                    EditorGUILayout.LabelField(new GUIContent("Type: " + _components.GetArrayElementAtIndex(i).objectReferenceValue.GetType().ToString()));
+                    string type = _components.GetArrayElementAtIndex(i).objectReferenceValue.GetType().ToString();
+                    EditorGUILayout.LabelField(new GUIContent("Type: " + type.FormatType(), type));
                 }
                 EditorGUILayout.EndScrollView();
             }

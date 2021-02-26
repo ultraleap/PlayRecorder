@@ -9,6 +9,7 @@ using PlayRecorder.Hands;
 
 namespace PlayRecorder.Leap
 {
+    [AddComponentMenu("PlayRecorder/RecordComponents/LeapHandRecordComponent")]
     public class LeapHandRecordComponent : RecordComponent
     {
 

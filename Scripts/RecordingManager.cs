@@ -7,6 +7,7 @@ using Debug = UnityEngine.Debug;
 
 namespace PlayRecorder {
 
+    [AddComponentMenu("PlayRecorder/RecordingManager",1)]
     public class RecordingManager : MonoBehaviour
     {
 

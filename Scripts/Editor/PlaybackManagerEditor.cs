@@ -28,15 +28,16 @@ namespace PlayRecorder
         private SerializedProperty _maxTick;
         private SerializedProperty _currentFrameRate;
         private SerializedProperty _timeCounter;
+        private SerializedProperty _ignoreFile;
 
         private string _componentFilter = "";
 
-        GUIContent recordFoldoutGUI = new GUIContent("", "You can drag files onto this header to add them to the files list.");
-        GUIContent loadingButtonGUI = new GUIContent("Loading...", _updateFilesDescription);
-        GUIContent updateFilesGUI = new GUIContent("Update Files", _updateFilesDescription);
-        GUIContent filterComponentsGUI = new GUIContent("Filter Components", "Filter to specific components based upon their descriptor and component type.");
-        GUIContent playbackRateGUI = new GUIContent("Playback Rate", "The rate/speed at which the recordings should play (1 = standard).");
-        GUIContent scrubWaitGUI = new GUIContent("Scrubbing Wait Time", "The amount of time to wait before jumping to a specific point on the timeline.");
+        private GUIContent _recordFoldoutGUI = new GUIContent("", "You can drag files onto this header to add them to the files list.");
+        private GUIContent _loadingButtonGUI = new GUIContent("Loading...", _updateFilesDescription);
+        private GUIContent _updateFilesGUI = new GUIContent("Update Files", _updateFilesDescription);
+        private GUIContent _filterComponentsGUI = new GUIContent("Filter Components", "Filter to specific components based upon their descriptor and component type.");
+        private GUIContent _playbackRateGUI = new GUIContent("Playback Rate", "The rate/speed at which the recordings should play (1 = standard).");
+        private GUIContent _scrubWaitGUI = new GUIContent("Scrubbing Wait Time", "The amount of time to wait before jumping to a specific point on the timeline.");
 
         private const string _updateFilesDescription = "This can take a while to process depending on your system, the number of files, and the recording complexity. You may find certain features or options inaccessible until this button is pressed.";
         private const string _recordComponentsInformation = "The green signifies how many components are correctly assigned, while red is the number that are not currently assigned.";
@@ -75,6 +76,7 @@ namespace PlayRecorder
             _maxTick = serializedObject.FindProperty("_maxTickVal");
             _currentFrameRate = serializedObject.FindProperty("_currentFrameRate");
             _timeCounter = serializedObject.FindProperty("_timeCounter");
+            _ignoreFile = serializedObject.FindProperty("_ignoresObject");
         }
 
         public override void OnInspectorGUI()
@@ -96,6 +98,10 @@ namespace PlayRecorder
             EditorUtil.DrawDividerLine();
 
             RecordComponents();
+
+            EditorUtil.DrawDividerLine();
+
+            PlaybackIgnoreItems();
 
             EditorUtil.DrawDividerLine();
 
@@ -141,11 +147,11 @@ namespace PlayRecorder
 
             if (_changingFiles.boolValue)
             {
-                GUILayout.Button(loadingButtonGUI, Styles.miniButtonGrey, GUILayout.Width(90));
+                GUILayout.Button(_loadingButtonGUI, Styles.miniButtonGrey, GUILayout.Width(90));
             }
             else
             {
-                if (GUILayout.Button(updateFilesGUI, _awaitingRefresh.boolValue ? Styles.miniButtonBoldRed : Styles.miniButton, GUILayout.Width(90)))
+                if (GUILayout.Button(_updateFilesGUI, _awaitingRefresh.boolValue ? Styles.miniButtonBoldRed : Styles.miniButton, GUILayout.Width(90)))
                 {
                     _awaitingRefresh.boolValue = false;
                     serializedObject.ApplyModifiedProperties();
@@ -200,9 +206,9 @@ namespace PlayRecorder
         {
             Rect dragRect = GUILayoutUtility.GetRect(0, 20, GUILayout.ExpandWidth(true));
 
-            recordFoldoutGUI.text = "Recorded Files (" + _recordedFiles.arraySize + ")";
+            _recordFoldoutGUI.text = "Recorded Files (" + _recordedFiles.arraySize + ")";
 
-            _recordedFiles.isExpanded = EditorGUI.Foldout(dragRect, _recordedFiles.isExpanded, recordFoldoutGUI, true, Styles.foldoutBold);
+            _recordedFiles.isExpanded = EditorGUI.Foldout(dragRect, _recordedFiles.isExpanded, _recordFoldoutGUI, true, Styles.foldoutBold);
 
             if (dragRect.Contains(Event.current.mousePosition) && !_changingFiles.boolValue)
             {
@@ -458,7 +464,7 @@ namespace PlayRecorder
             if (_binders.isExpanded)
             {
                 EditorGUILayout.BeginHorizontal();
-                _componentFilter = EditorGUILayout.TextField(filterComponentsGUI, _componentFilter);
+                _componentFilter = EditorGUILayout.TextField(_filterComponentsGUI, _componentFilter);
                 if (GUILayout.Button("Clear Filter", Styles.miniButton, GUILayout.Width(90)))
                 {
                     _componentFilter = "";
@@ -496,12 +502,24 @@ namespace PlayRecorder
             }
         }
 
+        private void PlaybackIgnoreItems()
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(new GUIContent("Playback Ignore File", "This file controls which components on a RecordComponent's object are NOT disabled when playback begins. If no file is assigned then the default values for each RecordComponent will be used."), Styles.textBold);
+            _ignoreFile.objectReferenceValue = EditorGUILayout.ObjectField(_ignoreFile.objectReferenceValue, typeof(PlaybackIgnoreComponentsObject), false);
+            EditorGUILayout.EndHorizontal();
+            if(_ignoreFile.objectReferenceValue == null)
+            {
+                EditorGUILayout.HelpBox("To create an Ignore File, go to your project assets, right click -> Create -> PlayRecorder -> Playback Ignore Asset. If no file is selected, default values are used.", MessageType.Info);
+            }
+        }
+
         private void PlaybackControls()
         {
             EditorGUILayout.LabelField("Playback Parameters", EditorStyles.boldLabel);
 
-            _playbackRate.floatValue = EditorGUILayout.Slider(playbackRateGUI, _playbackRate.floatValue, 0, 3.0f);
-            _scrubWait.floatValue = EditorGUILayout.Slider(scrubWaitGUI, _scrubWait.floatValue, 0, 1.0f);
+            _playbackRate.floatValue = EditorGUILayout.Slider(_playbackRateGUI, _playbackRate.floatValue, 0, 3.0f);
+            _scrubWait.floatValue = EditorGUILayout.Slider(_scrubWaitGUI, _scrubWait.floatValue, 0, 1.0f);
 
             EditorGUI.BeginDisabledGroup(!Application.isPlaying || _recordedFiles.arraySize == 0);
 

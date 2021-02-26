@@ -61,6 +61,7 @@ namespace PlayRecorder
 
     }
 
+    [AddComponentMenu("PlayRecorder/RecordComponents/TransformRecordComponent")]
     public class TransformRecordComponent : RecordComponent
     {
 
@@ -150,22 +151,25 @@ namespace PlayRecorder
 
         #region Playback
 
-        public override void StartPlaying()
+        protected override void SetPlaybackIgnoreTransforms()
         {
-            base.StartPlaying();
-            if (_baseTransform != null)
+            _extraTransforms.Clear();
+            if(_baseTransform != null)
             {
-                DisableAllComponents(_baseTransform);
+                _playbackIgnoreTransforms.Add(_baseTransform);
             }
-
-
             for (int i = 0; i < _extraTransforms.Count; i++)
             {
-                if (_extraTransforms[i] != null)
-                {
-                    DisableAllComponents(_extraTransforms[i]);
-                }
+                _playbackIgnoreTransforms.Add(_extraTransforms[i]);
             }
+        }
+
+        protected override PlaybackIgnoreItem SetDefaultPlaybackIgnores(string type)
+        {
+            PlaybackIgnoreItem pbi = new PlaybackIgnoreItem(type);
+            pbi.disableVRCamera = true;
+            pbi.enabledComponents.Add("UnityEngine.UI.");
+            return pbi;
         }
 
         protected override void PlayUpdateLogic()

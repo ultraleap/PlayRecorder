@@ -44,6 +44,7 @@ Please refer to [Expanding Your Components](#expanding-your-components) for more
 
 ## Requirements
 - [Odin Serializer](https://github.com/TeamSirenix/odin-serializer)
+  - This requires setting your project API Compatibility Level to .NET 4.x
 - [Unity Editor Coroutines](https://docs.unity3d.com/Packages/com.unity.editorcoroutines@1.0/manual/index.html)
 
 Currently only verified to run on Windows and Standalone Windows builds. Other platforms may work however are beyond scope.
@@ -51,6 +52,8 @@ Currently only verified to run on Windows and Standalone Windows builds. Other p
 ## Getting Started
 - Add Odin Serializer to your project.
   - Ensure it is using the default namespace.
+  - Change your project's API Compatibility Level to .NET 4.x (```Edit -> Project Settings -> Player -> Other Settings -> API Compatibility Level```)
+
 - Add PlayRecorder as a submodule within your project Assets folder.
 - Add the RecordingManager script to a new empty gameobject and set your recording folder and name.
   - Specify a custom frame rate if you wish.
