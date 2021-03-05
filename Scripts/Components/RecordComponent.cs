@@ -4,11 +4,12 @@ using UnityEngine;
 
 namespace PlayRecorder
 {
-    [AddComponentMenu("PlayRecorder/RecordComponents/RecordComponent")]
+    [AddComponentMenu("PlayRecorder/RecordComponents/Record Component")]
     public class RecordComponent : MonoBehaviour
     {
 
         protected RecordingManager _manager;
+        public RecordingManager manager { get { return _manager; } }
 
         protected RecordItem _recordItem;
 
@@ -25,7 +26,7 @@ namespace PlayRecorder
         public bool required { get { return _required; } set { _required = value; } }
 
         protected bool _recording = false;
-        public bool recording { get { return _recording; } }
+        public bool isRecording { get { return _recording; } }
         protected bool _playing = false;
 
         protected bool _recordUpdated = false;
@@ -174,9 +175,167 @@ namespace PlayRecorder
             }
             else
             {
-                _recordItem.messages[ind].frames.Add(_manager.currentTick);
+                _recordItem.messages[ind].frames.Add(_currentTick);
             }
         }
+
+        #region Stats
+
+        public void AddStatMessage(string message, int value)
+        {
+            if (_recordItem == null || _recordItem.messages == null)
+                return;
+
+            int ind = _recordItem.messages.FindIndex(x => x.message == message);
+            if(ind == -1)
+            {
+                RecordStatInt rsi = new RecordStatInt { message = message };
+                rsi.frames.Add(_currentTick);
+                rsi.values.Add(value);
+                _recordItem.messages.Add(rsi);
+            }
+            else if (_recordItem.messages[ind].GetType() == typeof(RecordStatInt))
+            {
+                _recordItem.messages[ind].frames.Add(_currentTick);
+                ((RecordStatInt)_recordItem.messages[ind]).values.Add(value);
+            }
+            else
+            {
+                StatWarning(_recordItem.messages[ind]);
+            }
+        }
+
+        public void AddStatMessage(string message, double value)
+        {
+            if (_recordItem == null || _recordItem.messages == null)
+                return;
+
+            int ind = _recordItem.messages.FindIndex(x => x.message == message);
+            if (ind == -1)
+            {
+                RecordStatDouble rsd = new RecordStatDouble { message = message };
+                rsd.frames.Add(_currentTick);
+                rsd.values.Add(value);
+                _recordItem.messages.Add(rsd);
+            }
+            else if (_recordItem.messages[ind].GetType() == typeof(RecordStatDouble))
+            {
+                _recordItem.messages[ind].frames.Add(_currentTick);
+                ((RecordStatDouble)_recordItem.messages[ind]).values.Add(value);
+            }
+            else
+            {
+                StatWarning(_recordItem.messages[ind]);
+            }
+        }
+
+        public void AddStatMessage(string message, float value)
+        {
+            AddStatMessage(message, (double)value);
+        }
+
+        public void AddStatMessage(string message, bool value)
+        {
+            if (_recordItem == null || _recordItem.messages == null)
+                return;
+
+            int ind = _recordItem.messages.FindIndex(x => x.message == message);
+            if (ind == -1)
+            {
+                RecordStatBool rsb = new RecordStatBool { message = message };
+                rsb.frames.Add(_currentTick);
+                rsb.values.Add(value);
+                _recordItem.messages.Add(rsb);
+            }
+            else if (_recordItem.messages[ind].GetType() == typeof(RecordStatBool))
+            {
+                _recordItem.messages[ind].frames.Add(_currentTick);
+                ((RecordStatBool)_recordItem.messages[ind]).values.Add(value);
+            }
+            else
+            {
+                StatWarning(_recordItem.messages[ind]);
+            }
+        }
+
+        public void AddStatMessage(string message, Vector2 value)
+        {
+            if (_recordItem == null || _recordItem.messages == null)
+                return;
+
+            int ind = _recordItem.messages.FindIndex(x => x.message == message);
+            if (ind == -1)
+            {
+                RecordStatVector2 rs2 = new RecordStatVector2 { message = message };
+                rs2.frames.Add(_currentTick);
+                rs2.values.Add(value);
+                _recordItem.messages.Add(rs2);
+            }
+            else if (_recordItem.messages[ind].GetType() == typeof(RecordStatVector2))
+            {
+                _recordItem.messages[ind].frames.Add(_currentTick);
+                ((RecordStatVector2)_recordItem.messages[ind]).values.Add(value);
+            }
+            else
+            {
+                StatWarning(_recordItem.messages[ind]);
+            }
+        }
+
+        public void AddStatMessage(string message, Vector3 value)
+        {
+            if (_recordItem == null || _recordItem.messages == null)
+                return;
+
+            int ind = _recordItem.messages.FindIndex(x => x.message == message);
+            if (ind == -1)
+            {
+                RecordStatVector3 rs3 = new RecordStatVector3 { message = message };
+                rs3.frames.Add(_currentTick);
+                rs3.values.Add(value);
+                _recordItem.messages.Add(rs3);
+            }
+            else if (_recordItem.messages[ind].GetType() == typeof(RecordStatVector3))
+            {
+                _recordItem.messages[ind].frames.Add(_currentTick);
+                ((RecordStatVector3)_recordItem.messages[ind]).values.Add(value);
+            }
+            else
+            {
+                StatWarning(_recordItem.messages[ind]);
+            }
+        }
+
+        public void AddStatMessage(string message, Vector4 value)
+        {
+            if (_recordItem == null || _recordItem.messages == null)
+                return;
+
+            int ind = _recordItem.messages.FindIndex(x => x.message == message);
+            if (ind == -1)
+            {
+                RecordStatVector4 rs4 = new RecordStatVector4 { message = message };
+                rs4.frames.Add(_currentTick);
+                rs4.values.Add(value);
+                _recordItem.messages.Add(rs4);
+            }
+            else if (_recordItem.messages[ind].GetType() == typeof(RecordStatVector4))
+            {
+                _recordItem.messages[ind].frames.Add(_currentTick);
+                ((RecordStatVector4)_recordItem.messages[ind]).values.Add(value);
+            }
+            else
+            {
+                StatWarning(_recordItem.messages[ind]);
+            }
+        }
+
+        private void StatWarning(RecordMessage type)
+        {
+            Debug.LogWarning("Stat already assigned under different type: " + type.GetType().ToString());
+        }
+
+        #endregion
 
         #endregion
 

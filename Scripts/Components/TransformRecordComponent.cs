@@ -61,7 +61,7 @@ namespace PlayRecorder
 
     }
 
-    [AddComponentMenu("PlayRecorder/RecordComponents/TransformRecordComponent")]
+    [AddComponentMenu("PlayRecorder/RecordComponents/Transform Record Component")]
     public class TransformRecordComponent : RecordComponent
     {
 

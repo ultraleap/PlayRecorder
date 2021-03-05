@@ -56,7 +56,7 @@ namespace PlayRecorder {
         [SerializeField]
         private List<TextAsset> _loadedRecordedFiles = new List<TextAsset>();
 
-        [SerializeField,HideInInspector]
+        [SerializeReference,HideInInspector]
         private List<DataCache> _dataCache = new List<DataCache>();
 
         [SerializeField]
@@ -255,7 +255,7 @@ namespace PlayRecorder {
                     if(d != null)
                     {
                         ChangeBinders(d);
-                        _dataCache.Add(new DataCache(d));
+                        _dataCache.Add(new DataCache(d,tempName));
                         _dataCacheNames.Add(d.recordingName);
                     }
                     else
