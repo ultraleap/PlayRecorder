@@ -603,7 +603,14 @@ namespace PlayRecorder.Stats
                 {
                     cache = _statCache.Where(x => x.fileIndex == _fileIndex && x.validStat).ToList();
                 }
-                PopupWindow.Show(b, new StatsCSVPopup(cache, final, _windowRect.width));
+                if(cache.Count > 0)
+                {
+                    PopupWindow.Show(b, new StatsCSVPopup(cache, final, _windowRect.width));
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("No Stats", "You have no available stats to export.", "Ok");
+                }
             }
         }
 
@@ -644,7 +651,7 @@ namespace PlayRecorder.Stats
             {
                 if(_allFiles)
                 {
-                    EditorGUILayout.LabelField("Current loaded file do not include any stats.");
+                    EditorGUILayout.LabelField("Current loaded files do not include any stats.");
                 }
                 else
                 {
