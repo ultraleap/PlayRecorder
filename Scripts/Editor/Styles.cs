@@ -6,6 +6,8 @@ namespace PlayRecorder.Tools
     public static class Styles
     {
         public static GUIStyle textCentered = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleCenter };
+        public static GUIStyle textTopLeft = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.UpperLeft };
+        public static GUIStyle textBottomLeft = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.LowerLeft };
         public static GUIStyle textBold = new GUIStyle(EditorStyles.boldLabel);
         public static GUIStyle textRich = new GUIStyle(EditorStyles.label) { richText = true };
         public static GUIStyle textBoldRed = new GUIStyle(EditorStyles.boldLabel) { normal = new GUIStyleState() { textColor = new Color(255f * 0.8f, 0, 0) } };

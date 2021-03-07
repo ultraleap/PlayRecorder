@@ -153,6 +153,7 @@ namespace PlayRecorder {
         public Action<List<DataCache>> OnDataCacheChange;
         public Action<int> OnTick, OnScrub;
         public Action OnUpdateTick;
+        public Action OnPlaybackStart;
 
         #endregion
 
@@ -297,9 +298,9 @@ namespace PlayRecorder {
             {
                 Debug.LogWarning("You have a mismatch between your recorded item count and your data files. This may mean certain objects do not have unique playback data.");
             }
-            OnDataCacheChange?.Invoke(_dataCache);
             _changingFiles = false;
             ChangeCurrentFile(_currentFile);
+            OnDataCacheChange?.Invoke(_dataCache);
         }
 
         private void ChangeBinders(Data data)
@@ -564,6 +565,7 @@ namespace PlayRecorder {
                     _binders[i].recordComponent.StartPlaying();
                 }
             }
+            OnPlaybackStart?.Invoke();
             _playbackThread.Start();
         }
 

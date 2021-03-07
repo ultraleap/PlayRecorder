@@ -29,13 +29,48 @@ namespace PlayRecorder.Tools
             float frac = 1 / Mathf.Sqrt(Mathf.Pow(p2.x - p1.x, 2) + Mathf.Pow(p2.y - p1.y, 2));
             float ctr = 0;
 
+            Color semi = new Color(col.r, col.g, col.b, col.a *.75f);
+            Color tiny = new Color(col.r, col.g, col.b, col.a *.5f);
+
+            if(((int)p2.y) >= tex.height)
+            {
+                p2.y -= 1;
+            }
+
             while ((int)t.x != (int)p2.x || (int)t.y != (int)p2.y)
             {
                 t = Vector2.Lerp(p1, p2, ctr);
                 ctr += frac;
 
-                tex.SetPixel((int)t.x, (int)t.y-1, col);
-                tex.SetPixel((int)t.x, (int)t.y, col);
+                tex.SetPixel(Mathf.Clamp((int)t.x - 1, 0, tex.width - 1), Mathf.Clamp((int)t.y - 1, 0, tex.height - 1), tiny);
+                tex.SetPixel(Mathf.Clamp((int)t.x - 1, 0, tex.width - 1), Mathf.Clamp((int)t.y + 1, 0, tex.height - 1), tiny);
+                tex.SetPixel(Mathf.Clamp((int)t.x + 1, 0, tex.width - 1), Mathf.Clamp((int)t.y - 1, 0, tex.height - 1), tiny);
+                tex.SetPixel(Mathf.Clamp((int)t.x + 1, 0, tex.width - 1), Mathf.Clamp((int)t.y + 1, 0, tex.height - 1), tiny);
+            }
+
+            ctr = 0;
+            t = p1;
+
+            while ((int)t.x != (int)p2.x || (int)t.y != (int)p2.y)
+            {
+                t = Vector2.Lerp(p1, p2, ctr);
+                ctr += frac;
+
+                tex.SetPixel(Mathf.Clamp((int)t.x - 1, 0, tex.width - 1), Mathf.Clamp((int)t.y, 0, tex.height - 1), semi);
+                tex.SetPixel(Mathf.Clamp((int)t.x, 0, tex.width - 1), Mathf.Clamp((int)t.y + 1, 0, tex.height - 1), semi);
+                tex.SetPixel(Mathf.Clamp((int)t.x, 0, tex.width - 1), Mathf.Clamp((int)t.y - 1, 0, tex.height - 1), semi);
+                tex.SetPixel(Mathf.Clamp((int)t.x + 1, 0, tex.width - 1), Mathf.Clamp((int)t.y, 0, tex.height - 1), semi);
+            }
+
+            ctr = 0;
+            t = p1;
+
+            while ((int)t.x != (int)p2.x || (int)t.y != (int)p2.y)
+            {
+                t = Vector2.Lerp(p1, p2, ctr);
+                ctr += frac;
+
+                tex.SetPixel(Mathf.Clamp((int)t.x, 0, tex.width - 1), Mathf.Clamp((int)t.y, 0, tex.height-1), col);
             }
         }
 
