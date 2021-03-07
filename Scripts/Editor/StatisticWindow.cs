@@ -9,11 +9,11 @@ using System.Reflection;
 namespace PlayRecorder.Stats
 {
 
-    public class StatsWindow : EditorWindow
+    public class StatisticWindow : EditorWindow
     {
         public PlaybackManager playbackManager = null;
 
-        [SerializeField, HideInInspector]
+        [SerializeReference, HideInInspector]
         private List<DataCache> _dataCache = new List<DataCache>();
         private string[] _fileNames = null;
 
@@ -56,12 +56,12 @@ namespace PlayRecorder.Stats
 
         private GUIContent _copyButton;
 
-        [MenuItem("Tools/PlayRecorder/Message Stats")]
+        [MenuItem("Tools/PlayRecorder/Statistics")]
         static public void Init()
         {
-            StatsWindow window = GetWindow<StatsWindow>();
+            StatisticWindow window = GetWindow<StatisticWindow>();
 
-            window.titleContent = new GUIContent("Message Stats", Resources.Load<Texture>("Images/playrecorder"));
+            window.titleContent = new GUIContent("Statistics", Resources.Load<Texture>("Images/playrecorder"));
 
             window.playbackManager = FindObjectOfType<PlaybackManager>();
 
@@ -71,7 +71,7 @@ namespace PlayRecorder.Stats
             }
             else
             {
-                Debug.LogError("Please add a PlaybackManager to your scene before trying to open the stats window.");
+                Debug.LogError("Please add a PlaybackManager to your scene before trying to open the statistics window.");
             }
         }
 
@@ -227,7 +227,7 @@ namespace PlayRecorder.Stats
             if (playbackManager == null)
             {
                 Startup();
-                EditorGUILayout.LabelField("Please add a PlaybackManager to your scene before trying to use the stats window.");
+                EditorGUILayout.LabelField("Please add a PlaybackManager to your scene before trying to use the statistics window.");
             }
             else
             {
@@ -278,7 +278,7 @@ namespace PlayRecorder.Stats
             EditorGUI.EndDisabledGroup();
 
             EditorGUI.BeginDisabledGroup(_allFiles);
-            GUIContent matchPlayFile = new GUIContent("Follow File","Matches the current stat file to the currently selected playback file.");
+            GUIContent matchPlayFile = new GUIContent("Follow File","Matches the current statistics file to the currently selected playback file.");
             EditorGUILayout.LabelField(matchPlayFile, GUILayout.Width(EditorStyles.label.CalcSize(matchPlayFile).x));
             bool oldMatchFiles = _followFile;
             _followFile = EditorGUILayout.Toggle(_followFile, GUILayout.Width(Sizes.widthIcon));
@@ -288,7 +288,7 @@ namespace PlayRecorder.Stats
             }
             EditorGUI.EndDisabledGroup();
 
-            GUIContent matchlabel = new GUIContent("All Files","Shows all stats for the currently loaded playback files in this window in one big list.");
+            GUIContent matchlabel = new GUIContent("All Files", "Shows all statistics for the currently loaded playback files in this window in one big list.");
             EditorGUILayout.LabelField(matchlabel, GUILayout.Width(EditorStyles.label.CalcSize(matchlabel).x));
             bool oldAllFiles = _allFiles;
             _allFiles = EditorGUILayout.Toggle(_allFiles, GUILayout.Width(Sizes.widthIcon));
@@ -582,13 +582,13 @@ namespace PlayRecorder.Stats
         private void ExportCSVButtons()
         {
             bool current = false, final = false;
-            GUIContent currentValues = new GUIContent("Export Current Values", "Exports the visible list of stats current values. If all files is ticked, all files will be saved to the CSV as separate rows.");
+            GUIContent currentValues = new GUIContent("Export Current Values", "Exports the visible list of statistics current values. If all files is ticked, all files will be saved to the CSV as separate rows.");
             current = GUILayout.Button(currentValues);
             if(Event.current.type == EventType.Repaint)
             {
                 _csvCurrentRect = GUILayoutUtility.GetLastRect();
             }
-            GUIContent finalValues = new GUIContent("Export Final Values", "Exports the visible list of stats final values. If all files is ticked, all files will be saved to the CSV as separate rows.");
+            GUIContent finalValues = new GUIContent("Export Final Values", "Exports the visible list of statistics final values. If all files is ticked, all files will be saved to the CSV as separate rows.");
             final = GUILayout.Button(finalValues);
 
             if (current || final)
@@ -605,11 +605,11 @@ namespace PlayRecorder.Stats
                 }
                 if(cache.Count > 0)
                 {
-                    PopupWindow.Show(b, new StatsCSVPopup(cache, final, _windowRect.width));
+                    PopupWindow.Show(b, new StatisticCSVPopup(cache, final, _windowRect.width));
                 }
                 else
                 {
-                    EditorUtility.DisplayDialog("No Stats", "You have no available stats to export.", "Ok");
+                    EditorUtility.DisplayDialog("No Statistics", "You have no available statistics to export.", "Ok");
                 }
             }
         }
@@ -651,11 +651,11 @@ namespace PlayRecorder.Stats
             {
                 if(_allFiles)
                 {
-                    EditorGUILayout.LabelField("Current loaded files do not include any stats.");
+                    EditorGUILayout.LabelField("Current loaded files do not include any statistics.");
                 }
                 else
                 {
-                    EditorGUILayout.LabelField("Current file does not include any stats.");
+                    EditorGUILayout.LabelField("Current file does not include any statistics.");
                 }
             }
 
@@ -694,11 +694,11 @@ namespace PlayRecorder.Stats
                     GUIContent statCount = new GUIContent("("+list.Count.ToString()+")");
                     EditorGUILayout.LabelField(statCount,Styles.textBold,GUILayout.Width(Styles.textBold.CalcSize(statCount).x));
 
-                    GUIContent currentValLab = new GUIContent("Current Value", "The value of the stat based on the current frame.");
+                    GUIContent currentValLab = new GUIContent("Current Value", "The value of the statistic based on the current frame.");
                     EditorGUILayout.LabelField(currentValLab, GUILayout.Width(EditorStyles.label.CalcSize(currentValLab).x));
                     _statCache[index].current = SingleStatBox(list[GetStatIndex(message, _statCache[index].frameIndex)]);
 
-                    GUIContent lastValLab = new GUIContent("Final Value", "The final value of the stat, regardless of the current frame.");
+                    GUIContent lastValLab = new GUIContent("Final Value", "The final value of the statistic, regardless of the current frame.");
                     EditorGUILayout.LabelField(lastValLab, GUILayout.Width(EditorStyles.label.CalcSize(lastValLab).x));
                     _statCache[index].final = SingleStatBox(list[list.Count-1]);
                     _statCache[index].validStat = true;

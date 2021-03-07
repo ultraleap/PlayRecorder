@@ -181,7 +181,7 @@ namespace PlayRecorder
 
         #region Stats
 
-        public void AddStatMessage(string message, int value)
+        public void AddStatistic(string message, int value)
         {
             if (_recordItem == null || _recordItem.messages == null)
                 return;
@@ -201,11 +201,11 @@ namespace PlayRecorder
             }
             else
             {
-                StatWarning(_recordItem.messages[ind]);
+                StatisticWarning(_recordItem.messages[ind]);
             }
         }
 
-        public void AddStatMessage(string message, double value)
+        public void AddStatistic(string message, double value)
         {
             if (_recordItem == null || _recordItem.messages == null)
                 return;
@@ -225,16 +225,16 @@ namespace PlayRecorder
             }
             else
             {
-                StatWarning(_recordItem.messages[ind]);
+                StatisticWarning(_recordItem.messages[ind]);
             }
         }
 
-        public void AddStatMessage(string message, float value)
+        public void AddStatistic(string message, float value)
         {
-            AddStatMessage(message, (double)value);
+            AddStatistic(message, (double)value);
         }
 
-        public void AddStatMessage(string message, bool value)
+        public void AddStatistic(string message, bool value)
         {
             if (_recordItem == null || _recordItem.messages == null)
                 return;
@@ -254,11 +254,11 @@ namespace PlayRecorder
             }
             else
             {
-                StatWarning(_recordItem.messages[ind]);
+                StatisticWarning(_recordItem.messages[ind]);
             }
         }
 
-        public void AddStatMessage(string message, Vector2 value)
+        public void AddStatistic(string message, Vector2 value)
         {
             if (_recordItem == null || _recordItem.messages == null)
                 return;
@@ -278,11 +278,11 @@ namespace PlayRecorder
             }
             else
             {
-                StatWarning(_recordItem.messages[ind]);
+                StatisticWarning(_recordItem.messages[ind]);
             }
         }
 
-        public void AddStatMessage(string message, Vector3 value)
+        public void AddStatistic(string message, Vector3 value)
         {
             if (_recordItem == null || _recordItem.messages == null)
                 return;
@@ -302,11 +302,11 @@ namespace PlayRecorder
             }
             else
             {
-                StatWarning(_recordItem.messages[ind]);
+                StatisticWarning(_recordItem.messages[ind]);
             }
         }
 
-        public void AddStatMessage(string message, Vector4 value)
+        public void AddStatistic(string message, Vector4 value)
         {
             if (_recordItem == null || _recordItem.messages == null)
                 return;
@@ -326,11 +326,11 @@ namespace PlayRecorder
             }
             else
             {
-                StatWarning(_recordItem.messages[ind]);
+                StatisticWarning(_recordItem.messages[ind]);
             }
         }
 
-        private void StatWarning(RecordMessage type)
+        private void StatisticWarning(RecordMessage type)
         {
             Debug.LogWarning("Stat already assigned under different type: " + type.GetType().ToString());
         }

@@ -7,11 +7,11 @@ using PlayRecorder.Tools;
 
 namespace PlayRecorder.Stats
 {
-    public class StatsCSVPopup : PopupWindowContent
+    public class StatisticCSVPopup : PopupWindowContent
     {
         private bool _isFinal = false;
         private float _width = 0f;
-        private List<StatsWindow.StatCache> _statsCache;
+        private List<StatisticWindow.StatCache> _statsCache;
 
         private List<int> _fileIndexes = new List<int>();
         private List<string> _columns = new List<string>();
@@ -25,7 +25,7 @@ namespace PlayRecorder.Stats
 
         private const string _keepNumbersKey = "PlayRecorder_CSV_Numbers", _keepNamesKey = "PlayRecorder_CSV_Names";
 
-        public StatsCSVPopup(List<StatsWindow.StatCache> statsCache, bool final, float width)
+        public StatisticCSVPopup(List<StatisticWindow.StatCache> statsCache, bool final, float width)
         {
             _statsCache = statsCache;
             _isFinal = final;
@@ -43,7 +43,7 @@ namespace PlayRecorder.Stats
             }
             _totalRows = _fileIndexes.Count;
             int tempInd = _statsCache[0].fileIndex;
-            List<StatsWindow.StatCache> tempCache = _statsCache.Where(x => x.fileIndex == tempInd).ToList();
+            List<StatisticWindow.StatCache> tempCache = _statsCache.Where(x => x.fileIndex == tempInd).ToList();
             for (int i = 0; i < _columns.Count; i++)
             {
                 _columnsRaw += _columns[i].ToCSVCell() + ",";
@@ -73,7 +73,7 @@ namespace PlayRecorder.Stats
         {
             EditorGUILayout.BeginHorizontal();
 
-            EditorGUILayout.LabelField("Export " + (_isFinal ? "Final Value" : "Current Value") + " Stats to CSV", Styles.textBold);
+            EditorGUILayout.LabelField("Export " + (_isFinal ? "Final Value" : "Current Value") + " Statistics to CSV", Styles.textBold);
 
             GUIContent closeButton = new GUIContent(EditorGUIUtility.IconContent("winbtn_win_close"));
 
@@ -87,7 +87,7 @@ namespace PlayRecorder.Stats
             EditorGUILayout.BeginHorizontal();
 
             bool oldNumbers = _keepFileNumbers;
-            _keepFileNumbers = EditorGUILayout.Toggle(new GUIContent("Keep File Numbers","Adds a column with the current file number as shown in the stats window for this stat."), _keepFileNumbers);
+            _keepFileNumbers = EditorGUILayout.Toggle(new GUIContent("Keep File Numbers", "Adds a column with the current file number as shown in the statistics window for this statistic."), _keepFileNumbers);
 
             if(oldNumbers != _keepFileNumbers)
             {
@@ -95,7 +95,7 @@ namespace PlayRecorder.Stats
             }
 
             bool oldNames = _keepFileNames;
-            _keepFileNames = EditorGUILayout.Toggle(new GUIContent("Keep File Names","Adds a column with the current file name for this stat."), _keepFileNames);
+            _keepFileNames = EditorGUILayout.Toggle(new GUIContent("Keep File Names", "Adds a column with the current file name for this statistic."), _keepFileNames);
 
             if(oldNames != _keepFileNames)
             {
@@ -131,8 +131,7 @@ namespace PlayRecorder.Stats
 
         private string GetCSVLine(int fileIndex, bool keepFileNumber, bool keepFileName)
         {
-
-            List<StatsWindow.StatCache> tempCache = _statsCache.Where(x => x.fileIndex == fileIndex).ToList();
+            List<StatisticWindow.StatCache> tempCache = _statsCache.Where(x => x.fileIndex == fileIndex).ToList();
             
             if (tempCache.Count == 0)
                 return "";
