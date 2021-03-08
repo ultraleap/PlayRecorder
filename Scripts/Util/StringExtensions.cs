@@ -36,7 +36,6 @@ namespace PlayRecorder
                 sb.Append("\"");
                 return sb.ToString();
             }
-
             return str;
         }
     }

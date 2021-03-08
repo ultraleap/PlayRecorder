@@ -197,6 +197,10 @@ namespace PlayRecorder.Stats
                 {
                     _emptyOnLoad = false;
                     DataSet();
+                    if (_fileIndex != -1)
+                    {
+                        SetUILists();
+                    }
                 }
             }
             if (_dataCache.Count == 0 || playbackManager.currentFileIndex == -1)
@@ -260,7 +264,7 @@ namespace PlayRecorder.Stats
         {
             EditorGUI.BeginDisabledGroup(_allFiles || _followFile);
             GUIContent label = new GUIContent("Current File");
-            EditorGUILayout.LabelField(label,Styles.textBold,GUILayout.Width(Styles.textBold.CalcSize(label).x));
+            EditorGUILayout.LabelField(label, Styles.textBold, GUILayout.Width(Styles.textBold.CalcSize(label).x));
             int oldInd = _fileIndex;
             _fileIndex = EditorGUILayout.Popup(_fileIndex, _allFiles ? new string[]{ "All Files"} : _fileNames);
             if (oldInd != _fileIndex)
@@ -278,7 +282,7 @@ namespace PlayRecorder.Stats
             EditorGUI.EndDisabledGroup();
 
             EditorGUI.BeginDisabledGroup(_allFiles);
-            GUIContent matchPlayFile = new GUIContent("Follow File","Matches the current statistics file to the currently selected playback file.");
+            GUIContent matchPlayFile = new GUIContent("Follow File", "Matches the current statistics file to the currently selected playback file.");
             EditorGUILayout.LabelField(matchPlayFile, GUILayout.Width(EditorStyles.label.CalcSize(matchPlayFile).x));
             bool oldMatchFiles = _followFile;
             _followFile = EditorGUILayout.Toggle(_followFile, GUILayout.Width(Sizes.widthIcon));
@@ -520,6 +524,7 @@ namespace PlayRecorder.Stats
             if(frames.Count == 1)
             {
                 item = list[0];
+                // Draw the line to the end of the file.
                 DrawLinesFromObject(item, item, texture, frames[0], endFrame, endFrame, negative, range);
             }
             else
@@ -635,7 +640,6 @@ namespace PlayRecorder.Stats
         private void Messages()
         {
             _messageScroll = EditorGUILayout.BeginScrollView(_messageScroll);
-
             _statCount = 0;
 
             for (int i = 0; i < _statCache.Count; i++)
@@ -669,15 +673,10 @@ namespace PlayRecorder.Stats
                 _statCache[index].validStat = false;
                 return;
             }
-
             _statCount++;
-
             FieldInfo[] fields = message.GetType().GetFields();
-
             GUILayout.BeginVertical(GUI.skin.box);
-
             GUIContent label = new GUIContent((_allFiles ? (fileIndex+1).ToString() + ". " : "") + message.message + " - " + message.GetType().ToString().FormatType() + " (" + _statCache[index].frameIndex + "/" + _statCache[index].maxFrame + ")");
-
             _statCache[index].expanded = EditorGUILayout.BeginFoldoutHeaderGroup(_statCache[index].expanded, label);
             _statCache[index].validStat = false;
             EditorGUILayout.BeginHorizontal();
@@ -705,9 +704,7 @@ namespace PlayRecorder.Stats
                     break;
                 }
             }
-
             EditorGUILayout.EndFoldoutHeaderGroup();
-
             EditorGUILayout.EndHorizontal();
 
             if (_statCache[index].expanded)
@@ -734,7 +731,6 @@ namespace PlayRecorder.Stats
                     GUI.Label(r, _statCache[index].negative.ToString(), Styles.textBottomLeft);
                 }
             }
-
             EditorGUILayout.EndVertical();
         }
 

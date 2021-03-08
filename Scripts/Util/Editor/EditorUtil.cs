@@ -103,7 +103,5 @@ namespace PlayRecorder.Tools
         {
             return Mathf.Max(Mathf.Max(Mathf.Max(v4.x, v4.y), v4.z), v4.w);
         }
-
     }
-
 }
