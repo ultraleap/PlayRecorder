@@ -44,6 +44,8 @@ namespace PlayRecorder.Statistics
         private int _fileIndex = -1;
 
         private Vector2 _messageScroll;
+        private float _scrollbarWidth;
+        private bool _scrollBarActive = false;
 
         private int _statCount = 0;
         private Rect _windowRect, _csvCurrentRect;
@@ -55,6 +57,7 @@ namespace PlayRecorder.Statistics
         private Color _indicatorColor = Color.white;
 
         private GUIContent _copyButton;
+        private GUIContent _skipToEndButton;
 
         [MenuItem("Tools/PlayRecorder/Statistics")]
         public static void Init()
@@ -109,6 +112,9 @@ namespace PlayRecorder.Statistics
 
             _copyButton = new GUIContent(EditorGUIUtility.IconContent("Clipboard"));
             _copyButton.tooltip = "Copy the field to the system clipboard.";
+
+            _skipToEndButton = new GUIContent(EditorGUIUtility.IconContent("Animation.LastKey"));
+            _skipToEndButton.tooltip = "Set the current frame to the last possible frame.";
 
             if (_dataCache.Count > 0)
             {
@@ -225,6 +231,7 @@ namespace PlayRecorder.Statistics
                 {
                     _windowRect = position;
                     _regenerateCounter = 0.2f;
+                    _scrollbarWidth = GUI.skin.verticalScrollbar.fixedWidth + 1;
                 }
             }
 
@@ -316,6 +323,12 @@ namespace PlayRecorder.Statistics
             EditorGUILayout.LabelField(label, EditorStyles.label, GUILayout.Width(EditorStyles.label.CalcSize(label).x));
             int oldInd = _globalFrame;
             _globalFrame = EditorGUILayout.IntSlider(_globalFrame, 0, _globalMaxFrame);
+
+            if(GUILayout.Button(_skipToEndButton,GUILayout.Width(Sizes.Timeline.widthFileButton)))
+            {
+                _globalFrame = _globalMaxFrame;
+            }
+
             if(oldInd != _globalFrame)
             {
                 for (int i = 0; i < _statCache.Count; i++)
@@ -385,7 +398,7 @@ namespace PlayRecorder.Statistics
                 {
                     continue;
                 }
-                _statCache[i].graph = StatisticGraph.GenerateGraph(_dataCache[_statCache[i].fileIndex].messages[_statCache[i].messageIndex], _statCache[i], (int)(_windowRect.width - 16), 80, _globalMaxFrame, _graphColors);
+                _statCache[i].graph = StatisticGraph.GenerateGraph(_dataCache[_statCache[i].fileIndex].messages[_statCache[i].messageIndex], _statCache[i], (int)(_windowRect.width - 16 - (_scrollBarActive ? (_scrollbarWidth-1) : 0)), 80, _globalMaxFrame, _graphColors);
             }
         }
 
@@ -517,6 +530,15 @@ namespace PlayRecorder.Statistics
             GUIContent label = new GUIContent((_allFiles ? (fileIndex+1).ToString() + ". " : "") + message.message + " - " + message.GetType().ToString().FormatType() + " (" + _statCache[index].frameIndex + "/" + _statCache[index].maxFrame + ")");
             _statCache[index].expanded = EditorGUILayout.BeginFoldoutHeaderGroup(_statCache[index].expanded, label);
             _statCache[index].validStat = false;
+            Rect scrollCheck = GUILayoutUtility.GetLastRect();
+            if (scrollCheck.width + _scrollbarWidth < _windowRect.width)
+            {
+                _scrollBarActive = true;
+            }
+            else
+            {
+                _scrollBarActive = false;
+            }
             EditorGUILayout.BeginHorizontal();
             for (int i = 0; i < fields.Length; i++)
             {
@@ -547,22 +569,31 @@ namespace PlayRecorder.Statistics
 
             if (_statCache[index].expanded)
             {
+                EditorGUILayout.BeginHorizontal();
+
                 _statCache[index].frameIndex = EditorGUILayout.IntSlider("Frame", _statCache[index].frameIndex, 0, _dataCache[fileIndex].frameCount);
-                
-                if(_statCache[index].graph != null)
+
+                if (GUILayout.Button(_skipToEndButton, GUILayout.Width(Sizes.Timeline.widthFileButton)))
+                {
+                    _statCache[index].frameIndex = _statCache[index].maxFrame;
+                }
+
+                EditorGUILayout.EndHorizontal();
+
+                if (_statCache[index].graph != null)
                 {
                     GUILayout.Label("", GUILayout.Height(_statCache[index].graph.height + Sizes.padding));
                     Rect r = GUILayoutUtility.GetLastRect();
                     r.width = _statCache[index].graph.width;
                     r.height = _statCache[index].graph.height;
+                    GUI.DrawTexture(r, _statCache[index].graph);
                     if ((Event.current.type == EventType.MouseUp || Event.current.type == EventType.MouseDrag) && r.Contains(Event.current.mousePosition))
                     {
                         _statCache[index].frameIndex = (int)((Event.current.mousePosition.x - r.x) / r.width * _dataCache[fileIndex].frameCount);
                         Repaint();
                     }
-                    GUI.DrawTexture(r, _statCache[index].graph);
                     Rect r2 = new Rect(r);
-                    r2.x = r.x + (((float)_statCache[index].frameIndex / (float)_dataCache[fileIndex].frameCount) * r.width);
+                    r2.x = r.x + (((float)_statCache[index].frameIndex / (float)_dataCache[fileIndex].frameCount) * (r.width));
                     r2.width = 2;
                     GUI.DrawTexture(r2, _indicator);
                     GUI.Label(r, _statCache[index].positive.ToString(), Styles.textTopLeft);
