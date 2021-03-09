@@ -113,7 +113,7 @@ namespace PlayRecorder.Timeline
             }
             _timelineBG = Resources.Load<Texture2D>("Images/timelinebg");
             _windowRect = position;
-            _dataCache = playbackManager.GetDataCache();
+            _dataCache = new List<DataCache>(playbackManager.GetDataCache());
             playbackManager.OnDataCacheChange -= OnDataCacheChange;
             playbackManager.OnDataCacheChange += OnDataCacheChange;
             _normalBackground = GUI.backgroundColor;
@@ -188,7 +188,10 @@ namespace PlayRecorder.Timeline
 
         private void OnDestroy()
         {
-            playbackManager.OnDataCacheChange -= OnDataCacheChange;
+            if(playbackManager != null)
+            {
+                playbackManager.OnDataCacheChange -= OnDataCacheChange;
+            }
         }
 
         private void OnDataCacheChange(List<DataCache> cache)

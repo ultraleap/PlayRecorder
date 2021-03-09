@@ -9,18 +9,21 @@ namespace PlayRecorder
     {
 
         public string name;
+        public string fileName;
 
         public int frameCount = 0, frameRate = 0;
 
-        [HideInInspector]
+        [HideInInspector,SerializeReference]
         public List<RecordMessage> messages = new List<RecordMessage>();
 
-        public DataCache(Data data)
+        public DataCache(Data data, string filename)
         {
             if (data.objects == null || data.objects.Count == 0)
                 return;
 
             name = data.recordingName;
+
+            fileName = filename;
 
             frameCount = data.frameCount;
 

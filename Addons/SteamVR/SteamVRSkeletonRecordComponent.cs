@@ -118,7 +118,7 @@ namespace PlayRecorder.SteamVR
         }
     }
 
-    [AddComponentMenu("PlayRecorder/RecordComponents/SteamVRSkeletonRecordComponent")]
+    [AddComponentMenu("PlayRecorder/RecordComponents/SteamVR Skeleton Record Component")]
     public class SteamVRSkeletonRecordComponent : RecordComponent
     {
         [SerializeField, Tooltip("This value is the square magnitude at which rotation changes will cause a frame to be stored.")]
