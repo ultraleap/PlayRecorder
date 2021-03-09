@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using PlayRecorder.Tools;
 
-namespace PlayRecorder.Stats
+namespace PlayRecorder.Statistics
 {
     public class StatisticCSVPopup : PopupWindowContent
     {

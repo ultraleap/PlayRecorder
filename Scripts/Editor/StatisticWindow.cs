@@ -6,7 +6,7 @@ using UnityEditor;
 using PlayRecorder.Tools;
 using System.Reflection;
 
-namespace PlayRecorder.Stats
+namespace PlayRecorder.Statistics
 {
 
     public class StatisticWindow : EditorWindow
@@ -52,12 +52,12 @@ namespace PlayRecorder.Stats
 
         private Texture2D _indicator;
         private List<Color> _graphColors;
-        private Color _indiciatorColor = Color.white;
+        private Color _indicatorColor = Color.white;
 
         private GUIContent _copyButton;
 
         [MenuItem("Tools/PlayRecorder/Statistics")]
-        static public void Init()
+        public static void Init()
         {
             StatisticWindow window = GetWindow<StatisticWindow>();
 
@@ -331,10 +331,7 @@ namespace PlayRecorder.Stats
 
         private bool CheckFollowUpdate()
         {
-            if (_followFile && _fileIndex != playbackManager.currentFileIndex)
-                return true;
-
-            return false;
+            return _followFile && _fileIndex != playbackManager.currentFileIndex;
         }
 
         private void SetUILists()
@@ -379,51 +376,16 @@ namespace PlayRecorder.Stats
         private void Graphs()
         {
             _indicator = new Texture2D(1, 1);
-            _indicator.SetPixel(0, 0, _indiciatorColor);
+            _indicator.SetPixel(0, 0, _indicatorColor);
             _indicator.Apply();
 
             for (int i = 0; i < _statCache.Count; i++)
             {
-                if (!_allFiles && _statCache[i].fileIndex != _fileIndex)
+                if (!_allFiles && _statCache[i].fileIndex != _fileIndex || _dataCache[_statCache[i].fileIndex].frameCount == 0)
                 {
                     continue;
                 }
-                GenerateGraphs(_statCache[i]);
-            }
-        }
-
-        private void GenerateGraphs(StatCache cache)
-        {
-            int endFrame = _dataCache[cache.fileIndex].frameCount;
-            if (endFrame == 0)
-            {
-                cache.graph = null;
-                return;
-            }
-            RecordMessage rm = _dataCache[cache.fileIndex].messages[cache.messageIndex];
-            FieldInfo[] fields = rm.GetType().GetFields();
-            for (int j = 0; j < fields.Length; j++)
-            {
-                if (fields[j].Name == "message" || fields[j].Name == "frames")
-                    continue;
-
-                object obj = fields[j].GetValue(rm);
-                if (obj is IList)
-                {
-                    System.Type t = obj.GetType().GetGenericArguments().Single();
-                    if(t == typeof(string))
-                    {
-                        cache.graph = null;
-                        return;
-                    }
-                    else
-                    {
-                        cache.graph = new Texture2D((int)(Mathf.Abs(_windowRect.width - 16)*(cache.maxFrame/(float)_globalMaxFrame)), 80);
-                        GraphLines(cache.graph, cache, rm.frames, endFrame, obj);
-                        cache.graph.Apply();
-                        return;
-                    }
-                }
+                _statCache[i].graph = StatisticGraph.GenerateGraph(_dataCache[_statCache[i].fileIndex].messages[_statCache[i].messageIndex], _statCache[i], (int)(_windowRect.width - 16), 80, _globalMaxFrame, _graphColors);
             }
         }
 
@@ -440,148 +402,24 @@ namespace PlayRecorder.Stats
         private void SetStatCacheIndividual(int indexOffset, int file, DataCache cache)
         {
             int f = file;
+            int ind;
             for (int i = 0; i < cache.messages.Count; i++)
             {
-                if(_statCache[indexOffset + i] == null)
+                ind = indexOffset + i;
+                if(_statCache[ind] == null)
                 {
-                    _statCache[indexOffset + i] = new StatCache();
-                    _statCache[indexOffset + i].frameIndex = cache.frameCount;
+                    _statCache[ind] = new StatCache();
+                    _statCache[ind].frameIndex = cache.frameCount;
                 }
                 int mi = i;
-                _statCache[indexOffset + i].fileIndex = f;
-                _statCache[indexOffset + i].messageIndex = mi;
-                _statCache[indexOffset + i].maxFrame = cache.frameCount;
-                _statCache[indexOffset + i].fileName = cache.fileName;
-                _statCache[indexOffset + i].statName = cache.messages[i].message;
-                _statCache[indexOffset + i].current = "";
-                _statCache[indexOffset + i].final = "";
+                _statCache[ind].fileIndex = f;
+                _statCache[ind].messageIndex = mi;
+                _statCache[ind].maxFrame = cache.frameCount;
+                _statCache[ind].fileName = cache.fileName;
+                _statCache[ind].statName = cache.messages[i].message;
+                _statCache[ind].current = "";
+                _statCache[ind].final = "";
             }
-        }
-
-        private void GraphLines(Texture2D texture, StatCache cache, List<int> frames, int endFrame, object obj)
-        {
-            IList list = (IList)obj;
-            float positive = 0, negative = 0, range;
-            object item;
-            for (int i = 0; i < list.Count; i++)
-            {
-                item = list[i];
-                if (item.GetType() == typeof(int) ||
-                    item.GetType() == typeof(float) ||
-                    item.GetType() == typeof(double))
-                {
-                    //float val = (float)item;
-                    float val = 0f;
-                    float.TryParse(item.ToString(), out val);
-                    if(positive < val)
-                    {
-                        positive = val;
-                    }
-                    if(negative > val)
-                    {
-                        negative = val;
-                    }
-                }
-                else if (item.GetType() == typeof(Vector2))
-                {
-                    if(positive < ((Vector2)item).MaxAxis())
-                    {
-                        positive = ((Vector2)item).MaxAxis();
-                    }
-                    if(negative > ((Vector2)item).MinAxis())
-                    {
-                        negative = ((Vector2)item).MinAxis();
-                    }
-                }
-                else if (item.GetType() == typeof(Vector3))
-                {
-                    if (positive < ((Vector3)item).MaxAxis())
-                    {
-                        positive = ((Vector3)item).MaxAxis();
-                    }
-                    if (negative > ((Vector3)item).MinAxis())
-                    {
-                        negative = ((Vector3)item).MinAxis();
-                    }
-                }
-                else if (item.GetType() == typeof(Vector4))
-                {
-                    if (positive < ((Vector4)item).MaxAxis())
-                    {
-                        positive = ((Vector4)item).MaxAxis();
-                    }
-                    if (negative > ((Vector4)item).MinAxis())
-                    {
-                        negative = ((Vector4)item).MinAxis();
-                    }
-                }
-            }
-
-            range = positive + Mathf.Abs(negative);
-            cache.negative = negative;
-            cache.positive = positive;
-           
-            if(frames.Count == 1)
-            {
-                item = list[0];
-                // Draw the line to the end of the file.
-                DrawLinesFromObject(item, item, texture, frames[0], endFrame, endFrame, negative, range);
-            }
-            else
-            {
-                object previous = null;
-                for (int i = 0; i < list.Count; i++)
-                {
-                    item = list[i];
-                    if(i == 0)
-                    {
-                        previous = item;
-                        continue;
-                    }
-                    DrawLinesFromObject(item, previous, texture, frames[i - 1], frames[i], endFrame, negative, range);
-                    previous = item;
-                }
-                DrawLinesFromObject(previous, previous, texture, frames[frames.Count - 1], endFrame, endFrame, negative, range);
-            }
-        }
-
-        private void DrawLinesFromObject(object item, object previousItem, Texture2D texture, float previousFrame, float currentFrame, float endFrame, float negative, float range)
-        {
-            if (item.GetType() == typeof(int) ||
-                item.GetType() == typeof(float) ||
-                item.GetType() == typeof(double))
-            {
-                float val = 0f, valPrev = 0;
-                // Complaining about not being able to convert a double to a float, this solves it for some reason.
-                float.TryParse(item.ToString(), out val);
-                float.TryParse(previousItem.ToString(), out valPrev);
-                DrawSingleLine(texture, previousFrame, currentFrame, endFrame, valPrev, val, negative, range, _graphColors[0 % _graphColors.Count]);
-            }
-            else if (item.GetType() == typeof(Vector2))
-            {
-                DrawSingleLine(texture, previousFrame, currentFrame, endFrame, ((Vector2)previousItem).x, ((Vector2)item).x, negative, range, _graphColors[0 % _graphColors.Count]);
-                DrawSingleLine(texture, previousFrame, currentFrame, endFrame, ((Vector2)previousItem).y, ((Vector2)item).y, negative, range, _graphColors[1 % _graphColors.Count]);
-            }
-            else if (item.GetType() == typeof(Vector3))
-            {
-                DrawSingleLine(texture, previousFrame, currentFrame, endFrame, ((Vector3)previousItem).x, ((Vector3)item).x, negative, range, _graphColors[0 % _graphColors.Count]);
-                DrawSingleLine(texture, previousFrame, currentFrame, endFrame, ((Vector3)previousItem).y, ((Vector3)item).y, negative, range, _graphColors[1 % _graphColors.Count]);
-                DrawSingleLine(texture, previousFrame, currentFrame, endFrame, ((Vector3)previousItem).z, ((Vector3)item).z, negative, range, _graphColors[2 % _graphColors.Count]);
-            }
-            else if (item.GetType() == typeof(Vector4))
-            {
-                DrawSingleLine(texture, previousFrame, currentFrame, endFrame, ((Vector4)previousItem).x, ((Vector4)item).x, negative, range, _graphColors[0 % _graphColors.Count]);
-                DrawSingleLine(texture, previousFrame, currentFrame, endFrame, ((Vector4)previousItem).y, ((Vector4)item).y, negative, range, _graphColors[1 % _graphColors.Count]);
-                DrawSingleLine(texture, previousFrame, currentFrame, endFrame, ((Vector4)previousItem).z, ((Vector4)item).z, negative, range, _graphColors[2 % _graphColors.Count]);
-                DrawSingleLine(texture, previousFrame, currentFrame, endFrame, ((Vector4)previousItem).w, ((Vector4)item).w, negative, range, _graphColors[3 % _graphColors.Count]);
-            }
-        }
-
-        private void DrawSingleLine(Texture2D texture, float previousFrame, float currentFrame, float endFrame, float previousValue, float currentValue, float negative, float range, Color color)
-        {
-            texture.DrawLine(new Vector2((previousFrame / endFrame) * texture.width, ((previousValue + Mathf.Abs(negative)) / range) * texture.height),
-                        new Vector2((currentFrame / endFrame) * texture.width, ((currentValue + Mathf.Abs(negative)) / range) * texture.height),
-                        color);
         }
 
         private void ExportCSVButtons()
