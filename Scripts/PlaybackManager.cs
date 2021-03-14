@@ -197,7 +197,10 @@ namespace PlayRecorder {
                 _binders.Clear();
                 OnDataCacheChange?.Invoke(_dataCache);
 #if UNITY_EDITOR
-                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
+                if(!Application.isPlaying)
+                {
+                    UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
+                }
 #endif
                 return;
             }
@@ -305,7 +308,10 @@ namespace PlayRecorder {
             ChangeCurrentFile(_currentFile);
             OnDataCacheChange?.Invoke(_dataCache);
 #if UNITY_EDITOR
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
+            if(!Application.isPlaying)
+            {
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
+            }
 #endif
         }
 

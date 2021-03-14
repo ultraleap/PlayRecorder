@@ -435,7 +435,6 @@ namespace PlayRecorder
                         ((Renderer)components[j]).enabled = false;
                         continue;
                     }
-                    
                 }
 
                 Behaviour[] behaviours = _playbackIgnoreTransforms[i].GetComponents<Behaviour>();
