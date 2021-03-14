@@ -120,8 +120,10 @@ namespace PlayRecorder {
 
                 if(_components[i].required)
                 {
-                    _components[i].StartRecording();
-                    _currentComponents.Add(_components[i]);
+                    if(_components[i].StartRecording())
+                    {
+                        _currentComponents.Add(_components[i]);
+                    }
                 }
             }
             _mainThreadTime = Time.time;

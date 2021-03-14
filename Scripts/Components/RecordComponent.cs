@@ -104,12 +104,13 @@ namespace PlayRecorder
 
         }
 
-        public virtual void StartRecording()
+        public virtual bool StartRecording()
         {
             _currentTick = 0;
             _recording = true;
             _recordItem = new RecordItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy);
             OnStartRecording?.Invoke();
+            return true;
         }
 
         public virtual RecordItem StopRecording()
@@ -135,7 +136,14 @@ namespace PlayRecorder
         public void RecordTick(int tick)
         {
             _currentTick = tick;
-            RecordTickLogic();
+            try
+            {
+                RecordTickLogic();
+            }
+            catch(Exception error)
+            {
+                Debug.LogError("Error with " + name + " on RecordTickLogic.\n" + error.ToString(), this);
+            }
         }
 
         /// <summary>
@@ -384,7 +392,7 @@ namespace PlayRecorder
 
         protected virtual PlaybackIgnoreItem SetDefaultPlaybackIgnores(string type)
         {
-            return null;
+            return new PlaybackIgnoreItem(type);
         }
 
         protected virtual void SetPlaybackIgnoreTransforms()
@@ -396,7 +404,7 @@ namespace PlayRecorder
         {
             for (int i = 0; i < _playbackIgnoreTransforms.Count; i++)
             {
-                Component[] components = transform.GetComponents<Component>();
+                Component[] components = _playbackIgnoreTransforms[i].GetComponents<Component>();
                 for (int j = 0; j < components.Length; j++)
                 {
                     // Can't switch a type
@@ -430,7 +438,7 @@ namespace PlayRecorder
                     
                 }
 
-                Behaviour[] behaviours = transform.GetComponents<Behaviour>();
+                Behaviour[] behaviours = _playbackIgnoreTransforms[i].GetComponents<Behaviour>();
                 bool found = false;
                 for (int j = 0; j < behaviours.Length; j++)
                 {
@@ -482,7 +490,14 @@ namespace PlayRecorder
             {
                 if (ValidPlayUpdate())
                 {
-                    PlayUpdateLogic();
+                    try
+                    {
+                        PlayUpdateLogic();
+                    }
+                    catch(Exception error)
+                    {
+                        Debug.LogError("Error with " + name + " on PlayUpdateLogic.\n"+error.ToString(), this);
+                    }
                 }
                 _playUpdatedParts.Clear();
             }
@@ -531,7 +546,14 @@ namespace PlayRecorder
                             int j = i;
                             if (!_playUpdatedParts.Contains(j))
                                 _playUpdatedParts.Add(j);
-                            PlayTickLogic(i);
+                            try
+                            {
+                                PlayTickLogic(i);
+                            }
+                            catch(Exception error)
+                            {
+                                Debug.LogError("Error with " + name + " on PlayTickLogic.\n" + error.ToString(), this);
+                            }
                         }
                     }
                 }
