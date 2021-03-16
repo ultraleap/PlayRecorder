@@ -92,7 +92,7 @@ namespace PlayRecorder
 
         #region Recording
 
-        public override void StartRecording()
+        public override bool StartRecording()
         {
             base.StartRecording();
 
@@ -116,6 +116,7 @@ namespace PlayRecorder
                 rp.AddFrame(new TransformFrame(_currentTick, _transformCache[i]));
                 _recordItem.parts.Add(rp);
             }
+            return true;
         }
 
         protected override void RecordUpdateLogic()

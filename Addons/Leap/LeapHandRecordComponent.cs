@@ -1,15 +1,18 @@
 ﻿// To enable this addon go to Edit -> Project Settings -> Player -> Other Settings -> Scripting Define Symbols and add
 // PR_LEAP;
 // This records a HandModel object (e.g. RiggedHand), listening to the transform information. It does not record raw Leap frames (Leap frames are ~1k data points).
+// This method of recording is the older method and mostly only included to prevent issues with old recordings.
 #if PR_LEAP
 using UnityEngine;
 using Leap;
 using Leap.Unity;
 using PlayRecorder.Hands;
+using System;
 
 namespace PlayRecorder.Leap
 {
     [AddComponentMenu("PlayRecorder/RecordComponents/Leap Hand Record Component")]
+    [Obsolete("DEPRECATED\nPlease try to make use of the Leap Hand Frame Record Component instead of this.")]
     public class LeapHandRecordComponent : RecordComponent
     {
 
@@ -27,14 +30,14 @@ namespace PlayRecorder.Leap
 
         #region Recording
 
-        public override void StartRecording()
+        public override bool StartRecording()
         {
             _handModel = GetComponent<HandModel>();
 
             if (_handModel == null)
             {
                 Debug.LogError("Leap Hand recorder has no Leap Hand model on object.");
-                return;
+                return false;
             }
 
             _handModel.OnUpdate += HandModelUpdate;
@@ -73,6 +76,8 @@ namespace PlayRecorder.Leap
 
             HandPart pinky = new HandPart(HandPart.HandPartID.Pinky);
             _recordItem.parts.Add(pinky);
+
+            return true;
         }
 
         public override RecordItem StopRecording()

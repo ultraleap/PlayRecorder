@@ -196,6 +196,12 @@ namespace PlayRecorder {
                 Debug.LogWarning("No files chosen. Aborting.");
                 _binders.Clear();
                 OnDataCacheChange?.Invoke(_dataCache);
+#if UNITY_EDITOR
+                if(!Application.isPlaying)
+                {
+                    UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
+                }
+#endif
                 return;
             }
 
@@ -301,6 +307,12 @@ namespace PlayRecorder {
             _changingFiles = false;
             ChangeCurrentFile(_currentFile);
             OnDataCacheChange?.Invoke(_dataCache);
+#if UNITY_EDITOR
+            if(!Application.isPlaying)
+            {
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
+            }
+#endif
         }
 
         private void ChangeBinders(Data data)
@@ -420,8 +432,13 @@ namespace PlayRecorder {
                 }
             }
 
+            float oldFrameRate = _currentFrameRate;
             _currentFrameRate = _currentData.frameRate;
             _maxTickVal = _currentData.frameCount;
+            if(_currentFrameRate != oldFrameRate)
+            {
+                _currentTickVal =  (int)(_currentTickVal * (_currentFrameRate / oldFrameRate));
+            }
             _tickRate = 1.0 / _currentData.frameRate;
             OnDataChange?.Invoke(_currentData);
             if (_firstLoad && _playing && Application.isPlaying)

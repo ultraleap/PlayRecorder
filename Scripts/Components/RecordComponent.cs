@@ -37,6 +37,7 @@ namespace PlayRecorder
 
         // Playback temp variables
         private int _oldFrame, _newFrame;
+        private string _gameObjectName = "";
 
         public Action OnStartRecording, OnStopRecording, OnStartPlayback;
 
@@ -44,6 +45,7 @@ namespace PlayRecorder
         private void Awake()
         {
             AddToManager();
+            _gameObjectName = name;
         }
 
         [ExecuteInEditMode]
@@ -104,12 +106,13 @@ namespace PlayRecorder
 
         }
 
-        public virtual void StartRecording()
+        public virtual bool StartRecording()
         {
             _currentTick = 0;
             _recording = true;
             _recordItem = new RecordItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy);
             OnStartRecording?.Invoke();
+            return true;
         }
 
         public virtual RecordItem StopRecording()
@@ -135,7 +138,14 @@ namespace PlayRecorder
         public void RecordTick(int tick)
         {
             _currentTick = tick;
-            RecordTickLogic();
+            try
+            {
+                RecordTickLogic();
+            }
+            catch(Exception error)
+            {
+                Debug.LogError("Error with " + _gameObjectName + " on RecordTickLogic.\n" + error.ToString(), this);
+            }
         }
 
         /// <summary>
@@ -384,7 +394,7 @@ namespace PlayRecorder
 
         protected virtual PlaybackIgnoreItem SetDefaultPlaybackIgnores(string type)
         {
-            return null;
+            return new PlaybackIgnoreItem(type);
         }
 
         protected virtual void SetPlaybackIgnoreTransforms()
@@ -396,7 +406,7 @@ namespace PlayRecorder
         {
             for (int i = 0; i < _playbackIgnoreTransforms.Count; i++)
             {
-                Component[] components = transform.GetComponents<Component>();
+                Component[] components = _playbackIgnoreTransforms[i].GetComponents<Component>();
                 for (int j = 0; j < components.Length; j++)
                 {
                     // Can't switch a type
@@ -427,10 +437,9 @@ namespace PlayRecorder
                         ((Renderer)components[j]).enabled = false;
                         continue;
                     }
-                    
                 }
 
-                Behaviour[] behaviours = transform.GetComponents<Behaviour>();
+                Behaviour[] behaviours = _playbackIgnoreTransforms[i].GetComponents<Behaviour>();
                 bool found = false;
                 for (int j = 0; j < behaviours.Length; j++)
                 {
@@ -482,7 +491,14 @@ namespace PlayRecorder
             {
                 if (ValidPlayUpdate())
                 {
-                    PlayUpdateLogic();
+                    try
+                    {
+                        PlayUpdateLogic();
+                    }
+                    catch(Exception error)
+                    {
+                        Debug.LogError("Error with " + _gameObjectName + " on PlayUpdateLogic.\n"+error.ToString(), this);
+                    }
                 }
                 _playUpdatedParts.Clear();
             }
@@ -531,8 +547,19 @@ namespace PlayRecorder
                             int j = i;
                             if (!_playUpdatedParts.Contains(j))
                                 _playUpdatedParts.Add(j);
-                            PlayTickLogic(i);
+                            try
+                            {
+                                PlayTickLogic(i);
+                            }
+                            catch(Exception error)
+                            {
+                                Debug.LogError("Error with " + _gameObjectName + " on PlayTickLogic.\n" + error.ToString(), this);
+                            }
                         }
+                    }
+                    if(_playUpdatedParts.Count > 0)
+                    {
+                        PlayAfterTickLogic();
                     }
                 }
             }
@@ -544,6 +571,14 @@ namespace PlayRecorder
         protected virtual void PlayTickLogic(int index)
         {
             
+        }
+
+        /// <summary>
+        /// This function fires during the playback thread, AFTER all individual parts have updated. Similar principle to LateUpdate.
+        /// </summary>
+        protected virtual void PlayAfterTickLogic()
+        {
+
         }
 
         public List<string> PlayMessages(int tick)
