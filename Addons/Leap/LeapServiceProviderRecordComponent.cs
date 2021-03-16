@@ -1,6 +1,6 @@
 // To enable this addon go to Edit -> Project Settings -> Player -> Other Settings -> Scripting Define Symbols and add
 // PR_LEAP;
-// This records information from a LeapProvider object (e.g. LeapServiceProvider/LeapXRServiceProvider), listening to all frame and hand information.
+// This records information from a LeapProvider object (e.g. LeapServiceProvider/LeapXRServiceProvider), listening to all frame and hand information. Use this when you want to reproduce all the logic that both hands may have done.
 // You need to add a LeapPlaybackProvider to your object have frames played back, in place of your original LeapProvider.
 #if PR_LEAP
 using System.Collections;

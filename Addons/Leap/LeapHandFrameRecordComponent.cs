@@ -1,6 +1,6 @@
 ﻿// To enable this addon go to Edit -> Project Settings -> Player -> Other Settings -> Scripting Define Symbols and add
 // PR_LEAP;
-// This records a HandModel object (e.g. RiggedHand), listening to the raw frame information.
+// This records a HandModel object (e.g. RiggedHand), listening to the raw frame information. Use this when you only really want to record the visual information of each individual hand.
 #if PR_LEAP
 using UnityEngine;
 using Leap;
