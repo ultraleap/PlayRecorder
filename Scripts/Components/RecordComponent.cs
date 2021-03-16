@@ -37,6 +37,7 @@ namespace PlayRecorder
 
         // Playback temp variables
         private int _oldFrame, _newFrame;
+        private string _gameObjectName = "";
 
         public Action OnStartRecording, OnStopRecording, OnStartPlayback;
 
@@ -44,6 +45,7 @@ namespace PlayRecorder
         private void Awake()
         {
             AddToManager();
+            _gameObjectName = name;
         }
 
         [ExecuteInEditMode]
@@ -142,7 +144,7 @@ namespace PlayRecorder
             }
             catch(Exception error)
             {
-                Debug.LogError("Error with " + name + " on RecordTickLogic.\n" + error.ToString(), this);
+                Debug.LogError("Error with " + _gameObjectName + " on RecordTickLogic.\n" + error.ToString(), this);
             }
         }
 
@@ -495,7 +497,7 @@ namespace PlayRecorder
                     }
                     catch(Exception error)
                     {
-                        Debug.LogError("Error with " + name + " on PlayUpdateLogic.\n"+error.ToString(), this);
+                        Debug.LogError("Error with " + _gameObjectName + " on PlayUpdateLogic.\n"+error.ToString(), this);
                     }
                 }
                 _playUpdatedParts.Clear();
@@ -551,9 +553,13 @@ namespace PlayRecorder
                             }
                             catch(Exception error)
                             {
-                                Debug.LogError("Error with " + name + " on PlayTickLogic.\n" + error.ToString(), this);
+                                Debug.LogError("Error with " + _gameObjectName + " on PlayTickLogic.\n" + error.ToString(), this);
                             }
                         }
+                    }
+                    if(_playUpdatedParts.Count > 0)
+                    {
+                        PlayAfterTickLogic();
                     }
                 }
             }
@@ -565,6 +571,14 @@ namespace PlayRecorder
         protected virtual void PlayTickLogic(int index)
         {
             
+        }
+
+        /// <summary>
+        /// This function fires during the playback thread, AFTER all individual parts have updated. Similar principle to LateUpdate.
+        /// </summary>
+        protected virtual void PlayAfterTickLogic()
+        {
+
         }
 
         public List<string> PlayMessages(int tick)
