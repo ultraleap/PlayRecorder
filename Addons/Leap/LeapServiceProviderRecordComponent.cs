@@ -52,6 +52,17 @@ namespace PlayRecorder.Leap
         }
     }
 
+    // The data for recording the ID of the hand.
+    [System.Serializable]
+    public class LeapIntStatFrame : RecordFrame
+    {
+        public int stat;
+        public LeapIntStatFrame(int tick, int stat) : base(tick)
+        {
+            this.stat = stat;
+        }
+    }
+
     // The data for an individual hand property (in this case only used for hand velocity)
     [System.Serializable]
     public class LeapVectorStatFrame : RecordFrame
@@ -72,7 +83,7 @@ namespace PlayRecorder.Leap
         private bool _frameUpdated = false;
         private Frame _currentFrame;
 
-        private const int _framePosition = 0, _handStatCount = 6, _leftHandOffset = 1, _rightHandOffset = _leftHandOffset + _handStatCount + 1;
+        private const int _framePosition = 0, _handStatCount = 8, _leftHandOffset = 1, _rightHandOffset = _leftHandOffset + _handStatCount + 1;
 
         [SerializeField]
         private float _handDistanceThreshold = 0.00075f;
@@ -86,8 +97,10 @@ namespace PlayRecorder.Leap
             public byte[] handArray;
             public Vector3[] jointCache;
 
-            public bool pinchStrengthUpdated = false, pinchDistanceUpdated = false, palmWidthUpdated = false, grabStrengthUpdated = false, grabAngleUpdated = false, palmVelocityUpdated = false;
-            public float pinchStrength, pinchDistance, palmWidth, grabStrength, grabAngle;
+            public bool handIDUpdated = false;
+            public int handID;
+            public bool confidenceUpdated = false, pinchStrengthUpdated = false, pinchDistanceUpdated = false, palmWidthUpdated = false, grabStrengthUpdated = false, grabAngleUpdated = false, palmVelocityUpdated = false;
+            public float confidence, pinchStrength, pinchDistance, palmWidth, grabStrength, grabAngle;
             public Vector palmVelocity;
 
             public LeapHandCache()
@@ -189,6 +202,18 @@ namespace PlayRecorder.Leap
 
         private void UpdateStats(Hand hand, LeapHandCache cache)
         {
+            if(cache.handID != hand.Id)
+            {
+                cache.handID = hand.Id;
+                cache.handIDUpdated = true;
+            }
+
+            if(cache.confidence != hand.Confidence)
+            {
+                cache.confidence = hand.Confidence;
+                cache.confidenceUpdated = true;
+            }
+
             if (cache.pinchStrength != hand.PinchStrength)
             {
                 cache.pinchStrength = hand.PinchStrength;
@@ -263,39 +288,51 @@ namespace PlayRecorder.Leap
 
         private void RecordStatFrames(LeapHandCache cache, int offset)
         {
+            if(cache.handIDUpdated)
+            {
+                _recordItem.parts[offset].AddFrame(new LeapIntStatFrame(_currentTick, cache.handID));
+                cache.handIDUpdated = false;
+            }
+
+            if(cache.confidenceUpdated)
+            {
+                _recordItem.parts[offset + 1].AddFrame(new LeapStatFrame(_currentTick, cache.confidence));
+                cache.confidenceUpdated = false;
+            }
+
             if (cache.pinchStrengthUpdated)
             {
-                _recordItem.parts[offset].AddFrame(new LeapStatFrame(_currentTick, cache.pinchStrength));
+                _recordItem.parts[offset + 2].AddFrame(new LeapStatFrame(_currentTick, cache.pinchStrength));
                 cache.pinchStrengthUpdated = false;
             }
 
             if (cache.pinchDistanceUpdated)
             {
-                _recordItem.parts[offset + 1].AddFrame(new LeapStatFrame(_currentTick, cache.pinchDistance));
+                _recordItem.parts[offset + 3].AddFrame(new LeapStatFrame(_currentTick, cache.pinchDistance));
                 cache.pinchDistanceUpdated = false;
             }
 
             if (cache.palmWidthUpdated)
             {
-                _recordItem.parts[offset + 2].AddFrame(new LeapStatFrame(_currentTick, cache.palmWidth));
+                _recordItem.parts[offset + 4].AddFrame(new LeapStatFrame(_currentTick, cache.palmWidth));
                 cache.palmWidthUpdated = false;
             }
 
             if (cache.grabStrengthUpdated)
             {
-                _recordItem.parts[offset + 3].AddFrame(new LeapStatFrame(_currentTick, cache.grabStrength));
+                _recordItem.parts[offset + 5].AddFrame(new LeapStatFrame(_currentTick, cache.grabStrength));
                 cache.grabStrengthUpdated = false;
             }
 
             if (cache.grabAngleUpdated)
             {
-                _recordItem.parts[offset + 4].AddFrame(new LeapStatFrame(_currentTick, cache.grabAngle));
+                _recordItem.parts[offset + 6].AddFrame(new LeapStatFrame(_currentTick, cache.grabAngle));
                 cache.grabAngleUpdated = false;
             }
 
             if (cache.palmVelocityUpdated)
             {
-                _recordItem.parts[offset + 5].AddFrame(new LeapVectorStatFrame(_currentTick, cache.palmVelocity));
+                _recordItem.parts[offset + 7].AddFrame(new LeapVectorStatFrame(_currentTick, cache.palmVelocity));
                 cache.palmVelocityUpdated = false;
             }
         }
@@ -318,7 +355,8 @@ namespace PlayRecorder.Leap
                 return;
             }
             _playbackProvider.StartPlayback();
-            _currentFrame = new Frame();
+            _currentFrame = null;
+            _playbackProvider.SetFrame(null);
             _leftCache = new LeapHandCache();
             _rightCache = new LeapHandCache();
             base.StartPlaying();
@@ -358,7 +396,7 @@ namespace PlayRecorder.Leap
 
         protected override void PlayAfterTickLogic()
         {
-            if(_frameUpdated)
+            if(_frameUpdated && _currentFrame != null)
             {
                 _currentFrame.Hands.Clear();
                 if(_leftCache.isTracked)
@@ -372,11 +410,16 @@ namespace PlayRecorder.Leap
                     _currentFrame.Hands.Add(_rightCache.hand);
                 }
                 _playbackProvider.SetFrame(_currentFrame);
+                _frameUpdated = false;
             }
         }
 
         private void ReadLeapIDFrame(LeapIDFrame frame)
         {
+            if(_currentFrame == null)
+            {
+                _currentFrame = new Frame();
+            }
             _currentFrame.Id = frame.id;
             _currentFrame.Timestamp = frame.timestamp;
             _currentFrame.CurrentFramesPerSecond = frame.fps;
@@ -390,21 +433,27 @@ namespace PlayRecorder.Leap
             switch (stat)
             {
                 case 0:
-                    cache.pinchStrength = ((LeapStatFrame)frame).stat;
+                    cache.handID = ((LeapIntStatFrame)frame).stat;
                     break;
                 case 1:
-                    cache.pinchDistance = ((LeapStatFrame)frame).stat;
+                    cache.confidence = ((LeapStatFrame)frame).stat;
                     break;
                 case 2:
-                    cache.palmWidth = ((LeapStatFrame)frame).stat;
+                    cache.pinchStrength = ((LeapStatFrame)frame).stat;
                     break;
                 case 3:
-                    cache.grabStrength = ((LeapStatFrame)frame).stat;
+                    cache.pinchDistance = ((LeapStatFrame)frame).stat;
                     break;
                 case 4:
-                    cache.grabAngle = ((LeapStatFrame)frame).stat;
+                    cache.palmWidth = ((LeapStatFrame)frame).stat;
                     break;
                 case 5:
+                    cache.grabStrength = ((LeapStatFrame)frame).stat;
+                    break;
+                case 6:
+                    cache.grabAngle = ((LeapStatFrame)frame).stat;
+                    break;
+                case 7:
                     cache.palmVelocity = ((LeapVectorStatFrame)frame).stat;
                     break;
             }
@@ -423,6 +472,10 @@ namespace PlayRecorder.Leap
 
         private void SetLeapStatsToHand(LeapHandCache cache)
         {
+            if(_currentFrame != null)
+            {
+                cache.hand.FrameId = _currentFrame.Id;
+            }
             cache.hand.PinchStrength = cache.pinchStrength;
             cache.hand.PinchDistance = cache.pinchDistance;
             cache.hand.PalmWidth = cache.palmWidth;
