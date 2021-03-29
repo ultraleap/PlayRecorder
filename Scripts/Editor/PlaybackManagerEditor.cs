@@ -399,11 +399,11 @@ namespace PlayRecorder
                         }
 
                         _currentFile.intValue = 0;
+                        _awaitingRefresh.boolValue = false;
                         serializedObject.ApplyModifiedProperties();
 
                         EditorUtility.DisplayDialog("Loaded", "Playlist loaded. " + textAssets.Count + " file(s) set.", "Ok");
                         ((PlaybackManager)serializedObject.targetObject).ChangeFiles();
-                        _awaitingRefresh.boolValue = false;
 
                     }
                     catch
