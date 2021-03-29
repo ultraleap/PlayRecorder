@@ -41,6 +41,15 @@ namespace PlayRecorder
 
         public Action OnStartRecording, OnStopRecording, OnStartPlayback;
 
+#if UNITY_EDITOR
+
+        /// <summary>
+        /// Override this to include an automatic helpbox in the inspector.
+        /// </summary>
+        public virtual string editorHelpbox { get { return null; } }
+
+#endif
+
         #region Unity Events
         private void Awake()
         {
@@ -107,6 +116,14 @@ namespace PlayRecorder
         }
 
         public virtual bool StartRecording()
+        {
+            return BasicStartRecording();
+        }
+
+        /// <summary>
+        /// The function called in StartRecording with no extra inputs, useful for passing through to other inherited classes.
+        /// </summary>
+        protected bool BasicStartRecording()
         {
             _currentTick = 0;
             _recording = true;

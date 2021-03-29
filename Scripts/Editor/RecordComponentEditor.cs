@@ -20,12 +20,14 @@ namespace PlayRecorder
         private SerializedProperty _descriptor;
         private SerializedProperty _uniqueDescriptor;
         private SerializedProperty _required;
+        private string _tooltip;
 
         private void SetProperties()
         {
             _descriptor = serializedObject.FindProperty("_descriptor");
             _uniqueDescriptor = serializedObject.FindProperty("_uniqueDescriptor");
             _required = serializedObject.FindProperty("_required");
+            _tooltip = ((RecordComponent)serializedObject.targetObject).editorHelpbox;
         }
 
         public override void OnInspectorGUI()
@@ -60,21 +62,35 @@ namespace PlayRecorder
                     _uniqueDescriptor.boolValue = manager.CheckUniqueDescriptor((RecordComponent)serializedObject.targetObject);
                 }
 
+                EditorGUILayout.BeginVertical(Styles.boxBorder);
+
+                EditorGUILayout.LabelField("Recording Info", Styles.textBold);
+
                 if (manager == null)
                 {
                     EditorGUILayout.LabelField("No recording manager in scene. Please add one.",Styles.textBoldRed);
                 }
-
-                EditorGUILayout.PropertyField(_descriptor, new GUIContent("Descriptor", "This needs to be unique."));
-
-                if (!_uniqueDescriptor.boolValue || Regex.Replace(_descriptor.stringValue, @"\s+", "") == "")
+                else
                 {
-                    EditorGUILayout.LabelField("Current descriptor is not unique. Please change this to make it unique.", Styles.textBoldRed);
+                    EditorGUILayout.PropertyField(_descriptor, new GUIContent("Descriptor", "This needs to be unique."));
+
+                    if (!_uniqueDescriptor.boolValue || Regex.Replace(_descriptor.stringValue, @"\s+", "") == "")
+                    {
+                        EditorGUILayout.LabelField("Current descriptor is not unique. Please change this to make it unique.", Styles.textBoldRed);
+                    }
+
+                    _required.boolValue = EditorGUILayout.Toggle(new GUIContent("Required for Recording", "Decides whether this component will be used during the next recording. Does not affect playback."), _required.boolValue);
                 }
 
-                _required.boolValue = EditorGUILayout.Toggle(new GUIContent("Required for Recording", "Decides whether this component will be used during the next recording. Does not affect playback."), _required.boolValue);
+                EditorGUILayout.EndVertical();
 
                 serializedObject.ApplyModifiedProperties();
+
+                if (_tooltip != null && _tooltip != "")
+                {
+                    EditorGUILayout.HelpBox(_tooltip, MessageType.Info);
+                }
+
                 DrawDefaultInspector();
                 if (currentDescriptor != _descriptor.stringValue)
                 {

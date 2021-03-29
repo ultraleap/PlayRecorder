@@ -98,6 +98,12 @@ namespace PlayRecorder
 
             _baseTransform = gameObject.transform;
 
+            SetTransformParts();
+            return true;
+        }
+
+        protected void SetTransformParts()
+        {
             _transformCache.Clear();
             _transformCache.Add(new TransformCache(_baseTransform));
             for (int i = 0; i < _extraTransforms.Count; i++)
@@ -116,7 +122,6 @@ namespace PlayRecorder
                 rp.AddFrame(new TransformFrame(_currentTick, _transformCache[i]));
                 _recordItem.parts.Add(rp);
             }
-            return true;
         }
 
         protected override void RecordUpdateLogic()
@@ -206,41 +211,5 @@ namespace PlayRecorder
                 Debug.LogWarning("Transform unable to be updated on " + name + " at tick " + _currentTick.ToString());
             }
         }
-
-        private void DisableAllComponents(Transform transform)
-        {
-            Behaviour[] behaviours = transform.GetComponents<Behaviour>();
-            for (int i = 0; i < behaviours.Length; i++)
-            {
-                // This may need more items to be added
-                if (!(typeof(RecordComponent).IsSameOrSubclass(behaviours[i].GetType()) ||
-                   behaviours[i].GetType() == typeof(Renderer) ||
-                   behaviours[i].GetType() == typeof(MeshFilter) ||
-                   behaviours[i].GetType() == typeof(Camera) ||
-                   behaviours[i].GetType() == typeof(Canvas) ||
-                   behaviours[i].GetType().ToString().Contains("UnityEngine.UI.")
-                   ))
-                {
-                    (behaviours[i]).enabled = false;
-                }
-                if (behaviours[i].GetType() == typeof(Camera))
-                {
-                    ((Camera)behaviours[i]).stereoTargetEye = StereoTargetEyeMask.None;
-                }
-            }
-            Component[] components = transform.GetComponents<Component>();
-            for (int i = 0; i < components.Length; i++)
-            {
-                if (components[i].GetType() == typeof(Rigidbody))
-                {
-                    ((Rigidbody)components[i]).isKinematic = true;
-                }
-                if (components[i].GetType() == typeof(Rigidbody2D))
-                {
-                    ((Rigidbody2D)components[i]).isKinematic = true;
-                }
-            }
-        }
     }
-
 }

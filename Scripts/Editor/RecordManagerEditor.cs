@@ -299,17 +299,18 @@ namespace PlayRecorder
                     {
                         EditorGUIUtility.PingObject(_components.GetArrayElementAtIndex(i).objectReferenceValue);
                     }
+                    EditorGUILayout.EndHorizontal();
 
+                    string type = _components.GetArrayElementAtIndex(i).objectReferenceValue.GetType().ToString();
+                    EditorGUILayout.LabelField(new GUIContent("Type: " + type.FormatType(), type));
+
+                    EditorGUILayout.BeginHorizontal();
                     if (GUILayout.Button(recordLabel, EditorStyles.label, GUILayout.Width(46)))
                     {
                         recordComponent.required = !recordComponent.required;
                     }
                     recordComponent.required = EditorGUILayout.Toggle(recordComponent.required, GUILayout.Width(14));
-
                     EditorGUILayout.EndHorizontal();
-
-                    string type = _components.GetArrayElementAtIndex(i).objectReferenceValue.GetType().ToString();
-                    EditorGUILayout.LabelField(new GUIContent("Type: " + type.FormatType(), type));
                 }
                 EditorGUILayout.EndScrollView();
             }
