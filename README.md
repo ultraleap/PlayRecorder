@@ -53,7 +53,8 @@ Currently only verified to run on Windows and Standalone Windows builds. Other p
 - Add Odin Serializer to your project.
   - Ensure it is using the default namespace.
   - Change your project's API Compatibility Level to .NET 4.x (```Edit -> Project Settings -> Player -> Other Settings -> API Compatibility Level```)
-
+- Add the Editor Coroutines package to your project.
+  - ```Window -> Package Manager -> Search for Editor Coroutines -> Click Install```
 - Add PlayRecorder as a submodule within your project Assets folder.
 - Add the RecordingManager script to a new empty gameobject and set your recording folder and name.
   - Specify a custom frame rate if you wish.
@@ -67,7 +68,8 @@ Currently only verified to run on Windows and Standalone Windows builds. Other p
 
 - Add the PlaybackManager script to a new empty gameobject.
 - Add your recorded files to the manager and press the Update Files button.
-  - Binary files are automatically found by Unity, as long as they are within your Assets folder they should be found with any Asset Database refresh.
+  - There are two ways to do this, either by pressing the plus button on the top right and then selecting your file you want to load, or by dragging the file onto the Recorded Files header.
+  - Binary files are automatically found by Unity, as long as your recordings are within your Assets folder they should be found with any Asset Database refresh.
 - Assign your recorded components to the ones in your scene (this should be done automatically based upon your descriptors).
 - Go into play mode and press Play.
   - To access the Timeline and see your messages go to ```Tools -> PlayRecorder -> Timeline```.

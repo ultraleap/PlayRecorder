@@ -73,7 +73,7 @@ namespace PlayRecorder.Timeline
             }
             else
             {
-                Debug.LogError("Please add a PlaybackManager to your scene before trying to open the timeline window.");
+                Debug.LogError(EditorMessages.noPlaybackManager);
             }
 
         }
@@ -114,6 +114,7 @@ namespace PlayRecorder.Timeline
             _timelineBG = Resources.Load<Texture2D>("Images/timelinebg");
             _windowRect = position;
             _dataCache = new List<DataCache>(playbackManager.GetDataCache());
+            _dataCache.RemoveAll(item => item == null);
             playbackManager.OnDataCacheChange -= OnDataCacheChange;
             playbackManager.OnDataCacheChange += OnDataCacheChange;
             _normalBackground = GUI.backgroundColor;
@@ -167,7 +168,7 @@ namespace PlayRecorder.Timeline
             if(playbackManager == null)
             {
                 Startup();
-                EditorGUILayout.LabelField("Please add a PlaybackManager to your scene before trying to use the timeline window.");
+                EditorGUILayout.LabelField(EditorMessages.noPlaybackManager);
             }
             else
             {
@@ -197,6 +198,7 @@ namespace PlayRecorder.Timeline
         private void OnDataCacheChange(List<DataCache> cache)
         {
             _dataCache = new List<DataCache>(cache);
+            _dataCache.RemoveAll(item => item == null);
             DataSet();
         }
 
@@ -257,15 +259,20 @@ namespace PlayRecorder.Timeline
             if(_dataCache.Count == 0 && _emptyOnLoad)
             {
                 _dataCache = playbackManager.GetDataCache();
-                if(_dataCache.Count > 0)
+                _dataCache.RemoveAll(item => item == null);
+                if (_dataCache.Count > 0)
                 {
                     _emptyOnLoad = false;
                     DataSet();
                 }
             }
-            if(_dataCache.Count == 0 || playbackManager.currentFileIndex == -1)
+            if(_dataCache.Count == 0 || _dataCache[0] == null || playbackManager.currentFileIndex == -1)
             {
-                EditorGUILayout.LabelField("No files currently loaded. Please add files to the PlaybackManager and press the Update Files button");
+                EditorGUILayout.LabelField(EditorMessages.noFilesInPlayback);
+                if(GUILayout.Button("Open Playback Manager"))
+                {
+                    Selection.activeObject = playbackManager.gameObject;
+                }
                 return false;
             }
             return true;

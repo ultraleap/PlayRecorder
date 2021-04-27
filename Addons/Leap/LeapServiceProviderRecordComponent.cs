@@ -12,7 +12,7 @@ using Leap.Unity.Encoding;
 
 namespace PlayRecorder.Leap
 {
-    [AddComponentMenu("PlayRecorder/RecordComponents/Leap Service Provider Record Component")]
+    [AddComponentMenu("PlayRecorder/Leap/Leap Service Provider Record Component")]
     public class LeapServiceProviderRecordComponent : RecordComponent
     {
         private LeapProvider _leapProvider;
@@ -25,6 +25,8 @@ namespace PlayRecorder.Leap
         private float _handDistanceThreshold = 0.00075f;
 
         private LeapHandCache _leftCache, _rightCache;
+
+        public override string editorHelpbox => "You will need to add a LeapPlaybackProvider component and remove your default LeapServiceProvider to enable playback.";
 
         public override bool StartRecording()
         {

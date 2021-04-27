@@ -120,6 +120,11 @@ namespace PlayRecorder
             return BasicStartRecording();
         }
 
+        public void OnRecordingStarted()
+        {
+            OnStartRecording?.Invoke();
+        }
+
         /// <summary>
         /// The function called in StartRecording with no extra inputs, useful for passing through to other inherited classes.
         /// </summary>
@@ -128,7 +133,6 @@ namespace PlayRecorder
             _currentTick = 0;
             _recording = true;
             _recordItem = new RecordItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy);
-            OnStartRecording?.Invoke();
             return true;
         }
 

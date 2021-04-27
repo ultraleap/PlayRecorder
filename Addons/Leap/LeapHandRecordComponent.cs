@@ -11,7 +11,7 @@ using System;
 
 namespace PlayRecorder.Leap
 {
-    [AddComponentMenu("PlayRecorder/RecordComponents/Leap Hand Record Component")]
+    [AddComponentMenu("PlayRecorder/Leap/Leap Hand Record Component")]
     [Obsolete("DEPRECATED\nPlease try to make use of the Leap Hand Frame Record Component instead of this.")]
     public class LeapHandRecordComponent : RecordComponent
     {

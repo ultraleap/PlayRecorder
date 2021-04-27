@@ -5,11 +5,11 @@ using UnityEngine;
 namespace PlayRecorder
 {
     [System.Serializable]
-    public class SkinnedMeshItem : RecordItem
+    public class SkinnedMeshItem : TransformItem
     {
         public bool updateOffscreen = false;
 
-        public SkinnedMeshItem(string descriptor, string type, bool active, bool updateOffscreen) : base(descriptor, type, active)
+        public SkinnedMeshItem(string descriptor, string type, bool active, TransformSpace space, bool updateOffscreen) : base(descriptor, type, active, space)
         {
             this.updateOffscreen = updateOffscreen;
         }
@@ -24,7 +24,7 @@ namespace PlayRecorder
 
 #if UNITY_EDITOR
 
-        public override string editorHelpbox { get { return "All baseTransform and extraTransform variables will be overriden by the values captured from the SkinnedMeshRenderer."; } }
+        public override string editorHelpbox => "All baseTransform and extraTransform variables will be overriden by the values captured from the SkinnedMeshRenderer.";
 
         private void OnValidate()
         {
@@ -62,7 +62,7 @@ namespace PlayRecorder
 
             BasicStartRecording();
 
-            _recordItem = new SkinnedMeshItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy, _skinnedMeshRenderer.updateWhenOffscreen);
+            _recordItem = new SkinnedMeshItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy, _transformSpace, _skinnedMeshRenderer.updateWhenOffscreen);
 
             _baseTransform = _skinnedMeshRenderer.rootBone;
             _extraTransforms = _skinnedMeshRenderer.bones.ToList();

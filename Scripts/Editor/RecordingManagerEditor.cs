@@ -8,7 +8,7 @@ namespace PlayRecorder
 {
 
     [CustomEditor(typeof(RecordingManager), true)]
-    public class RecordManagerEditor : Editor
+    public class RecordingManagerEditor : Editor
     {
         private Vector2 scrollPos;
 

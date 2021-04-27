@@ -20,10 +20,28 @@ namespace PlayRecorder
         }
     }
 
+    [System.Serializable]
+    public enum TransformSpace
+    {
+        Local = 0,
+        World = 1
+    }
+
+    [System.Serializable]
+    public class TransformItem : RecordItem
+    {
+        public TransformSpace space;
+
+        public TransformItem(string descriptor, string type, bool active, TransformSpace space) : base(descriptor, type, active)
+        {
+            this.space = space;
+        }
+    }
+
     public class TransformCache
     {
         private Transform _transform;
-
+        private TransformSpace _space;
         // Used in main thread
         public Vector3 localPosition;
         public Quaternion localRotation;
@@ -31,12 +49,23 @@ namespace PlayRecorder
 
         public bool hasChanged = false;
 
-        public TransformCache(Transform transform)
+        public TransformCache(Transform transform, TransformSpace space)
         {
             this._transform = transform;
-            localPosition = transform.localPosition;
-            localRotation = transform.localRotation;
-            localScale = transform.localScale;
+            this._space = space;
+            switch (this._space)
+            {
+                case TransformSpace.Local:
+                    localPosition = transform.localPosition;
+                    localRotation = transform.localRotation;
+                    localScale = transform.localScale;
+                    break;
+                case TransformSpace.World:
+                    localPosition = transform.position;
+                    localRotation = transform.rotation;
+                    localScale = transform.localScale;
+                    break;
+            }
         }
 
         public void Update()
@@ -58,12 +87,14 @@ namespace PlayRecorder
                 hasChanged = true;
             }
         }
-
     }
 
     [AddComponentMenu("PlayRecorder/RecordComponents/Transform Record Component")]
     public class TransformRecordComponent : RecordComponent
     {
+        [SerializeField, Tooltip("Controls whether the recording will be done in local or world space. Playback will use the recorded space.")]
+        protected TransformSpace _transformSpace = TransformSpace.Local;
+        private TransformSpace _playbackSpace = TransformSpace.Local;
 
         [SerializeField, Tooltip("Automatically assigned to the current object transform, changes will be ignored and reset once recording starts.")]
         protected Transform _baseTransform = null;
@@ -105,13 +136,13 @@ namespace PlayRecorder
         protected void SetTransformParts()
         {
             _transformCache.Clear();
-            _transformCache.Add(new TransformCache(_baseTransform));
+            _transformCache.Add(new TransformCache(_baseTransform,_transformSpace));
             for (int i = 0; i < _extraTransforms.Count; i++)
             {
                 if (_extraTransforms[i] == null)
                     continue;
 
-                TransformCache tc = new TransformCache(_extraTransforms[i]);
+                TransformCache tc = new TransformCache(_extraTransforms[i],_transformSpace);
                 _transformCache.Add(tc);
 
             }
@@ -156,6 +187,19 @@ namespace PlayRecorder
         #endregion
 
         #region Playback
+
+        protected override void OnSetPlaybackData()
+        {
+            if(_recordItem.type == typeof(TransformItem).ToString())
+            {
+                // Updated transform recording
+                _playbackSpace = ((TransformItem)_recordItem).space;
+            }
+            else
+            {
+                _playbackSpace = TransformSpace.Local;
+            }
+        }
 
         protected override void SetPlaybackIgnoreTransforms()
         {
@@ -202,9 +246,19 @@ namespace PlayRecorder
         {
             try
             {
-                transform.localPosition = frame.localPosition;
-                transform.localRotation = frame.localRotation;
-                transform.localScale = frame.localScale;
+                switch (_playbackSpace)
+                {
+                    case TransformSpace.Local:
+                        transform.localPosition = frame.localPosition;
+                        transform.localRotation = frame.localRotation;
+                        transform.localScale = frame.localScale;
+                        break;
+                    case TransformSpace.World:
+                        transform.position = frame.localPosition;
+                        transform.rotation = frame.localRotation;
+                        transform.localScale = frame.localScale;
+                        break;
+                }
             }
             catch
             {
