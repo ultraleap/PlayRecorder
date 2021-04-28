@@ -14,6 +14,7 @@ namespace PlayRecorder
         /// <summary>
         /// Editor usage only.
         /// </summary>
+        [HideInInspector]
         public bool open = true, coreLogicOpen = false, componentsOpen = false;
 #endif
 

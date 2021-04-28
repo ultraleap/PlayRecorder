@@ -1,6 +1,9 @@
 ﻿using OdinSerializer;
 using System;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace PlayRecorder
 {
@@ -33,6 +36,9 @@ namespace PlayRecorder
         {
             System.IO.Directory.CreateDirectory(path);
             System.IO.File.WriteAllBytes(path + filename + ".bytes", SerializationUtility.SerializeValue(data, DataFormat.Binary));
+#if UNITY_EDITOR
+            AssetDatabase.Refresh();
+#endif
         }
 
         // why json for playlists?

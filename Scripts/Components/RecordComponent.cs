@@ -32,7 +32,9 @@ namespace PlayRecorder
         protected bool _recordUpdated = false;
         protected List<int> _playUpdatedParts = new List<int>();
 
-        protected PlaybackIgnoreItem _playbackIgnoreItem;
+        [SerializeField, HideInInspector]
+        protected PlaybackIgnoreSingleObject _customPlaybackIgnoreItem = null;
+        protected PlaybackIgnoreItem _playbackIgnoreItem = null;
         protected List<Transform> _playbackIgnoreTransforms = new List<Transform>();
 
         // Playback temp variables
@@ -397,13 +399,20 @@ namespace PlayRecorder
 
         public void SetPlaybackIgnores(PlaybackIgnoreItem playbackIgnore)
         {
-            if(playbackIgnore != null)
+            if(_customPlaybackIgnoreItem == null)
             {
-                _playbackIgnoreItem = playbackIgnore;
+                if(playbackIgnore != null)
+                {
+                    _playbackIgnoreItem = playbackIgnore;
+                }
+                else
+                {
+                    _playbackIgnoreItem = SetDefaultPlaybackIgnores(GetType().ToString());
+                }
             }
             else
             {
-                _playbackIgnoreItem = SetDefaultPlaybackIgnores(GetType().ToString());
+                _playbackIgnoreItem = _customPlaybackIgnoreItem.item;
             }
             // This allows for empty ignores to not affect other components
             if(_playbackIgnoreItem != null)

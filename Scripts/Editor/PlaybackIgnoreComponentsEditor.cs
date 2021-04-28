@@ -101,7 +101,14 @@ namespace PlayRecorder
             for (int i = 0; i < _ignoreItems.ignoreItems.Count; i++)
             {
                 PlaybackIgnoreItem pbi = _ignoreItems.ignoreItems[i];
+                EditorGUILayout.BeginHorizontal();
                 _ignoreItems.ignoreItems[i].open = EditorGUILayout.Foldout(_ignoreItems.ignoreItems[i].open, new GUIContent(pbi.recordComponent.FormatType(), pbi.recordComponent),true,Styles.foldoutBold);
+                if(GUILayout.Button("-",Styles.miniButton,GUILayout.Width(24)))
+                {
+                    _ignoreItems.ignoreItems.RemoveAt(i);
+                    continue;
+                }
+                EditorGUILayout.EndHorizontal();
                 if (_ignoreItems.ignoreItems[i].open)
                 {
                     EditorGUI.indentLevel++;
@@ -153,6 +160,7 @@ namespace PlayRecorder
                 }
                 EditorUtil.DrawDividerLine();
             }
+            serializedObject.ApplyModifiedProperties();
         }
 
         public void AddIgnoreItem(int index, string item)
