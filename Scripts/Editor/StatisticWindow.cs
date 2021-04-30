@@ -534,7 +534,7 @@ namespace PlayRecorder.Statistics
             _statCount++;
             FieldInfo[] fields = message.GetType().GetFields();
             GUILayout.BeginVertical(GUI.skin.box);
-            GUIContent label = new GUIContent((_allFiles ? (fileIndex+1).ToString() + ". " : "") + message.message + " - " + message.GetType().ToString().FormatType() + " (" + _statCache[index].frameIndex + "/" + _statCache[index].maxFrame + ")");
+            GUIContent label = new GUIContent((_allFiles ? (fileIndex+1).ToString() + ". " : "") + message.message + " - " + message.GetType().FormatType() + " (" + _statCache[index].frameIndex + "/" + _statCache[index].maxFrame + ")");
             _statCache[index].expanded = EditorGUILayout.BeginFoldoutHeaderGroup(_statCache[index].expanded, label);
             _statCache[index].validStat = false;
             Rect scrollCheck = GUILayoutUtility.GetLastRect();

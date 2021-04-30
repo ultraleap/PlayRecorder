@@ -98,6 +98,9 @@ namespace PlayRecorder
             int lastIndex = -1;
             for (int i = 0; i < _currentBehaviours.Length; i++)
             {
+                if (typeof(RecordComponent).IsSameOrSubclass(_currentBehaviours[i].GetType()))
+                    continue;
+
                 if (!_currentItems.Contains(_currentBehaviours[i].GetType().ToString()))
                 {
                     int j = i;

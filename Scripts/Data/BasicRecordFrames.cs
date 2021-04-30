@@ -54,4 +54,14 @@ namespace PlayRecorder
             this.value = value;
         }
     }
+
+    [System.Serializable]
+    public class QuaternionFrame : RecordFrame
+    {
+        public Quaternion value;
+        public QuaternionFrame(int tick, Quaternion value) : base(tick)
+        {
+            this.value = value;
+        }
+    }
 }

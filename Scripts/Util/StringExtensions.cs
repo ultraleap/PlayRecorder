@@ -20,6 +20,17 @@ namespace PlayRecorder
             return source.Substring(lastIndex+1);
         }
 
+        public static string FormatType(this Type source)
+        {
+            string typeString = source.ToString();
+            int lastIndex = typeString.LastIndexOf('.');
+
+            if (lastIndex == -1)
+                return typeString;
+
+            return typeString.Substring(lastIndex + 1);
+        }
+
         public static string ToCSVCell(this string str)
         {
             bool mustQuote = (str.Contains(",") || str.Contains("\"") || str.Contains("\r") || str.Contains("\n"));

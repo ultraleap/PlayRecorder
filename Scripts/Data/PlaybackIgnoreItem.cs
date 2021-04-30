@@ -22,6 +22,11 @@ namespace PlayRecorder
         {
             recordComponent = prType;
         }
+
+        public void AddComponent(System.Type type)
+        {
+            enabledComponents.Add(type.ToString());
+        }
     }
 
 }

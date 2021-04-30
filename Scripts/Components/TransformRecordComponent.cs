@@ -70,7 +70,6 @@ namespace PlayRecorder
 
         public void Update()
         {
-            hasChanged = false;
             if (_transform.localPosition != localPosition)
             {
                 localPosition = _transform.localPosition;
@@ -217,7 +216,6 @@ namespace PlayRecorder
         protected override PlaybackIgnoreItem SetDefaultPlaybackIgnores(string type)
         {
             PlaybackIgnoreItem pbi = new PlaybackIgnoreItem(type);
-            pbi.disableVRCamera = true;
             pbi.enabledComponents.Add("UnityEngine.UI.");
             return pbi;
         }
@@ -242,7 +240,7 @@ namespace PlayRecorder
 
         #endregion
 
-        private void ApplyTransform(TransformFrame frame, Transform transform)
+        protected void ApplyTransform(TransformFrame frame, Transform transform)
         {
             try
             {

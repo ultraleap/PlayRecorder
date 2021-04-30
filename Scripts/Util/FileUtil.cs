@@ -36,9 +36,6 @@ namespace PlayRecorder
         {
             System.IO.Directory.CreateDirectory(path);
             System.IO.File.WriteAllBytes(path + filename + ".bytes", SerializationUtility.SerializeValue(data, DataFormat.Binary));
-#if UNITY_EDITOR
-            AssetDatabase.Refresh();
-#endif
         }
 
         // why json for playlists?

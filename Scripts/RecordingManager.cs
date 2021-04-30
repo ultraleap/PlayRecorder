@@ -37,6 +37,7 @@ namespace PlayRecorder {
         private float _recordOnStartupDelay = 0f;
         [SerializeField]
         private bool _recordStartupInProgress = false;
+        private bool _hasRecorded = false;
 
         public string recordingFolderName = "Recordings";
         public string recordingName = "";
@@ -155,6 +156,7 @@ namespace PlayRecorder {
             });
             Debug.Log("Saving recording: " + _recordingTimeDate + " " + recordingName);
             _savingThread.Start();
+            _hasRecorded = true;
         }
 
         // Temporarily pause recording, without stopping it.
@@ -174,6 +176,12 @@ namespace PlayRecorder {
             if(_recording)
             {
                 StopRecording();
+            }
+            if(_hasRecorded)
+            {
+#if UNITY_EDITOR
+                UnityEditor.AssetDatabase.Refresh();
+#endif
             }
         }
 

@@ -126,7 +126,7 @@ namespace PlayRecorder
                 EditorGUILayout.HelpBox("Playback has already started. No changes to the ignore settings will be respected.", MessageType.Info);
             }
 
-            GUIContent gc = new GUIContent("Custom Playback Ignore Settings", "Allows you to manually override this particular record components ignore settings for playback. These settings will take precedence over the file set in the Playback Manager. By default, most non-PlayRecorder components will be disabled by default.");
+            GUIContent gc = new GUIContent("Custom Playback Ignore Settings", "Allows you to manually override this particular record components ignore settings for playback. These settings will take precedence over the file set in the Playback Manager. By default, most non-PlayRecorder components on this object will be disabled.");
 
             EditorGUILayout.BeginHorizontal();
 
@@ -207,6 +207,7 @@ namespace PlayRecorder
             PlaybackIgnoreSingleObject so = (PlaybackIgnoreSingleObject)_customIgnoreFile.objectReferenceValue;
             so.item.enabledComponents.Add(item);
             so.item.componentsOpen = true;
+            Repaint();
         }
     }
 }

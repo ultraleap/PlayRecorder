@@ -92,7 +92,7 @@ namespace PlayRecorder
 
         protected virtual void Reset()
         {
-            _descriptor = name +"_"+ this.GetType().ToString();
+            _descriptor = name +"_"+ GetType().FormatType();
         }
 
 #endif
