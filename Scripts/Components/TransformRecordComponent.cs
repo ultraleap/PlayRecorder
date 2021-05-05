@@ -12,7 +12,7 @@ namespace PlayRecorder
         public Quaternion localRotation;
         public Vector3 localScale;
 
-        public TransformFrame(int tick, TransformCache tc) : base(tick)
+        public TransformFrame(int tick, TransformRecordComponent.TransformCache tc) : base(tick)
         {
             localPosition = tc.localPosition;
             localRotation = tc.localRotation;
@@ -38,56 +38,6 @@ namespace PlayRecorder
         }
     }
 
-    public class TransformCache
-    {
-        private Transform _transform;
-        private TransformSpace _space;
-        // Used in main thread
-        public Vector3 localPosition;
-        public Quaternion localRotation;
-        public Vector3 localScale;
-
-        public bool hasChanged = false;
-
-        public TransformCache(Transform transform, TransformSpace space)
-        {
-            this._transform = transform;
-            this._space = space;
-            switch (this._space)
-            {
-                case TransformSpace.Local:
-                    localPosition = transform.localPosition;
-                    localRotation = transform.localRotation;
-                    localScale = transform.localScale;
-                    break;
-                case TransformSpace.World:
-                    localPosition = transform.position;
-                    localRotation = transform.rotation;
-                    localScale = transform.localScale;
-                    break;
-            }
-        }
-
-        public void Update()
-        {
-            if (_transform.localPosition != localPosition)
-            {
-                localPosition = _transform.localPosition;
-                hasChanged = true;
-            }
-            if (_transform.localRotation != localRotation)
-            {
-                localRotation = _transform.localRotation;
-                hasChanged = true;
-            }
-            if (_transform.localScale != localScale)
-            {
-                localScale = _transform.localScale;
-                hasChanged = true;
-            }
-        }
-    }
-
     [AddComponentMenu("PlayRecorder/RecordComponents/Transform Record Component")]
     public class TransformRecordComponent : RecordComponent
     {
@@ -102,6 +52,56 @@ namespace PlayRecorder
         protected List<Transform> _extraTransforms = new List<Transform>();
 
         protected List<TransformCache> _transformCache = new List<TransformCache>();
+
+        public class TransformCache
+        {
+            private Transform _transform;
+            private TransformSpace _space;
+            // Used in main thread
+            public Vector3 localPosition;
+            public Quaternion localRotation;
+            public Vector3 localScale;
+
+            public bool hasChanged = false;
+
+            public TransformCache(Transform transform, TransformSpace space)
+            {
+                this._transform = transform;
+                this._space = space;
+                switch (this._space)
+                {
+                    case TransformSpace.Local:
+                        localPosition = transform.localPosition;
+                        localRotation = transform.localRotation;
+                        localScale = transform.localScale;
+                        break;
+                    case TransformSpace.World:
+                        localPosition = transform.position;
+                        localRotation = transform.rotation;
+                        localScale = transform.localScale;
+                        break;
+                }
+            }
+
+            public void Update()
+            {
+                if (_transform.localPosition != localPosition)
+                {
+                    localPosition = _transform.localPosition;
+                    hasChanged = true;
+                }
+                if (_transform.localRotation != localRotation)
+                {
+                    localRotation = _transform.localRotation;
+                    hasChanged = true;
+                }
+                if (_transform.localScale != localScale)
+                {
+                    localScale = _transform.localScale;
+                    hasChanged = true;
+                }
+            }
+        }
 
         #region Unity Events
 
@@ -196,6 +196,7 @@ namespace PlayRecorder
             }
             else
             {
+                // Previous data type
                 _playbackSpace = TransformSpace.Local;
             }
         }

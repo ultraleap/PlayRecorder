@@ -3,14 +3,12 @@
 // This records a HandModel object (e.g. RiggedHand), listening to the raw frame information. Use this when you only really want to record the visual information of each individual hand.
 #if PR_LEAP
 using UnityEngine;
-using Leap;
 using Leap.Unity;
-using Leap.Unity.Encoding;
 using PlayRecorder.Hands;
 
 namespace PlayRecorder.Leap
 {
-    [AddComponentMenu("PlayRecorder/Leap/Leap Hand Frame Record Component")]
+    [AddComponentMenu("PlayRecorder/Ultraleap/Leap Hand Frame Record Component")]
     public class LeapHandFrameRecordComponent : RecordComponent
     {
 

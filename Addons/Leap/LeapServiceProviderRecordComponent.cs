@@ -3,16 +3,13 @@
 // This records information from a LeapProvider object (e.g. LeapServiceProvider/LeapXRServiceProvider), listening to all frame and hand information. Use this when you want to reproduce all the logic that both hands may have done.
 // You need to add a LeapPlaybackProvider to your object have frames played back, in place of your original LeapProvider.
 #if PR_LEAP
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Leap;
 using Leap.Unity;
-using Leap.Unity.Encoding;
 
 namespace PlayRecorder.Leap
 {
-    [AddComponentMenu("PlayRecorder/Leap/Leap Service Provider Record Component")]
+    [AddComponentMenu("PlayRecorder/Ultraleap/Leap Service Provider Record Component")]
     public class LeapServiceProviderRecordComponent : RecordComponent
     {
         private LeapProvider _leapProvider;
@@ -26,7 +23,9 @@ namespace PlayRecorder.Leap
 
         private LeapHandCache _leftCache, _rightCache;
 
+#if UNITY_EDITOR
         public override string editorHelpbox => "You will need to add a LeapPlaybackProvider component and remove your default LeapServiceProvider to enable playback.";
+#endif
 
         public override bool StartRecording()
         {

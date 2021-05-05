@@ -77,54 +77,6 @@ namespace PlayRecorder
         }
     }
 
-    public class AnimatorParameterCache
-    {
-        private Animator _animator;
-        public string name;
-        public AnimatorControllerParameterType type;
-        public float fValue;
-        public int iValue;
-        public bool bValue;
-
-        public bool hasChanged = false;
-
-        public AnimatorParameterCache(Animator animator, AnimatorControllerParameter parameter)
-        {
-            this._animator = animator;
-            this.name = parameter.name;
-            this.type = parameter.type;
-        }
-
-        public void Update()
-        {
-            switch (this.type)
-            {
-                case AnimatorControllerParameterType.Float:
-                    if(this.fValue != _animator.GetFloat(name))
-                    {
-                        this.fValue = _animator.GetFloat(name);
-                        hasChanged = true;
-                    }
-                    break;
-                case AnimatorControllerParameterType.Int:
-                    if(this.iValue != _animator.GetInteger(name))
-                    {
-                        this.iValue = _animator.GetInteger(name);
-                        hasChanged = true;
-                    }
-                    break;
-                case AnimatorControllerParameterType.Bool:
-                case AnimatorControllerParameterType.Trigger:
-                    if(this.bValue != _animator.GetBool(name))
-                    {
-                        this.bValue = _animator.GetBool(name);
-                        hasChanged = true;
-                    }
-                    break;
-            }
-        }
-    }
-
     [AddComponentMenu("PlayRecorder/RecordComponents/Animator Record Component")]
     public class AnimatorRecordComponent : RecordComponent
     {
@@ -134,13 +86,61 @@ namespace PlayRecorder
         [SerializeField]
         protected TransformSpace _rootObjectTransformSpace = TransformSpace.Local;
         protected TransformSpace _playbackSpace = TransformSpace.Local;
-        protected TransformCache _transformCache = null;
+        protected TransformRecordComponent.TransformCache _transformCache = null;
         protected AnimatorCache _animatorCache = null;
 
         protected List<AnimatorParameterCache> _parameterCache = new List<AnimatorParameterCache>();
 
         protected const int ANIMATOR_PARTS = 4;
         protected int _playbackFrameRate = 60;
+
+        public class AnimatorParameterCache
+        {
+            private Animator _animator;
+            public string name;
+            public AnimatorControllerParameterType type;
+            public float fValue;
+            public int iValue;
+            public bool bValue;
+
+            public bool hasChanged = false;
+
+            public AnimatorParameterCache(Animator animator, AnimatorControllerParameter parameter)
+            {
+                this._animator = animator;
+                this.name = parameter.name;
+                this.type = parameter.type;
+            }
+
+            public void Update()
+            {
+                switch (this.type)
+                {
+                    case AnimatorControllerParameterType.Float:
+                        if (this.fValue != _animator.GetFloat(name))
+                        {
+                            this.fValue = _animator.GetFloat(name);
+                            hasChanged = true;
+                        }
+                        break;
+                    case AnimatorControllerParameterType.Int:
+                        if (this.iValue != _animator.GetInteger(name))
+                        {
+                            this.iValue = _animator.GetInteger(name);
+                            hasChanged = true;
+                        }
+                        break;
+                    case AnimatorControllerParameterType.Bool:
+                    case AnimatorControllerParameterType.Trigger:
+                        if (this.bValue != _animator.GetBool(name))
+                        {
+                            this.bValue = _animator.GetBool(name);
+                            hasChanged = true;
+                        }
+                        break;
+                }
+            }
+        }
 
 #if UNITY_EDITOR
         private void OnValidate()
@@ -159,10 +159,14 @@ namespace PlayRecorder
 
         public override bool StartRecording()
         {
+            _animator = GetComponent<Animator>();
+            if(_animator == null)
+            {
+                return false;
+            }
+
             base.StartRecording();
             _recordItem = new AnimatorItem(descriptor, this.GetType().ToString(), gameObject.activeInHierarchy, _rootObjectTransformSpace, _animator.applyRootMotion, (int)_animator.updateMode, (int)_animator.cullingMode, _animator.fireEvents, _animator.keepAnimatorControllerStateOnDisable);
-
-            _animator = GetComponent<Animator>();
 
             SetAnimatorParameters();
 
@@ -171,16 +175,13 @@ namespace PlayRecorder
 
         protected void SetAnimatorParameters()
         {
-            _transformCache = new TransformCache(transform, _rootObjectTransformSpace);
+            _transformCache = new TransformRecordComponent.TransformCache(transform, _rootObjectTransformSpace);
             _animatorCache = new AnimatorCache(_animator);
             for (int i = 0; i < ANIMATOR_PARTS; i++)
             {
                 _recordItem.parts.Add(new RecordPart());
             }
             RecordAnimatorProperties();
-            // speed f
-            // feetpivot f
-            // stabilizeFeet b
 
             _parameterCache.Clear();
             for (int i = 0; i < _animator.parameterCount; i++)
@@ -294,35 +295,31 @@ namespace PlayRecorder
 
         protected override void OnSetPlaybackData()
         {
-            _animator = GetComponent<Animator>();
-            PlaybackManager pbm = FindObjectOfType<PlaybackManager>();
-            if(pbm != null)
-            {
-                _playbackFrameRate = pbm.currentFrameRate;
-                pbm.OnUpdateTick -= OnUpdateTick;
-                pbm.OnUpdateTick += OnUpdateTick;
-            }
 
-            AnimatorItem ai = (AnimatorItem)_recordItem;
-            _playbackSpace = ai.space;
-            _animator.applyRootMotion = ai.applyRootMotion;
-            _animator.fireEvents = ai.fireEvents;
-            _animator.keepAnimatorControllerStateOnDisable = ai.keepAnimatorControllerState;
-            _animator.updateMode = (AnimatorUpdateMode)Enum.ToObject(typeof(AnimatorUpdateMode), ai.updateMode);
-            _animator.cullingMode = (AnimatorCullingMode)Enum.ToObject(typeof(AnimatorCullingMode), ai.cullingMode);
+            _animator = GetComponent<Animator>();
+            if (Application.isPlaying)
+            {
+                PlaybackManager pbm = FindObjectOfType<PlaybackManager>();
+                if (pbm != null)
+                {
+                    _playbackFrameRate = pbm.currentFrameRate;
+                    pbm.OnUpdateTick -= OnUpdateTick;
+                    pbm.OnUpdateTick += OnUpdateTick;
+                }
+
+                AnimatorItem ai = (AnimatorItem)_recordItem;
+                _playbackSpace = ai.space;
+                _animator.applyRootMotion = ai.applyRootMotion;
+                _animator.fireEvents = ai.fireEvents;
+                _animator.keepAnimatorControllerStateOnDisable = ai.keepAnimatorControllerState;
+                _animator.updateMode = (AnimatorUpdateMode)Enum.ToObject(typeof(AnimatorUpdateMode), ai.updateMode);
+                _animator.cullingMode = (AnimatorCullingMode)Enum.ToObject(typeof(AnimatorCullingMode), ai.cullingMode);
+            }
         }
 
         public override void StartPlaying()
         {
             base.StartPlaying();
-        }
-
-        protected override PlaybackIgnoreItem SetDefaultPlaybackIgnores(string type)
-        {
-            PlaybackIgnoreItem pbi = new PlaybackIgnoreItem(type);
-            
-            //pbi.AddComponent(typeof(Animator));
-            return pbi;
         }
 
         protected override void PlayUpdateLogic()
@@ -343,11 +340,6 @@ namespace PlayRecorder
         private void OnUpdateTick()
         {
             _animator.Update(1f / _playbackFrameRate);
-        }
-
-        protected override void PlayAfterTickLogic()
-        {
-            base.PlayAfterTickLogic();
         }
 
         protected void ApplyAnimatorProperties(int ind, RecordFrame frame)

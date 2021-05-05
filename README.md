@@ -1,4 +1,7 @@
-# PlayRecorder
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/6281246/117145497-206d9f00-adab-11eb-82a7-065c3fecdcc9.png" />
+</p>
+
 PlayRecorder lets you record Unity scene logic into binary files that work in **both** the editor or builds. Once a recording is made with a scene, even if that recording is created within a build, it can be played back within the editor, making it incredibly useful for recording data from user studies or analytics. Data can also be recorded within the editor, and then played back within a build.
 
 All data recorded by PlayRecorder is entirely polymorphic, allowing for considerably large amounts of customisation with little effort. Due to this you can quite easily and quickly add your own custom data into the system, while still being sure it will be recorded.
@@ -9,30 +12,24 @@ PlayRecorder includes the ability to record messages (or events in another word)
 
 The idea behind the overall structure is that PlayRecorder is its mostly own contained module. There should be next to no impact on your current project, be it code wise, pre-requirements, and overall performance overhead.
 
-## How It Works
-PlayRecorder has a component (called ```RecordComponent```) and data (called ```RecordFrame```) layout, where individual components are attached to your objects and control their own data stores and logic. Components only ever records information when there is a change, or are explictly told to do so, reducing the overall recording size.
-
-The ```RecordingManager``` controls when components record their updates, and eventually collates all the data from the components and saves it into binary files.
-- ```RecordComponent```s control a ```RecordItem``` (the raw data).
-- ```RecordItem```s in turn can have as many ```RecordPart``` as they wish.
-- ```RecordPart```s store the individual frames for the recording.
-
-The ```PlaybackManager``` loads recorded files back into the scene, sends the respective data to components, and then ticks through all changes. Ideally recordings are meant to be loaded back into the scene that they were recorded from, and the system will automatically understand how to assign objects, however as long as the type of RecordComponent matches between the recording and the scene then it can be played back.
-- ```RecordComponent```s also control their playback logic.
-  - This logic can be customised freely to match requirements of the component.
-
-Please refer to [Expanding Your Components](#expanding-your-components) for more information on customising the system to meet your needs.
+📚 Please refer to the [wiki](wiki) for further information. 📚
 
 ## What's Included
 - Recording and Playback system
   - Customise recording (and playback) frame rates.
   - All events can be controlled from either the editor windows, or through code.
   - Multiple files can be loaded into the playback system and swapped between at runtime.
-- RecordComponents
+- [RecordComponents](Scripts/Components)
   - RecordComponent - Only records the Unity enable/disable events.
   - TransformRecordComponent - Records all transform changes.
-- Message system
+  - SkinnedMeshRecordComponent - Records all transform changes of a SkinnedMesh component.
+  - AnimationRecordComponent - Records play events of an Animation component.
+  - AnimatorRecordComponent - Records an Animator and state changes.
+- RecordFrames
+  - Multiple basic types of frames to help you quickly expand the system to meet your data needs.
+- Message and Statistics system
   - Allows for timestamped events to be recorded to objects.
+  - Store time based and final statistical values into recordings, one click CSV exporting of values.
 - Timeline window
   - View all messages recorded across all currently loaded files.
   - Fully customisable color palette for both messages and window.
@@ -82,7 +79,8 @@ PlayRecorder includes a few addons by default, including a [LeapMotion HandModel
 - To enable an addon go to ```Edit -> Project Settings -> Player -> Other Settings -> Scripting Define Symbols``` and add ```PR_*plugin*``` (e.g. ```PR_LEAP```).
 
 ### Current Addons
-- [LeapMotion HandModel recorder](Addons/Leap)
+- [Ultraleap hand recorder](Addons/Leap)
+  - Records either individual model based hands, or the entire service provider frames.
 - [SteamVR Skeletal Hand recorder](Addons/SteamVR)
 
 ## Expanding Your Components
@@ -94,6 +92,6 @@ Every segment of the system can be expanded, from the components, right down to 
 ## Disclaimers
 PlayRecorder is licensed under [Apache 2.0](LICENSE).
 
-PlayRecorder is not actively maintained or managed, and provided as is. Changes and fixes have no ETA.
+PlayRecorder is not (currently) actively maintained or managed, and provided as is. This is mostly a research focused passion project. Changes and fixes have no ETA.
 
 Although unlikely, features and names of types may change between commits/versions. If you record files in one version of PlayRecorder, use the same version to play it back or you may encounter errors.
