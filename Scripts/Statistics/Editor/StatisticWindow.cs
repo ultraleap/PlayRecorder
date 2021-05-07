@@ -55,6 +55,7 @@ namespace PlayRecorder.Statistics
         private Texture2D _indicator;
         private List<Color> _graphColors;
         private Color _indicatorColor = Color.white;
+        private Color _backgroundColor = Color.black;
 
         private GUIContent _copyButton;
         private GUIContent _skipToEndButton;
@@ -74,7 +75,7 @@ namespace PlayRecorder.Statistics
             }
             else
             {
-                Debug.LogError("Please add a PlaybackManager to your scene before trying to open the statistics window.");
+                Debug.LogError(EditorMessages.noPlaybackManager);
             }
         }
 
@@ -100,6 +101,7 @@ namespace PlayRecorder.Statistics
                 return;
             }
             _dataCache = new List<DataCache>(playbackManager.GetDataCache());
+            _dataCache.RemoveAll(item => item == null);
 
             playbackManager.OnDataCacheChange -= OnDataCacheChange;
             playbackManager.OnDataCacheChange += OnDataCacheChange;
@@ -115,6 +117,8 @@ namespace PlayRecorder.Statistics
 
             _skipToEndButton = new GUIContent(EditorGUIUtility.IconContent("Animation.LastKey"));
             _skipToEndButton.tooltip = "Set the current frame to the last possible frame.";
+
+            _backgroundColor = EditorGUIUtility.isProSkin ? new Color32(56, 56, 56, 255) : new Color32(194, 194, 194, 255);
 
             if (_dataCache.Count > 0)
             {
@@ -177,7 +181,8 @@ namespace PlayRecorder.Statistics
         private void OnDataCacheChange(List<DataCache> cache)
         {
             _dataCache = new List<DataCache>(cache);
-            if(_fileIndex > _dataCache.Count)
+            _dataCache.RemoveAll(item => item == null);
+            if (_fileIndex > _dataCache.Count)
             {
                 _fileIndex = _dataCache.Count - 1;
             }
@@ -199,6 +204,7 @@ namespace PlayRecorder.Statistics
             if (_dataCache.Count == 0 && _emptyOnLoad)
             {
                 _dataCache = playbackManager.GetDataCache();
+                _dataCache.RemoveAll(item => item == null);
                 if (_dataCache.Count > 0)
                 {
                     _emptyOnLoad = false;
@@ -211,7 +217,11 @@ namespace PlayRecorder.Statistics
             }
             if (_dataCache.Count == 0 || playbackManager.currentFileIndex == -1)
             {
-                EditorGUILayout.LabelField("No files currently loaded. Please add files to the PlaybackManager and press the Update Files button");
+                EditorGUILayout.LabelField(EditorMessages.noFilesInPlayback);
+                if (GUILayout.Button("Open Playback Manager"))
+                {
+                    Selection.activeObject = playbackManager.gameObject;
+                }
                 return false;
             }
             return true;
@@ -238,7 +248,7 @@ namespace PlayRecorder.Statistics
             if (playbackManager == null)
             {
                 Startup();
-                EditorGUILayout.LabelField("Please add a PlaybackManager to your scene before trying to use the statistics window.");
+                EditorGUILayout.LabelField(EditorMessages.noPlaybackManager);
             }
             else
             {
@@ -392,13 +402,15 @@ namespace PlayRecorder.Statistics
             _indicator.SetPixel(0, 0, _indicatorColor);
             _indicator.Apply();
 
+            _backgroundColor = EditorGUIUtility.isProSkin ? new Color32(56, 56, 56, 255) : new Color32(194, 194, 194, 255);
+
             for (int i = 0; i < _statCache.Count; i++)
             {
                 if (!_allFiles && _statCache[i].fileIndex != _fileIndex || _dataCache[_statCache[i].fileIndex].frameCount == 0)
                 {
                     continue;
                 }
-                _statCache[i].graph = StatisticGraph.GenerateGraph(_dataCache[_statCache[i].fileIndex].messages[_statCache[i].messageIndex], _statCache[i], (int)(_windowRect.width - 16 - (_scrollBarActive ? (_scrollbarWidth-1) : 0)), 80, _globalMaxFrame, _graphColors);
+                _statCache[i].graph = StatisticGraph.GenerateGraph(_dataCache[_statCache[i].fileIndex].messages[_statCache[i].messageIndex], _statCache[i], (int)(_windowRect.width - 16 - (_scrollBarActive ? (_scrollbarWidth-1) : 0)), 80, _globalMaxFrame, _graphColors, _backgroundColor);
             }
         }
 
@@ -527,7 +539,7 @@ namespace PlayRecorder.Statistics
             _statCount++;
             FieldInfo[] fields = message.GetType().GetFields();
             GUILayout.BeginVertical(GUI.skin.box);
-            GUIContent label = new GUIContent((_allFiles ? (fileIndex+1).ToString() + ". " : "") + message.message + " - " + message.GetType().ToString().FormatType() + " (" + _statCache[index].frameIndex + "/" + _statCache[index].maxFrame + ")");
+            GUIContent label = new GUIContent((_allFiles ? (fileIndex+1).ToString() + ". " : "") + message.message + " - " + message.GetType().FormatType() + " (" + _statCache[index].frameIndex + "/" + _statCache[index].maxFrame + ")");
             _statCache[index].expanded = EditorGUILayout.BeginFoldoutHeaderGroup(_statCache[index].expanded, label);
             _statCache[index].validStat = false;
             Rect scrollCheck = GUILayoutUtility.GetLastRect();
@@ -550,7 +562,7 @@ namespace PlayRecorder.Statistics
                 if(obj is IList)
                 {
                     IList list = (IList)obj;
-                    GUIContent statCount = new GUIContent("("+list.Count.ToString()+")");
+                    GUIContent statCount = new GUIContent("("+list.Count.ToString()+")","The number of recorded instances of the statistic.");
                     EditorGUILayout.LabelField(statCount,Styles.textBold,GUILayout.Width(Styles.textBold.CalcSize(statCount).x));
 
                     GUIContent currentValLab = new GUIContent("Current Value", "The value of the statistic based on the current frame.");

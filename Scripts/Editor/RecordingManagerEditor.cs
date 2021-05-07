@@ -8,7 +8,7 @@ namespace PlayRecorder
 {
 
     [CustomEditor(typeof(RecordingManager), true)]
-    public class RecordManagerEditor : Editor
+    public class RecordingManagerEditor : Editor
     {
         private Vector2 scrollPos;
 
@@ -204,8 +204,6 @@ namespace PlayRecorder
                 {
                     Object obj = AssetDatabase.LoadAssetAtPath("Assets/" + _recordingFolder.stringValue, typeof(Object));
 
-                    Selection.activeObject = obj;
-
                     EditorGUIUtility.PingObject(obj);
                 }
 
@@ -299,17 +297,18 @@ namespace PlayRecorder
                     {
                         EditorGUIUtility.PingObject(_components.GetArrayElementAtIndex(i).objectReferenceValue);
                     }
+                    EditorGUILayout.EndHorizontal();
 
+                    string type = _components.GetArrayElementAtIndex(i).objectReferenceValue.GetType().ToString();
+                    EditorGUILayout.LabelField(new GUIContent("Type: " + type.FormatType(), type));
+
+                    EditorGUILayout.BeginHorizontal();
                     if (GUILayout.Button(recordLabel, EditorStyles.label, GUILayout.Width(46)))
                     {
                         recordComponent.required = !recordComponent.required;
                     }
                     recordComponent.required = EditorGUILayout.Toggle(recordComponent.required, GUILayout.Width(14));
-
                     EditorGUILayout.EndHorizontal();
-
-                    string type = _components.GetArrayElementAtIndex(i).objectReferenceValue.GetType().ToString();
-                    EditorGUILayout.LabelField(new GUIContent("Type: " + type.FormatType(), type));
                 }
                 EditorGUILayout.EndScrollView();
             }

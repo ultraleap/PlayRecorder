@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace PlayRecorder
 {
-
     [CreateAssetMenu(fileName = "PlaybackIgnores", menuName = "PlayRecorder/Playback Ignore Asset")]
     public class PlaybackIgnoreComponentsObject : ScriptableObject
     {

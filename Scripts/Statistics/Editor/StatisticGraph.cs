@@ -11,7 +11,7 @@ namespace PlayRecorder.Statistics
     public static class StatisticGraph
     {
 
-        public static Texture2D GenerateGraph(RecordMessage message, StatisticWindow.StatCache cache, int width, int height, int allMaxFrame, List<Color> lineColors)
+        public static Texture2D GenerateGraph(RecordMessage message, StatisticWindow.StatCache cache, int width, int height, int allMaxFrame, List<Color> lineColors, Color backgroundColor)
         {
             if (cache.maxFrame == 0)
             {
@@ -34,6 +34,7 @@ namespace PlayRecorder.Statistics
                     else
                     {
                         Texture2D tex = new Texture2D((int)(Mathf.Abs(width) * (cache.maxFrame / (float)allMaxFrame)), Mathf.Abs(height));
+                        FillPixels(tex, backgroundColor);
                         GraphLines(tex, cache, message.frames, (IList)obj, lineColors);
                         tex.Apply();
                         return tex;
@@ -41,6 +42,16 @@ namespace PlayRecorder.Statistics
                 }
             }
             return null;
+        }
+
+        private static void FillPixels(Texture2D texture, Color color)
+        {
+            Color[] colors = texture.GetPixels();
+            for (int i = 0; i < colors.Length; i++)
+            {
+                colors[i] = color;
+            }
+            texture.SetPixels(colors);
         }
 
         private static void GraphLines(Texture2D texture, StatisticWindow.StatCache cache, List<int> frames, IList list, List<Color> lineColors)

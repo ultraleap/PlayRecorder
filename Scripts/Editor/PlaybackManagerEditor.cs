@@ -35,12 +35,11 @@ namespace PlayRecorder
         private GUIContent _recordFoldoutGUI = new GUIContent("", "You can drag files onto this header to add them to the files list.");
         private GUIContent _loadingButtonGUI = new GUIContent("Loading...", _updateFilesDescription);
         private GUIContent _updateFilesGUI = new GUIContent("Update Files", _updateFilesDescription);
-        private GUIContent _filterComponentsGUI = new GUIContent("Filter Components", "Filter to specific components based upon their descriptor and component type.");
+        private GUIContent _filterComponentsGUI = new GUIContent("Filter Items", "Filter to specific items based upon their descriptor and component type.");
         private GUIContent _playbackRateGUI = new GUIContent("Playback Rate", "The rate/speed at which the recordings should play (1 = standard).");
         private GUIContent _scrubWaitGUI = new GUIContent("Scrubbing Wait Time", "The amount of time to wait before jumping to a specific point on the timeline.");
 
         private const string _updateFilesDescription = "This can take a while to process depending on your system, the number of files, and the recording complexity. You may find certain features or options inaccessible until this button is pressed.";
-        private const string _recordComponentsInformation = "The green signifies how many components are correctly assigned, while red is the number that are not currently assigned.";
 
         private void Awake()
         {
@@ -399,11 +398,11 @@ namespace PlayRecorder
                         }
 
                         _currentFile.intValue = 0;
+                        _awaitingRefresh.boolValue = false;
                         serializedObject.ApplyModifiedProperties();
 
                         EditorUtility.DisplayDialog("Loaded", "Playlist loaded. " + textAssets.Count + " file(s) set.", "Ok");
                         ((PlaybackManager)serializedObject.targetObject).ChangeFiles();
-                        _awaitingRefresh.boolValue = false;
 
                     }
                     catch
@@ -434,28 +433,28 @@ namespace PlayRecorder
                 }
             }
 
-            GUIContent recordComponents = new GUIContent("Recorded Components (" + _binders.arraySize+")", _recordComponentsInformation);
+            GUIContent recordComponents = new GUIContent("Recorded Items (" + _binders.arraySize+")", EditorMessages.playbackRecordItemInfo);
 
             EditorGUILayout.BeginHorizontal();
 
             Rect foldoutRect = GUILayoutUtility.GetRect(0, Sizes.widthIcon + Sizes.padding, GUILayout.ExpandWidth(true));
 
             GUIContent greenLabel = new GUIContent(EditorGUIUtility.IconContent("greenLight"));
-            greenLabel.tooltip = _recordComponentsInformation;
+            greenLabel.tooltip = EditorMessages.playbackRecordItemInfo;
             GUIContent redLabel = new GUIContent(EditorGUIUtility.IconContent("redLight"));
-            redLabel.tooltip = _recordComponentsInformation;
+            redLabel.tooltip = EditorMessages.playbackRecordItemInfo;
 
             _binders.isExpanded = EditorGUI.Foldout(foldoutRect,_binders.isExpanded, recordComponents, true, Styles.foldoutBold);
 
             EditorGUILayout.LabelField(greenLabel,Styles.textIconBold,GUILayout.Width(Sizes.widthIcon));
 
-            GUIContent gcLabel = new GUIContent(assignedCount.ToString(), _recordComponentsInformation);
+            GUIContent gcLabel = new GUIContent(assignedCount.ToString(), EditorMessages.playbackRecordItemInfo);
 
             EditorGUILayout.LabelField(gcLabel,Styles.textBold, GUILayout.Width(Styles.textBold.CalcSize(gcLabel).x));
 
             EditorGUILayout.LabelField(redLabel,Styles.textIconBold, GUILayout.Width(Sizes.widthIcon));
 
-            GUIContent rcLabel = new GUIContent(unassignedCount.ToString(), _recordComponentsInformation);
+            GUIContent rcLabel = new GUIContent(unassignedCount.ToString(), EditorMessages.playbackRecordItemInfo);
 
             EditorGUILayout.LabelField(rcLabel, Styles.textBold,GUILayout.Width(Styles.textBold.CalcSize(rcLabel).x));
 

@@ -32,7 +32,9 @@ namespace PlayRecorder
         protected bool _recordUpdated = false;
         protected List<int> _playUpdatedParts = new List<int>();
 
-        protected PlaybackIgnoreItem _playbackIgnoreItem;
+        [SerializeField, HideInInspector]
+        protected PlaybackIgnoreSingleObject _customPlaybackIgnoreItem = null;
+        protected PlaybackIgnoreItem _playbackIgnoreItem = null;
         protected List<Transform> _playbackIgnoreTransforms = new List<Transform>();
 
         // Playback temp variables
@@ -40,6 +42,15 @@ namespace PlayRecorder
         private string _gameObjectName = "";
 
         public Action OnStartRecording, OnStopRecording, OnStartPlayback;
+
+#if UNITY_EDITOR
+
+        /// <summary>
+        /// Override this to include an automatic helpbox in the inspector.
+        /// </summary>
+        public virtual string editorHelpbox { get { return null; } }
+
+#endif
 
         #region Unity Events
         private void Awake()
@@ -81,7 +92,7 @@ namespace PlayRecorder
 
         protected virtual void Reset()
         {
-            _descriptor = name +"_"+ this.GetType().ToString();
+            _descriptor = name +"_"+ GetType().FormatType();
         }
 
 #endif
@@ -108,10 +119,22 @@ namespace PlayRecorder
 
         public virtual bool StartRecording()
         {
+            return BasicStartRecording();
+        }
+
+        public void OnRecordingStarted()
+        {
+            OnStartRecording?.Invoke();
+        }
+
+        /// <summary>
+        /// The function called in StartRecording with no extra inputs, useful for passing through to other inherited classes.
+        /// </summary>
+        protected bool BasicStartRecording()
+        {
             _currentTick = 0;
             _recording = true;
             _recordItem = new RecordItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy);
-            OnStartRecording?.Invoke();
             return true;
         }
 
@@ -376,13 +399,20 @@ namespace PlayRecorder
 
         public void SetPlaybackIgnores(PlaybackIgnoreItem playbackIgnore)
         {
-            if(playbackIgnore != null)
+            if(_customPlaybackIgnoreItem == null)
             {
-                _playbackIgnoreItem = playbackIgnore;
+                if(playbackIgnore != null)
+                {
+                    _playbackIgnoreItem = playbackIgnore;
+                }
+                else
+                {
+                    _playbackIgnoreItem = SetDefaultPlaybackIgnores(GetType().ToString());
+                }
             }
             else
             {
-                _playbackIgnoreItem = SetDefaultPlaybackIgnores(GetType().ToString());
+                _playbackIgnoreItem = _customPlaybackIgnoreItem.item;
             }
             // This allows for empty ignores to not affect other components
             if(_playbackIgnoreItem != null)
@@ -462,9 +492,9 @@ namespace PlayRecorder
                     }
 
                     found = false;
-                    for (int k = 0; k < _playbackIgnoreItem.enabledComponents.Count; k++)
+                    for (int k = 0; k < _playbackIgnoreItem.enabledBehaviours.Count; k++)
                     {
-                        if(behaviours[j].GetType().ToString().Contains(_playbackIgnoreItem.enabledComponents[k],StringComparison.InvariantCultureIgnoreCase))
+                        if(behaviours[j].GetType().ToString().Contains(_playbackIgnoreItem.enabledBehaviours[k],StringComparison.InvariantCultureIgnoreCase))
                         {
                             found = true;
                         }

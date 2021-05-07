@@ -34,7 +34,7 @@ namespace PlayRecorder {
         }
     }
 
-    [AddComponentMenu("PlayRecorder/PlaybackManager",2)]
+    [AddComponentMenu("PlayRecorder/Playback Manager")]
     public class PlaybackManager : MonoBehaviour
     { 
 
@@ -153,6 +153,7 @@ namespace PlayRecorder {
         public Action<List<DataCache>> OnDataCacheChange;
         public Action<int> OnTick, OnScrub;
         public Action OnUpdateTick;
+        public Action OnPrePlaybackStart;
         public Action OnPlaybackStart;
 
         #endregion
@@ -555,6 +556,7 @@ namespace PlayRecorder {
         private void StartPlayingAfterLoad()
         {
             _firstLoad = false;
+            OnPrePlaybackStart?.Invoke();
             _playbackThread = new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;

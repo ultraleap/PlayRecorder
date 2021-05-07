@@ -7,7 +7,7 @@ using Debug = UnityEngine.Debug;
 
 namespace PlayRecorder {
 
-    [AddComponentMenu("PlayRecorder/RecordingManager",1)]
+    [AddComponentMenu("PlayRecorder/Recording Manager")]
     public class RecordingManager : MonoBehaviour
     {
 
@@ -37,9 +37,10 @@ namespace PlayRecorder {
         private float _recordOnStartupDelay = 0f;
         [SerializeField]
         private bool _recordStartupInProgress = false;
+        private bool _hasRecorded = false;
 
         public string recordingFolderName = "Recordings";
-        public string recordingName = "";
+        public string recordingName = "Recording";
         private string _recordingTimeDate = "";
         private string _unityDataPath;
 
@@ -58,6 +59,8 @@ namespace PlayRecorder {
         /// Occurs on the Unity update thread after the most recent thread tick.
         /// </summary>
         public Action OnUpdateTick;
+        public Action OnPreRecordingStart;
+        public Action OnRecordingStart;
 
         private void Start()
         {
@@ -100,6 +103,7 @@ namespace PlayRecorder {
                 Debug.LogError("There are duplicate descriptors in your current setup. Please fix before trying to record.");
                 return;
             }
+            OnPreRecordingStart?.Invoke();
             _unityDataPath = Application.dataPath;
             _data = new Data()
             {
@@ -118,12 +122,10 @@ namespace PlayRecorder {
                 if (_components[i] == null)
                     continue;
 
-                if(_components[i].required)
+                if(_components[i].required && _components[i].StartRecording())
                 {
-                    if(_components[i].StartRecording())
-                    {
-                        _currentComponents.Add(_components[i]);
-                    }
+                    _currentComponents.Add(_components[i]);
+                    _components[i].OnRecordingStarted();
                 }
             }
             _mainThreadTime = Time.time;
@@ -134,6 +136,7 @@ namespace PlayRecorder {
             });
             Debug.Log("Starting recording: " + _recordingTimeDate + " " + recordingName);
             _recordingThread.Start();
+            OnRecordingStart?.Invoke();
         }
 
         public void StopRecording()
@@ -153,6 +156,7 @@ namespace PlayRecorder {
             });
             Debug.Log("Saving recording: " + _recordingTimeDate + " " + recordingName);
             _savingThread.Start();
+            _hasRecorded = true;
         }
 
         // Temporarily pause recording, without stopping it.
@@ -167,11 +171,26 @@ namespace PlayRecorder {
             _recordingPaused = false;
         }
 
-        void OnDestroy()
+#if UNITY_EDITOR
+
+        private void Reset()
+        {
+            RefreshComponents();
+        }
+
+#endif
+
+        private void OnDestroy()
         {
             if(_recording)
             {
                 StopRecording();
+            }
+            if(_hasRecorded)
+            {
+#if UNITY_EDITOR
+                UnityEditor.AssetDatabase.Refresh();
+#endif
             }
         }
 
@@ -252,7 +271,6 @@ namespace PlayRecorder {
 
                 if (component == _components[i])
                     continue;
-
 
                 if (component.descriptor == _components[i].descriptor)
                     return false;
