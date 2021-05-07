@@ -492,9 +492,9 @@ namespace PlayRecorder
                     }
 
                     found = false;
-                    for (int k = 0; k < _playbackIgnoreItem.enabledComponents.Count; k++)
+                    for (int k = 0; k < _playbackIgnoreItem.enabledBehaviours.Count; k++)
                     {
-                        if(behaviours[j].GetType().ToString().Contains(_playbackIgnoreItem.enabledComponents[k],StringComparison.InvariantCultureIgnoreCase))
+                        if(behaviours[j].GetType().ToString().Contains(_playbackIgnoreItem.enabledBehaviours[k],StringComparison.InvariantCultureIgnoreCase))
                         {
                             found = true;
                         }

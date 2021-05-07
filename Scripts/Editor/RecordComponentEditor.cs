@@ -165,29 +165,29 @@ namespace PlayRecorder
                     so.item.disableVRCamera = EditorGUILayout.Toggle(new GUIContent("Disable VR Camera", "Forces camera to render to desktop, not headset."), so.item.disableVRCamera);
                 }
 
-                so.item.componentsOpen = EditorGUILayout.Foldout(so.item.componentsOpen, new GUIContent("Enabled Components (" + so.item.enabledComponents.Count + ")", "The components that will remain enabled when playback begins."), true);
+                so.item.componentsOpen = EditorGUILayout.Foldout(so.item.componentsOpen, new GUIContent("Enabled Behaviours (" + so.item.enabledBehaviours.Count + ")", "The components that will remain enabled when playback begins."), true);
                 if (so.item.componentsOpen)
                 {
-                    for (int j = 0; j < so.item.enabledComponents.Count; j++)
+                    for (int j = 0; j < so.item.enabledBehaviours.Count; j++)
                     {
                         EditorGUILayout.BeginHorizontal();
                         if (GUILayout.Button(new GUIContent("-", "Remove this class from the ignore list."), Styles.miniButton, GUILayout.Width(Sizes.widthCharButton)))
                         {
-                            so.item.enabledComponents.RemoveAt(j);
+                            so.item.enabledBehaviours.RemoveAt(j);
                             GUIUtility.ExitGUI();
                         }
-                        so.item.enabledComponents[j] = EditorGUILayout.TextField(so.item.enabledComponents[j]);
+                        so.item.enabledBehaviours[j] = EditorGUILayout.TextField(so.item.enabledBehaviours[j]);
                         EditorGUILayout.EndHorizontal();
                     }
                 }
                 EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button(new GUIContent("Add Components from GameObject", "Allows you to select a GameObject in the scene and quickly select components you want to ignore.")))
+                if (GUILayout.Button(new GUIContent("Add Behaviours from GameObject", "Allows you to select a GameObject in the scene and quickly select behaviours you want to ignore.")))
                 {
-                    PopupWindow.Show(_popupRect, new PlaybackIgnorePopup(this, so.item.enabledComponents, _popupRect.width));
+                    PopupWindow.Show(_popupRect, new PlaybackIgnorePopup(this, so.item.enabledBehaviours, _popupRect.width));
                 }
                 if (GUILayout.Button(new GUIContent("Add Empty", "Adds an empty row allowing you to add whatever text you wish. Logic is tested on a string contains test so you could include a whole namespace as an example.")))
                 {
-                    so.item.enabledComponents.Add("");
+                    so.item.enabledBehaviours.Add("");
                 }
                 EditorGUILayout.EndHorizontal();
                 if (Event.current.type == EventType.Repaint)
@@ -203,7 +203,7 @@ namespace PlayRecorder
         public void AddIgnoreItem(string item)
         {
             PlaybackIgnoreSingleObject so = (PlaybackIgnoreSingleObject)_customIgnoreFile.objectReferenceValue;
-            so.item.enabledComponents.Add(item);
+            so.item.enabledBehaviours.Add(item);
             so.item.componentsOpen = true;
             Repaint();
         }

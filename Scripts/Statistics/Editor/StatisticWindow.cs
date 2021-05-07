@@ -55,6 +55,7 @@ namespace PlayRecorder.Statistics
         private Texture2D _indicator;
         private List<Color> _graphColors;
         private Color _indicatorColor = Color.white;
+        private Color _backgroundColor = Color.black;
 
         private GUIContent _copyButton;
         private GUIContent _skipToEndButton;
@@ -116,6 +117,8 @@ namespace PlayRecorder.Statistics
 
             _skipToEndButton = new GUIContent(EditorGUIUtility.IconContent("Animation.LastKey"));
             _skipToEndButton.tooltip = "Set the current frame to the last possible frame.";
+
+            _backgroundColor = EditorGUIUtility.isProSkin ? new Color32(56, 56, 56, 255) : new Color32(194, 194, 194, 255);
 
             if (_dataCache.Count > 0)
             {
@@ -399,13 +402,15 @@ namespace PlayRecorder.Statistics
             _indicator.SetPixel(0, 0, _indicatorColor);
             _indicator.Apply();
 
+            _backgroundColor = EditorGUIUtility.isProSkin ? new Color32(56, 56, 56, 255) : new Color32(194, 194, 194, 255);
+
             for (int i = 0; i < _statCache.Count; i++)
             {
                 if (!_allFiles && _statCache[i].fileIndex != _fileIndex || _dataCache[_statCache[i].fileIndex].frameCount == 0)
                 {
                     continue;
                 }
-                _statCache[i].graph = StatisticGraph.GenerateGraph(_dataCache[_statCache[i].fileIndex].messages[_statCache[i].messageIndex], _statCache[i], (int)(_windowRect.width - 16 - (_scrollBarActive ? (_scrollbarWidth-1) : 0)), 80, _globalMaxFrame, _graphColors);
+                _statCache[i].graph = StatisticGraph.GenerateGraph(_dataCache[_statCache[i].fileIndex].messages[_statCache[i].messageIndex], _statCache[i], (int)(_windowRect.width - 16 - (_scrollBarActive ? (_scrollbarWidth-1) : 0)), 80, _globalMaxFrame, _graphColors, _backgroundColor);
             }
         }
 
@@ -557,7 +562,7 @@ namespace PlayRecorder.Statistics
                 if(obj is IList)
                 {
                     IList list = (IList)obj;
-                    GUIContent statCount = new GUIContent("("+list.Count.ToString()+")");
+                    GUIContent statCount = new GUIContent("("+list.Count.ToString()+")","The number of recorded instances of the statistic.");
                     EditorGUILayout.LabelField(statCount,Styles.textBold,GUILayout.Width(Styles.textBold.CalcSize(statCount).x));
 
                     GUIContent currentValLab = new GUIContent("Current Value", "The value of the statistic based on the current frame.");

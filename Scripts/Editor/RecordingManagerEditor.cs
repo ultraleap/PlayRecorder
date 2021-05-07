@@ -204,8 +204,6 @@ namespace PlayRecorder
                 {
                     Object obj = AssetDatabase.LoadAssetAtPath("Assets/" + _recordingFolder.stringValue, typeof(Object));
 
-                    Selection.activeObject = obj;
-
                     EditorGUIUtility.PingObject(obj);
                 }
 

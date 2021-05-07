@@ -131,8 +131,8 @@ namespace PlayRecorder.Leap
         protected override PlaybackIgnoreItem SetDefaultPlaybackIgnores(string type)
         {
             PlaybackIgnoreItem pbi = new PlaybackIgnoreItem(type);
-            pbi.enabledComponents.Add("Leap.");
-            pbi.enabledComponents.Add(typeof(LeapPlaybackProvider).ToString());
+            pbi.enabledBehaviours.Add("Leap.");
+            pbi.enabledBehaviours.Add(typeof(LeapPlaybackProvider).ToString());
             return pbi;
         }
 

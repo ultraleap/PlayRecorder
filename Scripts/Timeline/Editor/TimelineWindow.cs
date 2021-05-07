@@ -311,14 +311,16 @@ namespace PlayRecorder.Timeline
 
             EditorGUI.EndDisabledGroup();
 
-            playbackManager.playbackRate = EditorGUILayout.Slider(playbackManager.playbackRate, 0, 3.0f, GUILayout.MaxWidth(150));
-            
-            if(Event.current.type == EventType.Repaint)
+            playbackManager.playbackRate = EditorGUILayout.Slider(playbackManager.playbackRate, 0, 3.0f, GUILayout.MaxWidth(150));            
+
+            if (Event.current.type == EventType.Repaint)
             {
                 _timelineTickerRect = GUILayoutUtility.GetLastRect();
             }
 
-            EditorGUILayout.LabelField(new GUIContent(playbackManager.currentTick + " - " + TimeUtil.ConvertToTime((double)playbackManager.currentTime) + " / " + TimeUtil.ConvertToTime(_maximumTime),"The end time value shown here is the end time of the longest file loaded."), Styles.textCentered,GUILayout.ExpandWidth(true));
+            GUI.Label(_timelineTickerRect, new GUIContent("", "Adjusts the playback rate."));
+
+            EditorGUILayout.LabelField(new GUIContent((playbackManager.hasStarted ? playbackManager.currentTick + " - " : "") + TimeUtil.ConvertToTime((double)playbackManager.currentTime) + " / " + TimeUtil.ConvertToTime(_maximumTime),"The end time value shown here is the end time of the longest file loaded."), Styles.textCentered,GUILayout.ExpandWidth(true));
 
             GUIContent maxTickLabel = new GUIContent(_maximumTick.ToString(),"The maximum tick of all currently loaded files.");
 

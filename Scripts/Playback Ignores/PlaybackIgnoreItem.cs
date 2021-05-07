@@ -9,7 +9,7 @@ namespace PlayRecorder
     {
         public string recordComponent;
         public bool makeKinematic = true, disableCollisions = false, disableRenderer = false, disableCamera = false, disableVRCamera = true;
-        public List<string> enabledComponents = new List<string>();
+        public List<string> enabledBehaviours = new List<string>();
 #if UNITY_EDITOR
         /// <summary>
         /// Editor usage only.
@@ -25,7 +25,7 @@ namespace PlayRecorder
 
         public void AddComponent(System.Type type)
         {
-            enabledComponents.Add(type.ToString());
+            enabledBehaviours.Add(type.ToString());
         }
     }
 

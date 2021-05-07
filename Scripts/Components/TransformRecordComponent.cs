@@ -217,7 +217,7 @@ namespace PlayRecorder
         protected override PlaybackIgnoreItem SetDefaultPlaybackIgnores(string type)
         {
             PlaybackIgnoreItem pbi = new PlaybackIgnoreItem(type);
-            pbi.enabledComponents.Add("UnityEngine.UI.");
+            pbi.enabledBehaviours.Add("UnityEngine.UI.");
             return pbi;
         }
 

@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using UnityEditorInternal;
 using System;
 using System.Reflection;
 using System.Linq;
@@ -123,18 +121,18 @@ namespace PlayRecorder
                         pbi.disableVRCamera = EditorGUILayout.Toggle(new GUIContent("Disable VR Camera", "Forces camera to render to desktop, not headset."), pbi.disableVRCamera);
                     }
 
-                    _ignoreItems.ignoreItems[i].componentsOpen = EditorGUILayout.Foldout(_ignoreItems.ignoreItems[i].componentsOpen, new GUIContent("Enabled Components (" + _ignoreItems.ignoreItems[i].enabledComponents.Count + ")", "The components that will remain enabled when playback begins."), true);
+                    _ignoreItems.ignoreItems[i].componentsOpen = EditorGUILayout.Foldout(_ignoreItems.ignoreItems[i].componentsOpen, new GUIContent("Enabled Behaviours (" + _ignoreItems.ignoreItems[i].enabledBehaviours.Count + ")", "The components that will remain enabled when playback begins."), true);
                     if (_ignoreItems.ignoreItems[i].componentsOpen)
                     {
-                        for (int j = 0; j < pbi.enabledComponents.Count; j++)
+                        for (int j = 0; j < pbi.enabledBehaviours.Count; j++)
                         {
                             EditorGUILayout.BeginHorizontal();
                             if (GUILayout.Button(new GUIContent("-", "Remove this class from the ignore list."), Styles.miniButton, GUILayout.Width(Sizes.widthCharButton)))
                             {
-                                pbi.enabledComponents.RemoveAt(j);
+                                pbi.enabledBehaviours.RemoveAt(j);
                                 GUIUtility.ExitGUI();
                             }
-                            pbi.enabledComponents[j] = EditorGUILayout.TextField(pbi.enabledComponents[j]);
+                            pbi.enabledBehaviours[j] = EditorGUILayout.TextField(pbi.enabledBehaviours[j]);
                             EditorGUILayout.EndHorizontal();
                         }
                     }
@@ -143,13 +141,13 @@ namespace PlayRecorder
                         _popupRect.Add(new Rect());
                     }
                     EditorGUILayout.BeginHorizontal();
-                    if (GUILayout.Button(new GUIContent("Add Components from GameObject","Allows you to select a GameObject in the scene and quickly select components you want to ignore.")))
+                    if (GUILayout.Button(new GUIContent("Add Behaviours from GameObject","Allows you to select a GameObject in the scene and quickly select behaviours you want to ignore.")))
                     {
-                        PopupWindow.Show(_popupRect[i], new PlaybackIgnorePopup(this, i, _ignoreItems.ignoreItems[i].enabledComponents, _popupRect[i].width));
+                        PopupWindow.Show(_popupRect[i], new PlaybackIgnorePopup(this, i, _ignoreItems.ignoreItems[i].enabledBehaviours, _popupRect[i].width));
                     }
                     if (GUILayout.Button(new GUIContent("Add Empty","Adds an empty row allowing you to add whatever text you wish. Logic is tested on a string contains test so you could include a whole namespace as an example.")))
                     {
-                        pbi.enabledComponents.Add("");
+                        pbi.enabledBehaviours.Add("");
                     }
                     EditorGUILayout.EndHorizontal();
                     if (Event.current.type == EventType.Repaint)
@@ -165,7 +163,7 @@ namespace PlayRecorder
 
         public void AddIgnoreItem(int index, string item)
         {
-            _ignoreItems.ignoreItems[index].enabledComponents.Add(item);
+            _ignoreItems.ignoreItems[index].enabledBehaviours.Add(item);
             _ignoreItems.ignoreItems[index].componentsOpen = true;
         }
     }

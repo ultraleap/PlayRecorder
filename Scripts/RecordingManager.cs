@@ -40,7 +40,7 @@ namespace PlayRecorder {
         private bool _hasRecorded = false;
 
         public string recordingFolderName = "Recordings";
-        public string recordingName = "";
+        public string recordingName = "Recording";
         private string _recordingTimeDate = "";
         private string _unityDataPath;
 
@@ -171,7 +171,16 @@ namespace PlayRecorder {
             _recordingPaused = false;
         }
 
-        void OnDestroy()
+#if UNITY_EDITOR
+
+        private void Reset()
+        {
+            RefreshComponents();
+        }
+
+#endif
+
+        private void OnDestroy()
         {
             if(_recording)
             {
