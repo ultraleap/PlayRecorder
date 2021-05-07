@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using TMPro;
+﻿using UnityEngine;
 
 namespace PlayRecorder.Interface
 {
@@ -9,7 +6,7 @@ namespace PlayRecorder.Interface
     public class MessageController : MonoBehaviour
     {
 
-        private TextMeshPro _textmesh;
+        private TextMesh _text;
 
         private float _timeRemaining = 1f;
 
@@ -17,8 +14,8 @@ namespace PlayRecorder.Interface
 
         private void Awake()
         {
-            _textmesh = GetComponent<TextMeshPro>();
-            if (_textmesh == null)
+            _text = GetComponent<TextMesh>();
+            if (_text == null)
             {
                 Debug.LogError("Message prefab does not have a textmesh component.");
             }
@@ -31,13 +28,13 @@ namespace PlayRecorder.Interface
 
         public void CreateMessage(Transform camera, string message, float time, Color textColor)
         {
-            if(_textmesh == null)
+            if(_text == null)
             {
                 Debug.LogError("Message cannot be shown as prefab lacks a textmesh component.");
                 return;
             }
-            _textmesh.color = textColor;
-            _textmesh.text = message;
+            _text.color = textColor;
+            _text.text = message;
             _timeRemaining = time;
             _camera = FindObjectOfType<Camera>().transform;
             gameObject.SetActive(true);
