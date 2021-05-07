@@ -20,7 +20,7 @@ PlayRecorder includes the ability to record messages (or events in another word)
 
 The idea behind the overall structure is that PlayRecorder is its mostly own contained module. There should be next to no impact on your current project, be it code wise, pre-requirements, and overall performance overhead.
 
-📚 Please refer to the [wiki](https://github.com/ultraleap/PlayRecorder/wiki) for further information. 📚
+**[📚 Please refer to the wiki for further information. 📚](https://github.com/ultraleap/PlayRecorder/wiki)**
 
 ## What's Included
 - Recording and Playback system
