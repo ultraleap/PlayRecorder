@@ -267,6 +267,7 @@ namespace PlayRecorder {
                 {
                     _components.RemoveAt(i); 
                     i--;
+                    continue;
                 }
 
                 if (component == _components[i])
