@@ -541,6 +541,11 @@ namespace PlayRecorder {
 
         public void StartPlaying()
         {
+            if(_playing)
+            {
+                Debug.Log("Already playing. Use TogglePlaying.");
+                return;
+            }
             if(_dataCache.Count == 0)
             {
                 Debug.LogError("No files to play.");
