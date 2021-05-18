@@ -15,6 +15,11 @@ namespace PlayRecorder.Leap
 
         protected bool _playbackStarted = false;
 
+        [SerializeField,Tooltip("Ignore all events from the device and simply copy frames from another provider.")]
+        protected bool _purePlayback = false;
+        [SerializeField]
+        protected LeapPlaybackProvider _providerToCopy = null;
+
         protected LeapServiceProviderRecordComponent _recordComponent = null;
 
         protected Frame _localUpdateFrame = null, _localFixedFrame = null;
@@ -39,11 +44,25 @@ namespace PlayRecorder.Leap
             {
                 if (_frameOptimization == FrameOptimizationMode.ReusePhysicsForUpdate)
                 {
-                    return _untransformedFixedFrame;
+                    if (_playbackStarted)
+                    {
+                        return _playbackUntransformedFixedFrame;
+                    }
+                    else
+                    {
+                        return _untransformedFixedFrame;
+                    }
                 }
                 else
                 {
-                    return _untransformedUpdateFrame;
+                    if (_playbackStarted)
+                    {
+                        return _playbackUntransformedUpdateFrame;
+                    }
+                    else
+                    {
+                        return _untransformedUpdateFrame;
+                    }
                 }
             }
         }
@@ -54,11 +73,25 @@ namespace PlayRecorder.Leap
             {
                 if (_frameOptimization == FrameOptimizationMode.ReuseUpdateForPhysics)
                 {
-                    return _untransformedUpdateFrame;
+                    if(_playbackStarted)
+                    {
+                        return _playbackUntransformedUpdateFrame;
+                    }
+                    else
+                    {
+                        return _untransformedUpdateFrame;
+                    }
                 }
                 else
                 {
-                    return _untransformedFixedFrame;
+                    if(_playbackStarted)
+                    {
+                        return _playbackUntransformedFixedFrame;
+                    }
+                    else
+                    {
+                        return _untransformedFixedFrame;
+                    }
                 }
             }
         }
@@ -67,7 +100,14 @@ namespace PlayRecorder.Leap
         {
             if (_playbackStarted)
             {
+                if (_purePlayback && _providerToCopy != null)
+                {
+                    _providerToCopy.OnLocalUpdateFrame -= SetPlaybackFrame;
+                    _providerToCopy.OnLocalUpdateFrame += SetPlaybackFrame;
 
+                    _providerToCopy.OnLocalFixedFrame -= SetPlaybackFrame;
+                    _providerToCopy.OnLocalFixedFrame += SetPlaybackFrame;
+                }
             }
             else if (_isVR)
             {
@@ -79,7 +119,11 @@ namespace PlayRecorder.Leap
         {
             if (_playbackStarted)
             {
-
+                if(_purePlayback && _providerToCopy != null)
+                {
+                    _providerToCopy.OnLocalUpdateFrame -= SetPlaybackFrame;
+                    _providerToCopy.OnLocalFixedFrame -= SetPlaybackFrame;
+                }
             }
             else if (_isVR)
             {
@@ -89,7 +133,6 @@ namespace PlayRecorder.Leap
 
         protected override void Start()
         {
-            _recordComponent = GetComponent<LeapServiceProviderRecordComponent>();
             GameObject go = GameObject.Find("Leap World Origin Cache");
             if(go == null)
             {
@@ -100,27 +143,37 @@ namespace PlayRecorder.Leap
             {
                 _worldOrigin = go.transform;
             }
-            if (_recordComponent == null)
-            {
-                Debug.LogWarning("No LeapServiceProviderRecordComponent on LeapPlaybackProvider.");
-            }
-            else
+
+            _recordComponent = GetComponent<LeapServiceProviderRecordComponent>();
+            if (_recordComponent != null)
             {
                 _recordComponent.OnStartPlayback -= OnStartPlayback;
                 _recordComponent.OnStartPlayback += OnStartPlayback;
             }
-            if (_isVR)
+            if(_purePlayback && _providerToCopy != null)
             {
-                base.Start();
+                OnStartPlayback();
+                _providerToCopy.OnLocalUpdateFrame -= SetPlaybackFrame;
+                _providerToCopy.OnLocalUpdateFrame += SetPlaybackFrame;
+
+                _providerToCopy.OnLocalFixedFrame -= SetPlaybackFrame;
+                _providerToCopy.OnLocalFixedFrame += SetPlaybackFrame;
             }
             else
             {
-                createController();
-                _transformedUpdateFrame = new Frame();
-                _transformedFixedFrame = new Frame();
-                _untransformedUpdateFrame = new Frame();
-                _untransformedFixedFrame = new Frame();
+                if (_isVR)
+                {
+                    base.Start();
+                }
+                else
+                {
+                    createController();
+                }
             }
+            _transformedUpdateFrame = new Frame();
+            _transformedFixedFrame = new Frame();
+            _untransformedUpdateFrame = new Frame();
+            _untransformedFixedFrame = new Frame();
             _localFixedFrame = new Frame();
             _localUpdateFrame = new Frame();
         }
@@ -138,6 +191,11 @@ namespace PlayRecorder.Leap
             _playbackUntransformedFixedFrame = new Frame();
             _playbackUpdateFrame = new Frame();
             _playbackFixedFrame = new Frame();
+        }
+
+        protected void SetPlaybackFrame(Frame frame)
+        {
+            _currentPlaybackFrame = frame;
         }
 
         protected override void Update()
@@ -160,16 +218,16 @@ namespace PlayRecorder.Leap
             try
             {
                 _playbackUntransformedUpdateFrame.CopyFrom(_currentPlaybackFrame);
+                if (_playbackUntransformedUpdateFrame != null)
+                {
+                    ApplyPlaybackTransform(_playbackUntransformedUpdateFrame, _playbackUpdateFrame);
+                    DispatchUpdateFrameEvent(_playbackUpdateFrame);
+                    DispatchLocalUpdateFrameEvent(_playbackUntransformedUpdateFrame);
+                }
             }
             catch
             {
                 // Very minor issue with copying frames at times.
-            }
-            if (_playbackUntransformedUpdateFrame != null)
-            {
-                ApplyPlaybackTransform(_playbackUntransformedUpdateFrame, _playbackUpdateFrame);
-                DispatchUpdateFrameEvent(_playbackUpdateFrame);
-                //DispatchLocalUpdateFrameEvent(_playbackUntransformedUpdateFrame);
             }
         }
 
@@ -213,16 +271,16 @@ namespace PlayRecorder.Leap
             try
             {
                 _playbackUntransformedFixedFrame.CopyFrom(_currentPlaybackFrame);
+                if (_playbackUntransformedFixedFrame != null)
+                {
+                    ApplyPlaybackTransform(_playbackUntransformedFixedFrame, _playbackFixedFrame);
+                    DispatchUpdateFrameEvent(_playbackFixedFrame);
+                    DispatchLocalUpdateFrameEvent(_playbackUntransformedFixedFrame);
+                }
             }
             catch
             {
                 // Very minor issue with copying frames at times.
-            }
-            if (_playbackUntransformedFixedFrame != null)
-            {
-                ApplyPlaybackTransform(_playbackUntransformedFixedFrame, _playbackFixedFrame);
-                DispatchUpdateFrameEvent(_playbackFixedFrame);
-                //DispatchLocalUpdateFrameEvent(_localFixedFrame);
             }
         }
 

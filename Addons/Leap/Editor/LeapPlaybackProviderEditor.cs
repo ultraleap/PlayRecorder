@@ -36,6 +36,14 @@ namespace PlayRecorder.Leap
             },
                                       "_deviceOrigin");
 
+            specifyConditionalDrawing(() =>
+            {
+                return serializedObject
+                        .FindProperty("_purePlayback")
+                            .boolValue;
+            },
+                                    "_providerToCopy");
+
             addPropertyToFoldout("_deviceOffsetMode", "Advanced Options");
             addPropertyToFoldout("_temporalWarpingMode", "Advanced Options");
             addPropertyToFoldout("_customWarpAdjustment", "Advanced Options");
