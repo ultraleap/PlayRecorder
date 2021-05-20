@@ -89,9 +89,7 @@ namespace PlayRecorder.Leap
                 deviceRotation = Quaternion.Euler(0f, 0f, 0f) *
                                      Quaternion.Euler(xrProvider.deviceTiltXAxis, 0f, 0f);
 
-                controllerOffset = new Vector3(0f,
-                                               xrProvider.deviceOffsetYAxis,
-                                               xrProvider.deviceOffsetZAxis);
+                controllerOffset = Vector3.zero;
             }
 
             base.OnSceneGUI();
