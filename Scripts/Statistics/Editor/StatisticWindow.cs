@@ -20,11 +20,15 @@ namespace PlayRecorder.Statistics
         [System.Serializable]
         public class StatCache
         {
-            public int fileIndex = -1, messageIndex = -1, maxFrame = -1;
+            public int fileIndex = -1, messageIndex = -1, maxFrame = -1, statCount = -1;
             public string fileName = "";
             public bool validStat = false;
             public string statName = "";
             public string current = "", final = "";
+            public object[] values;
+            public System.Type type;
+            public FieldInfo[] statFields;
+            public RecordMessage recordMessage;
             public bool expanded = false;
             public int frameIndex = 0;
             public float positive, negative;
@@ -69,7 +73,7 @@ namespace PlayRecorder.Statistics
 
             window.playbackManager = FindObjectOfType<PlaybackManager>();
 
-            if(window.playbackManager != null)
+            if (window.playbackManager != null)
             {
                 window.Show();
             }
@@ -86,7 +90,7 @@ namespace PlayRecorder.Statistics
 
         private void OnDestroy()
         {
-            if(playbackManager != null)
+            if (playbackManager != null)
             {
                 playbackManager.OnDataCacheChange -= OnDataCacheChange;
                 playbackManager.OnUpdateTick -= OnUpdateTick;
@@ -96,7 +100,7 @@ namespace PlayRecorder.Statistics
         private void Startup()
         {
             playbackManager = FindObjectOfType<PlaybackManager>();
-            if(playbackManager == null)
+            if (playbackManager == null)
             {
                 return;
             }
@@ -129,7 +133,7 @@ namespace PlayRecorder.Statistics
             int maxCol = 4;
             for (int i = 0; i < maxCol; i++)
             {
-                _graphColors.Add(Color.HSVToRGB(((float)i)/(maxCol-1), .75f, 1f));
+                _graphColors.Add(Color.HSVToRGB(((float)i) / (maxCol - 1), .75f, 1f));
             }
 
             if (_dataCache.Count == 0)
@@ -168,7 +172,7 @@ namespace PlayRecorder.Statistics
 
         private void OnUpdateTick()
         {
-            if(_followPlayback)
+            if (_followPlayback)
             {
                 _globalFrame = playbackManager.currentTick;
                 for (int i = 0; i < _statCache.Count; i++)
@@ -186,7 +190,7 @@ namespace PlayRecorder.Statistics
             {
                 _fileIndex = _dataCache.Count - 1;
             }
-            if(_followFile)
+            if (_followFile)
             {
                 _fileIndex = playbackManager.currentFileIndex;
             }
@@ -253,7 +257,7 @@ namespace PlayRecorder.Statistics
             else
             {
                 EditorGUI.BeginDisabledGroup(playbackManager.changingFiles);
-                if(CacheCheck())
+                if (CacheCheck())
                 {
                     EditorGUILayout.BeginHorizontal();
                     FileDropdown();
@@ -264,11 +268,11 @@ namespace PlayRecorder.Statistics
                     EditorUtil.DrawDividerLine();
                     EditorGUILayout.BeginHorizontal();
                     ExportCSVButtons();
-                    EditorGUILayout.LabelField("|",Styles.textCentered,GUILayout.Width(Sizes.widthIcon));
+                    EditorGUILayout.LabelField("|", Styles.textCentered, GUILayout.Width(Sizes.widthIcon));
                     ExpandCollapseButtons();
                     EditorGUILayout.EndHorizontal();
                     EditorUtil.DrawDividerLine();
-                    if(_fileIndex != -1)
+                    if (_fileIndex != -1)
                     {
                         Messages();
                     }
@@ -283,7 +287,7 @@ namespace PlayRecorder.Statistics
             GUIContent label = new GUIContent("Current File");
             EditorGUILayout.LabelField(label, Styles.textBold, GUILayout.Width(Styles.textBold.CalcSize(label).x));
             int oldInd = _fileIndex;
-            _fileIndex = EditorGUILayout.Popup(_fileIndex, _allFiles ? new string[]{ "All Files"} : _fileNames);
+            _fileIndex = EditorGUILayout.Popup(_fileIndex, _allFiles ? new string[] { "All Files" } : _fileNames);
             if (oldInd != _fileIndex)
             {
                 SetUILists();
@@ -299,7 +303,7 @@ namespace PlayRecorder.Statistics
             EditorGUI.EndDisabledGroup();
 
             EditorGUI.BeginDisabledGroup(_allFiles);
-            GUIContent matchPlayFile = new GUIContent("Follow File", "Matches the current statistics file to the currently selected playback file.");
+            GUIContent matchPlayFile = new GUIContent("Follow File", "Matches the current statistics set to the currently selected playback file.");
             EditorGUILayout.LabelField(matchPlayFile, GUILayout.Width(EditorStyles.label.CalcSize(matchPlayFile).x));
             bool oldMatchFiles = _followFile;
             _followFile = EditorGUILayout.Toggle(_followFile, GUILayout.Width(Sizes.widthIcon));
@@ -313,7 +317,7 @@ namespace PlayRecorder.Statistics
             EditorGUILayout.LabelField(matchlabel, GUILayout.Width(EditorStyles.label.CalcSize(matchlabel).x));
             bool oldAllFiles = _allFiles;
             _allFiles = EditorGUILayout.Toggle(_allFiles, GUILayout.Width(Sizes.widthIcon));
-            if(_allFiles != oldAllFiles)
+            if (_allFiles != oldAllFiles)
             {
                 SetUILists();
             }
@@ -334,12 +338,12 @@ namespace PlayRecorder.Statistics
             int oldInd = _globalFrame;
             _globalFrame = EditorGUILayout.IntSlider(_globalFrame, 0, _globalMaxFrame);
 
-            if(GUILayout.Button(_skipToEndButton,GUILayout.Width(Sizes.Timeline.widthFileButton)))
+            if (GUILayout.Button(_skipToEndButton, GUILayout.Width(Sizes.Timeline.widthFileButton)))
             {
                 _globalFrame = _globalMaxFrame;
             }
 
-            if(oldInd != _globalFrame)
+            if (oldInd != _globalFrame)
             {
                 for (int i = 0; i < _statCache.Count; i++)
                 {
@@ -410,7 +414,7 @@ namespace PlayRecorder.Statistics
                 {
                     continue;
                 }
-                _statCache[i].graph = StatisticGraph.GenerateGraph(_dataCache[_statCache[i].fileIndex].messages[_statCache[i].messageIndex], _statCache[i], (int)(_windowRect.width - 16 - (_scrollBarActive ? (_scrollbarWidth-1) : 0)), 80, _globalMaxFrame, _graphColors, _backgroundColor);
+                _statCache[i].graph = StatisticGraph.GenerateGraph(_dataCache[_statCache[i].fileIndex].messages[_statCache[i].messageIndex], _statCache[i], (int)(_windowRect.width - 16 - (_scrollBarActive ? (_scrollbarWidth - 1) : 0)), 80, _globalMaxFrame, _graphColors, _backgroundColor);
             }
         }
 
@@ -431,17 +435,58 @@ namespace PlayRecorder.Statistics
             for (int i = 0; i < cache.messages.Count; i++)
             {
                 ind = indexOffset + i;
-                if(_statCache[ind] == null)
+                int mi = i;
+                FieldInfo[] fi = cache.messages[mi].GetType().GetFields().Where(x => x.Name != "message" && x.Name != "frames" && x.DeclaringType.BaseType == typeof(RecordMessage)).ToArray();
+                if (fi.Length == 0)
+                {
+                    continue;
+                }
+                List<object> objectList = new List<object>();
+                FieldInfo[] fields = new FieldInfo[] { };
+                object obj = fi[0].GetValue(cache.messages[mi]);
+                System.Type t = null;
+                if (obj is IList && ((IList)obj).Count > 0)
+                {
+                    IList list = (IList)obj;
+                    t = list[0].GetType();
+                    bool simple = t.IsPrimitive || t == typeof(decimal) || t == typeof(string);
+                    if (simple)
+                    {
+                        fields = new FieldInfo[] { null };
+                    }
+                    else
+                    {
+                        fields = list[0].GetType().GetFields().Where(x => x.IsStatic == false).ToArray();
+                    }
+                    if (fields.Length != 0)
+                    {
+                        foreach (var item in list)
+                        {
+                            objectList.Add(item);
+                        }
+                    }
+                }
+
+                if (fields.Length == 0)
+                {
+                    Debug.Log("Some recorded stats are not currently supported. (" + fi[0].FieldType.GetType().ToString() + ")");
+                    continue;
+                }
+                if (_statCache[ind] == null)
                 {
                     _statCache[ind] = new StatCache();
                     _statCache[ind].frameIndex = cache.frameCount;
                 }
-                int mi = i;
+                _statCache[ind].values = objectList.ToArray();
+                _statCache[ind].type = t;
+                _statCache[ind].statFields = fields;
                 _statCache[ind].fileIndex = f;
                 _statCache[ind].messageIndex = mi;
                 _statCache[ind].maxFrame = cache.frameCount;
-                _statCache[ind].fileName = cache.fileName;
-                _statCache[ind].statName = cache.messages[i].message;
+                _statCache[ind].fileName = cache.name;
+                _statCache[ind].statName = cache.messages[mi].message;
+                _statCache[ind].recordMessage = cache.messages[mi];
+                _statCache[ind].statCount = cache.messages[mi].frames.Count;
                 _statCache[ind].current = "";
                 _statCache[ind].final = "";
             }
@@ -450,30 +495,28 @@ namespace PlayRecorder.Statistics
         private void ExportCSVButtons()
         {
             bool current = false, final = false;
-            GUIContent currentValues = new GUIContent("Export Current Values", "Exports the visible list of statistics current values. If all files is ticked, all files will be saved to the CSV as separate rows.");
+            GUIContent currentValues = new GUIContent("Export Statistics to CSV", "Exports the visible list of statistics current values. If all files is ticked, all files will be saved to the CSV as separate rows.");
             current = GUILayout.Button(currentValues);
-            if(Event.current.type == EventType.Repaint)
+            if (Event.current.type == EventType.Repaint)
             {
                 _csvCurrentRect = GUILayoutUtility.GetLastRect();
             }
-            GUIContent finalValues = new GUIContent("Export Final Values", "Exports the visible list of statistics final values. If all files is ticked, all files will be saved to the CSV as separate rows.");
-            final = GUILayout.Button(finalValues);
 
             if (current || final)
             {
                 Rect b = new Rect(_csvCurrentRect.x, _csvCurrentRect.y, 0, 0);
                 List<StatCache> cache;
-                if(_allFiles)
+                if (_allFiles)
                 {
-                    cache = _statCache.Where(x => x.validStat).ToList();
+                    cache = _statCache.ToList();
                 }
                 else
                 {
-                    cache = _statCache.Where(x => x.fileIndex == _fileIndex && x.validStat).ToList();
+                    cache = _statCache.Where(x => x.fileIndex == _fileIndex).ToList();
                 }
-                if(cache.Count > 0)
+                if (cache.Count > 0)
                 {
-                    PopupWindow.Show(b, new StatisticCSVPopup(cache, final, _windowRect.width));
+                    PopupWindow.Show(b, new StatisticCSVPopup(cache, _windowRect.width));
                 }
                 else
                 {
@@ -484,7 +527,7 @@ namespace PlayRecorder.Statistics
 
         private void ExpandCollapseButtons()
         {
-            if(GUILayout.Button("Expand All"))
+            if (GUILayout.Button("Expand All"))
             {
                 for (int i = 0; i < _statCache.Count; i++)
                 {
@@ -507,16 +550,16 @@ namespace PlayRecorder.Statistics
 
             for (int i = 0; i < _statCache.Count; i++)
             {
-                if(!_allFiles && _statCache[i].fileIndex != _fileIndex)
+                if (!_allFiles && _statCache[i].fileIndex != _fileIndex)
                 {
                     continue;
                 }
-                SingleMessage(_dataCache[_statCache[i].fileIndex].messages[_statCache[i].messageIndex], _statCache[i].fileIndex, i);
+                SingleMessage(_statCache[i], i);
             }
 
-            if(_statCount == 0)
+            if (_statCount == 0)
             {
-                if(_allFiles)
+                if (_allFiles)
                 {
                     EditorGUILayout.LabelField("Current loaded files do not include any statistics.");
                 }
@@ -529,19 +572,13 @@ namespace PlayRecorder.Statistics
             EditorGUILayout.EndScrollView();
         }
 
-        private void SingleMessage(RecordMessage message, int fileIndex, int index)
+        private void SingleMessage(StatCache cache, int index)
         {
-            if (message.GetType() == typeof(RecordMessage))
-            {
-                _statCache[index].validStat = false;
-                return;
-            }
             _statCount++;
-            FieldInfo[] fields = message.GetType().GetFields();
             GUILayout.BeginVertical(GUI.skin.box);
-            GUIContent label = new GUIContent((_allFiles ? (fileIndex+1).ToString() + ". " : "") + message.message + " - " + message.GetType().FormatType() + " (" + _statCache[index].frameIndex + "/" + _statCache[index].maxFrame + ")");
-            _statCache[index].expanded = EditorGUILayout.BeginFoldoutHeaderGroup(_statCache[index].expanded, label);
-            _statCache[index].validStat = false;
+            GUIContent label = new GUIContent((_allFiles ? (cache.fileIndex + 1).ToString() + ". " : "") + cache.statName + " -  (" + cache.frameIndex + "/" + cache.maxFrame + ")");
+            cache.expanded = EditorGUILayout.BeginFoldoutHeaderGroup(cache.expanded, label);
+            cache.validStat = false;
             Rect scrollCheck = GUILayoutUtility.GetLastRect();
             if (scrollCheck.width + _scrollbarWidth < _windowRect.width)
             {
@@ -552,75 +589,64 @@ namespace PlayRecorder.Statistics
                 _scrollBarActive = false;
             }
             EditorGUILayout.BeginHorizontal();
-            for (int i = 0; i < fields.Length; i++)
-            {
-                // Ignore the first two
-                if (fields[i].Name == "message" || fields[i].Name == "frames")
-                    continue;
 
-                object obj = fields[i].GetValue(message);
-                if(obj is IList)
-                {
-                    IList list = (IList)obj;
-                    GUIContent statCount = new GUIContent("("+list.Count.ToString()+")","The number of recorded instances of the statistic.");
-                    EditorGUILayout.LabelField(statCount,Styles.textBold,GUILayout.Width(Styles.textBold.CalcSize(statCount).x));
+            GUIContent statCount = new GUIContent("(" + cache.values.Length.ToString() + ")", "The number of recorded instances of the statistic.");
+            EditorGUILayout.LabelField(statCount, Styles.textBold, GUILayout.Width(Styles.textBold.CalcSize(statCount).x));
 
-                    GUIContent currentValLab = new GUIContent("Current Value", "The value of the statistic based on the current frame.");
-                    EditorGUILayout.LabelField(currentValLab, GUILayout.Width(EditorStyles.label.CalcSize(currentValLab).x));
-                    _statCache[index].current = SingleStatBox(list[GetStatIndex(message, _statCache[index].frameIndex)]);
+            GUIContent currentValLab = new GUIContent("Current Value", "The value of the statistic based on the current frame.");
+            EditorGUILayout.LabelField(currentValLab, GUILayout.Width(EditorStyles.label.CalcSize(currentValLab).x));
+            _statCache[index].current = SingleStatBox(cache.values[GetStatIndex(cache)],cache.statFields);
 
-                    GUIContent lastValLab = new GUIContent("Final Value", "The final value of the statistic, regardless of the current frame.");
-                    EditorGUILayout.LabelField(lastValLab, GUILayout.Width(EditorStyles.label.CalcSize(lastValLab).x));
-                    _statCache[index].final = SingleStatBox(list[list.Count-1]);
-                    _statCache[index].validStat = true;
-                    break;
-                }
-            }
+            GUIContent lastValLab = new GUIContent("Final Value", "The final value of the statistic, regardless of the current frame.");
+            EditorGUILayout.LabelField(lastValLab, GUILayout.Width(EditorStyles.label.CalcSize(lastValLab).x));
+            _statCache[index].final = SingleStatBox(cache.values[cache.values.Length - 1],cache.statFields);
+            _statCache[index].validStat = true;
+
             EditorGUILayout.EndFoldoutHeaderGroup();
             EditorGUILayout.EndHorizontal();
 
-            if (_statCache[index].expanded)
+            if (cache.expanded)
             {
                 EditorGUILayout.BeginHorizontal();
 
-                _statCache[index].frameIndex = EditorGUILayout.IntSlider("Frame", _statCache[index].frameIndex, 0, _dataCache[fileIndex].frameCount);
+                cache.frameIndex = EditorGUILayout.IntSlider("Frame", cache.frameIndex, 0, _dataCache[cache.fileIndex].frameCount);
 
                 if (GUILayout.Button(_skipToEndButton, GUILayout.Width(Sizes.Timeline.widthFileButton)))
                 {
-                    _statCache[index].frameIndex = _statCache[index].maxFrame;
+                    cache.frameIndex = cache.maxFrame;
                 }
 
                 EditorGUILayout.EndHorizontal();
 
-                if (_statCache[index].graph != null)
+                if (cache.graph != null)
                 {
-                    GUILayout.Label("", GUILayout.Height(_statCache[index].graph.height + Sizes.padding));
+                    GUILayout.Label("", GUILayout.Height(cache.graph.height + Sizes.padding));
                     Rect r = GUILayoutUtility.GetLastRect();
-                    r.width = _statCache[index].graph.width;
-                    r.height = _statCache[index].graph.height;
-                    GUI.DrawTexture(r, _statCache[index].graph);
+                    r.width = cache.graph.width;
+                    r.height = cache.graph.height;
+                    GUI.DrawTexture(r, cache.graph);
                     if ((Event.current.type == EventType.MouseUp || Event.current.type == EventType.MouseDrag) && r.Contains(Event.current.mousePosition))
                     {
-                        _statCache[index].frameIndex = (int)((Event.current.mousePosition.x - r.x) / r.width * _dataCache[fileIndex].frameCount);
+                        cache.frameIndex = (int)((Event.current.mousePosition.x - r.x) / (r.width - 2) * _dataCache[cache.fileIndex].frameCount);
                         Repaint();
                     }
                     Rect r2 = new Rect(r);
-                    r2.x = r.x + (((float)_statCache[index].frameIndex / (float)_dataCache[fileIndex].frameCount) * (r.width));
+                    r2.x = r.x + (((float)cache.frameIndex / (float)_dataCache[cache.fileIndex].frameCount) * (r.width));
                     r2.width = 2;
                     GUI.DrawTexture(r2, _indicator);
-                    GUI.Label(r, _statCache[index].positive.ToString(), Styles.textTopLeft);
-                    GUI.Label(r, _statCache[index].negative.ToString(), Styles.textBottomLeft);
+                    GUI.Label(r, cache.positive.ToString(), Styles.textTopLeft);
+                    GUI.Label(r, cache.negative.ToString(), Styles.textBottomLeft);
                 }
             }
             EditorGUILayout.EndVertical();
         }
 
-        private int GetStatIndex(RecordMessage message, int desiredIndex)
+        private int GetStatIndex(StatCache cache)
         {
             int v = 0;
-            for (int i = 0; i < message.frames.Count; i++)
+            for (int i = 0; i < cache.statCount; i++)
             {
-                if(message.frames[i] <= desiredIndex)
+                if (cache.recordMessage.frames[i] <= cache.frameIndex)
                 {
                     v = i;
                 }
@@ -628,33 +654,27 @@ namespace PlayRecorder.Statistics
             return v;
         }
 
-        private string SingleStatBox(object item)
+        private string SingleStatBox(object item, FieldInfo[] info)
         {
             string output = "";
-            if (item.GetType() == typeof(string) ||
-                item.GetType() == typeof(int) ||
-                item.GetType() == typeof(float) ||
-                item.GetType() == typeof(double))
+            if(info.Length == 1)
             {
                 output = EditorGUILayout.TextField(item.ToString());
                 CopyButton(output);
             }
-            else if(item.GetType() == typeof(Vector2))
+            else 
             {
-                Vector2 item2 = (Vector2)item;
-                output = EditorGUILayout.TextField("("+ item2.x.ToString()+", "+item2.y.ToString()+")");
-                CopyButton(output);
-            }
-            else if(item.GetType() == typeof(Vector3))
-            {
-                Vector3 item3 = (Vector3)item;
-                output = EditorGUILayout.TextField("(" + item3.x.ToString() + ", " + item3.y.ToString() + ", " + item3.z.ToString() + ")");
-                CopyButton(output);
-            }
-            else if (item.GetType() == typeof(Vector4))
-            {
-                Vector4 item4 = (Vector4)item;
-                output = EditorGUILayout.TextField("(" + item4.x.ToString() + ", " + item4.y.ToString() + ", " + item4.z.ToString() + ", " + item4.w.ToString() + ")");
+                output = "(";
+                for (int i = 0; i < info.Length; i++)
+                {
+                    output += info[i].GetValue(item).ToString();
+                    if(i != info.Length - 1)
+                    {
+                        output += ", ";
+                    }
+                }
+                output += ")";
+                EditorGUILayout.TextField(output);
                 CopyButton(output);
             }
             return output;

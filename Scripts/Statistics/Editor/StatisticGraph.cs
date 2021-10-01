@@ -17,28 +17,20 @@ namespace PlayRecorder.Statistics
             {
                 return null;
             }
-            FieldInfo[] fields = message.GetType().GetFields();
-            for (int i = 0; i < fields.Length; i++)
+            
+            for (int i = 0; i < cache.values.Length; i++)
             {
-                if (fields[i].Name == "message" || fields[i].Name == "frames")
-                    continue;
-
-                object obj = fields[i].GetValue(message);
-                if (obj is IList)
+                if (cache.type == typeof(string))
                 {
-                    Type t = obj.GetType().GetGenericArguments().Single();
-                    if (t == typeof(string))
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        Texture2D tex = new Texture2D((int)(Mathf.Abs(width) * (cache.maxFrame / (float)allMaxFrame)), Mathf.Abs(height));
-                        FillPixels(tex, backgroundColor);
-                        GraphLines(tex, cache, message.frames, (IList)obj, lineColors);
-                        tex.Apply();
-                        return tex;
-                    }
+                    return null;
+                }
+                else
+                {
+                    Texture2D tex = new Texture2D((int)(Mathf.Abs(width) * (cache.maxFrame / (float)allMaxFrame)), Mathf.Abs(height));
+                    FillPixels(tex, backgroundColor);
+                    GraphLines(tex, cache, lineColors);
+                    tex.Apply();
+                    return tex;
                 }
             }
             return null;
@@ -54,13 +46,13 @@ namespace PlayRecorder.Statistics
             texture.SetPixels(colors);
         }
 
-        private static void GraphLines(Texture2D texture, StatisticWindow.StatCache cache, List<int> frames, IList list, List<Color> lineColors)
+        private static void GraphLines(Texture2D texture, StatisticWindow.StatCache cache, List<Color> lineColors)
         {
             float positive = 0, negative = 0, range;
             object item;
-            for (int i = 0; i < list.Count; i++)
+            for (int i = 0; i < cache.values.Length; i++)
             {
-                item = list[i];
+                item = cache.values[i];
                 if (item.GetType() == typeof(int) ||
                     item.GetType() == typeof(float) ||
                     item.GetType() == typeof(double))
@@ -118,27 +110,27 @@ namespace PlayRecorder.Statistics
             cache.negative = negative;
             cache.positive = positive;
 
-            if (frames.Count == 1)
+            if (cache.recordMessage.frames.Count == 1)
             {
-                item = list[0];
+                item = cache.values[0];
                 // Draw the line to the end of the file.
-                DrawLinesFromObject(item, item, texture, frames[0], cache.maxFrame, cache.maxFrame, negative, range, lineColors);
+                DrawLinesFromObject(item, item, texture, cache.recordMessage.frames[0], cache.maxFrame, cache.maxFrame, negative, range, lineColors);
             }
             else
             {
                 object previous = null;
-                for (int i = 0; i < list.Count; i++)
+                for (int i = 0; i < cache.values.Length; i++)
                 {
-                    item = list[i];
+                    item = cache.values[i];
                     if (i == 0)
                     {
                         previous = item;
                         continue;
                     }
-                    DrawLinesFromObject(item, previous, texture, frames[i - 1], frames[i], cache.maxFrame, negative, range, lineColors);
+                    DrawLinesFromObject(item, previous, texture, cache.recordMessage.frames[i - 1], cache.recordMessage.frames[i], cache.maxFrame, negative, range, lineColors);
                     previous = item;
                 }
-                DrawLinesFromObject(previous, previous, texture, frames[frames.Count - 1], cache.maxFrame, cache.maxFrame, negative, range, lineColors);
+                DrawLinesFromObject(previous, previous, texture, cache.recordMessage.frames[cache.recordMessage.frames.Count - 1], cache.maxFrame, cache.maxFrame, negative, range, lineColors);
             }
         }
 
