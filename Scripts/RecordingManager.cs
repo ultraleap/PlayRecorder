@@ -3,9 +3,9 @@ using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace PlayRecorder {
+using Debug = UnityEngine.Debug;
 
     [AddComponentMenu("PlayRecorder/Recording Manager")]
     public class RecordingManager : MonoBehaviour
