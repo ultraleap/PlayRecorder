@@ -613,6 +613,11 @@ namespace PlayRecorder {
             return _paused = !_paused;
         }
 
+        public void SetTick(int tick)
+        {
+            currentTick = tick;
+        }
+
         public void ScrubTick(int tick)
         {
             if(_playing)
