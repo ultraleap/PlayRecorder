@@ -12,7 +12,7 @@ namespace PlayRecorder.Leap
     [AddComponentMenu("PlayRecorder/Ultraleap/Leap Service Provider Record Component")]
     public class LeapServiceProviderRecordComponent : RecordComponent
     {
-        private LeapProvider _leapProvider;
+        [SerializeField, Tooltip("Note this needs to be attached to the same object as your provider, and will be overwritten at recording and playback start.")]
         private LeapPlaybackProvider _playbackProvider;
 
         private bool _frameUpdated = false;
@@ -24,14 +24,26 @@ namespace PlayRecorder.Leap
         private LeapHandCache _leftCache, _rightCache;
 
 #if UNITY_EDITOR
-        public override string editorHelpbox => "You will need to add a LeapPlaybackProvider component and remove your default LeapServiceProvider to enable playback.";
+        public override string editorHelpbox => "You will need to replace your default LeapServiceProvider with LeapPlaybackProvider to use this.";
+
+        public void OnValidate()
+        {
+            _playbackProvider = GetComponent<LeapPlaybackProvider>();
+        }
+
+        protected override void Reset()
+        {
+            base.Reset();
+            _playbackProvider = GetComponent<LeapPlaybackProvider>();
+        }
+
 #endif
 
         public override bool StartRecording()
         {
-            _leapProvider = GetComponent<LeapProvider>();
+            _playbackProvider = GetComponent<LeapPlaybackProvider>();
 
-            if (_leapProvider == null)
+            if (_playbackProvider == null)
             {
                 Debug.LogError("Leap recorder has no Leap Provider on object.");
                 return false;
@@ -42,13 +54,13 @@ namespace PlayRecorder.Leap
             _leftCache = new LeapHandCache();
             _rightCache = new LeapHandCache();
 
-            if(_leapProvider.CurrentFrame != null)
+            if(_playbackProvider.CurrentUntransformedFrame != null)
             {
-                OnUpdateFrame(_leapProvider.CurrentFrame);
+                OnUpdateFrame(_playbackProvider.CurrentUntransformedFrame);
             }
 
-            _leapProvider.OnUpdateFrame -= OnUpdateFrame;
-            _leapProvider.OnUpdateFrame += OnUpdateFrame;
+            _playbackProvider.OnLocalUpdateFrame -= OnUpdateFrame;
+            _playbackProvider.OnLocalUpdateFrame += OnUpdateFrame;
 
             // Could just not use the base.StartRecording() but we don't know what's going to change there
             _recordItem = new RecordItem(_descriptor, this.GetType().ToString(), true);
@@ -62,7 +74,7 @@ namespace PlayRecorder.Leap
         {
             if(_recording)
             {
-                _leapProvider.OnUpdateFrame -= OnUpdateFrame;
+                _playbackProvider.OnLocalUpdateFrame -= OnUpdateFrame;
                 return base.StopRecording();
             }
             return null;
@@ -120,9 +132,8 @@ namespace PlayRecorder.Leap
                 Debug.LogError("Leap playback requires a LeapPlaybackProvider. Please add one to this object.", this);
                 return;
             }
-            _playbackProvider.StartPlayback();
             _currentFrame = null;
-            _playbackProvider.SetFrame(null);
+            _playbackProvider.CurrentPlaybackFrame = null;
             _leftCache = new LeapHandCache();
             _rightCache = new LeapHandCache();
             base.StartPlaying();
@@ -179,7 +190,7 @@ namespace PlayRecorder.Leap
                     SetLeapStatsToHand(_rightCache);
                     _currentFrame.Hands.Add(_rightCache.hand);
                 }
-                _playbackProvider.SetFrame(_currentFrame);
+                _playbackProvider.CurrentPlaybackFrame = _currentFrame;
                 _frameUpdated = false;
             }
         }

@@ -48,7 +48,7 @@ namespace PlayRecorder
         [SerializeField, Tooltip("Automatically assigned to the current object transform, changes will be ignored and reset once recording starts.")]
         protected Transform _baseTransform = null;
 
-        [SerializeField]
+        [SerializeField, Tooltip("Extra child transforms you want to record alongside of the base transform.")]
         protected List<Transform> _extraTransforms = new List<Transform>();
 
         protected List<TransformCache> _transformCache = new List<TransformCache>();
@@ -203,7 +203,7 @@ namespace PlayRecorder
 
         protected override void SetPlaybackIgnoreTransforms()
         {
-            _extraTransforms.Clear();
+            _playbackIgnoreTransforms.Clear();
             if(_baseTransform != null)
             {
                 _playbackIgnoreTransforms.Add(_baseTransform);

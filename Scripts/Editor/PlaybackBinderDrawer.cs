@@ -74,10 +74,8 @@ namespace PlayRecorder
 
                 EditorGUI.LabelField(countRect,new GUIContent("Instances: " + _count.intValue.ToString(),"The number of times this component appears in all files. If this number is different to the file count then you may have non-unique components in your save data."));
 
-                EditorGUI.BeginDisabledGroup(Application.isPlaying);
                 EditorGUI.PropertyField(recordRect, _recordComponent, new GUIContent("Component","This will only accept components that have the same type as listed above."));
                 _currentComponent = (RecordComponent)_recordComponent.objectReferenceValue;
-                EditorGUI.EndDisabledGroup();
                 if (_currentComponent != null && _currentComponent.GetType().ToString() != type)
                 {
                     Debug.LogError("RecordComponent type mismatch. Please assign the correct RecordComponent type.");
