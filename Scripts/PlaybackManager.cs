@@ -549,6 +549,7 @@ namespace PlayRecorder {
             if (_dataCache.Count > 0)
             {
                 _playing = true;
+                _paused = false;
                 ChangeCurrentFile(_currentFile);
             }
         }
@@ -609,6 +610,7 @@ namespace PlayRecorder {
             if(!_playing)
             {
                 StartPlaying();
+                return _paused;
             }
             return _paused = !_paused;
         }

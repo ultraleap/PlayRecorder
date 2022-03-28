@@ -14,6 +14,26 @@ namespace PlayRecorder
         [SerializeField]
         private bool _loopPlayback = true;
 
+        [SerializeField]
+        private bool _playOnAwake = true;
+
+        public void Start()
+        {
+            if (_playOnAwake)
+            {
+                if (_manager.isPaused)
+                {
+                    StartCoroutine(DelayedStart());
+                }
+            }
+        }
+
+        IEnumerator DelayedStart()
+        {
+            yield return null;
+            _manager.StartPlaying();
+        }
+
         private void OnEnable()
         {
             if(_manager != null)
