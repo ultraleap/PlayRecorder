@@ -64,5 +64,15 @@ namespace PlayRecorder.Leap
             this.stat = stat;
         }
     }
+
+    [System.Serializable]
+    public class LeapRotationStatFrame : RecordFrame
+    {
+        public Quaternion stat;
+        public LeapRotationStatFrame(int tick, Quaternion stat) : base(tick)
+        {
+            this.stat = stat;
+        }
+    }
 }
 #endif

@@ -5,11 +5,11 @@
 #if PR_LEAP
 using UnityEngine;
 using Leap;
-using Leap.Unity;
 
 namespace PlayRecorder.Leap
 {
-    [AddComponentMenu("PlayRecorder/Ultraleap/Leap Service Provider Record Component")]
+    [AddComponentMenu("PlayRecorder/Ultraleap/Leap Service Provider Record Component"),
+        RequireComponent(typeof(LeapPlaybackProvider))]
     public class LeapServiceProviderRecordComponent : RecordComponent
     {
         [SerializeField, Tooltip("Note this needs to be attached to the same object as your provider, and will be overwritten at recording and playback start.")]
@@ -24,7 +24,7 @@ namespace PlayRecorder.Leap
         private LeapHandCache _leftCache, _rightCache;
 
 #if UNITY_EDITOR
-        public override string editorHelpbox => "You will need to replace your default LeapServiceProvider with LeapPlaybackProvider to use this.";
+        public override string editorHelpbox => "You will need to ensure any hand models or providers you want to record/playback consume the Leap Playback Provider in their Input Provider slot.";
 
         public void OnValidate()
         {
@@ -54,13 +54,13 @@ namespace PlayRecorder.Leap
             _leftCache = new LeapHandCache();
             _rightCache = new LeapHandCache();
 
-            if(_playbackProvider.CurrentUntransformedFrame != null)
+            if(_playbackProvider.CurrentFrame != null)
             {
-                OnUpdateFrame(_playbackProvider.CurrentUntransformedFrame);
+                OnUpdateFrame(_playbackProvider.CurrentFrame);
             }
 
-            _playbackProvider.OnLocalUpdateFrame -= OnUpdateFrame;
-            _playbackProvider.OnLocalUpdateFrame += OnUpdateFrame;
+            _playbackProvider.OnUpdateFrame -= OnUpdateFrame;
+            _playbackProvider.OnUpdateFrame += OnUpdateFrame;
 
             // Could just not use the base.StartRecording() but we don't know what's going to change there
             _recordItem = new RecordItem(_descriptor, this.GetType().ToString(), true);
@@ -74,7 +74,7 @@ namespace PlayRecorder.Leap
         {
             if(_recording)
             {
-                _playbackProvider.OnLocalUpdateFrame -= OnUpdateFrame;
+                _playbackProvider.OnUpdateFrame -= OnUpdateFrame;
                 return base.StopRecording();
             }
             return null;
@@ -133,7 +133,6 @@ namespace PlayRecorder.Leap
                 return;
             }
             _currentFrame = null;
-            _playbackProvider.CurrentPlaybackFrame = null;
             _leftCache = new LeapHandCache();
             _rightCache = new LeapHandCache();
             base.StartPlaying();
@@ -190,7 +189,7 @@ namespace PlayRecorder.Leap
                     SetLeapStatsToHand(_rightCache);
                     _currentFrame.Hands.Add(_rightCache.hand);
                 }
-                _playbackProvider.CurrentPlaybackFrame = _currentFrame;
+                _playbackProvider.SetPlaybackFrame(_currentFrame);
                 _frameUpdated = false;
             }
         }

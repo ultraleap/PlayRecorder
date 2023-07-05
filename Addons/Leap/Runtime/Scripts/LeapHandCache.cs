@@ -7,20 +7,27 @@ namespace PlayRecorder.Leap
 {
     public class LeapHandCache
     {
-        public VectorHand vectorHand;
-        public Hand hand;
-        public bool handUpdated = false;
-        public bool isTracked = false;
-        public byte[] handArray;
-        public Vector3[] jointCache;
+        private VectorHand vectorHand;
+        internal Hand hand;
+        private bool handUpdated = false;
+        internal bool isTracked = false;
+        internal byte[] handArray;
+        private Vector3[] jointCache;
 
-        public bool handIDUpdated = false;
-        public int handID;
-        public bool confidenceUpdated = false, pinchStrengthUpdated = false, pinchDistanceUpdated = false, palmWidthUpdated = false, grabStrengthUpdated = false, palmVelocityUpdated = false;
-        public float confidence, pinchStrength, pinchDistance, palmWidth, grabStrength;
-        public Vector3 palmVelocity;
+        // Hand
+        internal bool handIDUpdated = false;
+        internal int handID;
+        internal bool confidenceUpdated = false, pinchStrengthUpdated = false, pinchDistanceUpdated = false, palmWidthUpdated = false, grabStrengthUpdated = false, palmVelocityUpdated = false;
+        internal float confidence, pinchStrength, pinchDistance, palmWidth, grabStrength;
+        internal Vector3 palmVelocity;
 
-        public const int framePosition = 0, handStatCount = 7, leftHandOffset = 1, rightHandOffset = leftHandOffset + handStatCount + 1;
+        // Arm
+        internal bool armWidthUpdated = false, wristPositionUpdated = false, elbowPositionUpdated = false, armRotationUpdated = false;
+        internal float armWidth;
+        internal Vector3 wristPosition, elbowPosition;
+        internal Quaternion armRotation;
+
+        internal const int framePosition = 0, handStatCount = 11, leftHandOffset = 1, rightHandOffset = leftHandOffset + handStatCount + 1;
 
         public LeapHandCache()
         {
@@ -92,6 +99,30 @@ namespace PlayRecorder.Leap
                 palmVelocity = hand.PalmVelocity;
                 palmVelocityUpdated = true;
             }
+
+            if (armWidth != hand.Arm.Width)
+            {
+                armWidth = hand.Arm.Width;
+                armWidthUpdated = true;
+            }
+
+            if (wristPosition != hand.WristPosition)
+            {
+                wristPosition = hand.WristPosition;
+                wristPositionUpdated = true;
+            }
+
+            if (elbowPosition != hand.Arm.ElbowPosition)
+            {
+                elbowPosition = hand.Arm.ElbowPosition;
+                elbowPositionUpdated = true;
+            }
+
+            if (armRotation != hand.Arm.Rotation)
+            {
+                armRotation = hand.Arm.Rotation;
+                armRotationUpdated = true;
+            }
         }
 
         public void UpdateJoints()
@@ -159,6 +190,30 @@ namespace PlayRecorder.Leap
                 recordItem.parts[offset + 6].AddFrame(new LeapVectorStatFrame(currentTick, palmVelocity));
                 palmVelocityUpdated = false;
             }
+
+            if (armWidthUpdated)
+            {
+                recordItem.parts[offset + 7].AddFrame(new LeapStatFrame(currentTick, armWidth));
+                armWidthUpdated = false;
+            }
+
+            if (wristPositionUpdated)
+            {
+                recordItem.parts[offset + 8].AddFrame(new LeapVectorStatFrame (currentTick, wristPosition));
+                wristPositionUpdated = false;
+            }
+
+            if(elbowPositionUpdated)
+            {
+                recordItem.parts[offset + 9].AddFrame(new LeapVectorStatFrame(currentTick, elbowPosition));
+                elbowPositionUpdated = false;
+            }
+
+            if(armRotationUpdated)
+            {
+                recordItem.parts[offset + 10].AddFrame(new LeapRotationStatFrame(currentTick, armRotation));
+                armRotationUpdated = false;
+            }
         }
 
         public void RecordJointFrame(RecordItem recordItem, int currentTick, int jointIndex)
@@ -172,7 +227,7 @@ namespace PlayRecorder.Leap
 
         public bool PlayHandStat(RecordFrame frame, int stat)
         {
-            if(stat < handStatCount)
+            if (stat < handStatCount)
             {
                 handUpdated = true;
             }
@@ -199,6 +254,18 @@ namespace PlayRecorder.Leap
                 case 6:
                     palmVelocity = ((LeapVectorStatFrame)frame).stat;
                     return true;
+                case 7:
+                    armWidth = ((LeapStatFrame)frame).stat;
+                    return true;
+                case 8:
+                    wristPosition = ((LeapVectorStatFrame)frame).stat;
+                    return true;
+                case 9:
+                    elbowPosition = ((LeapVectorStatFrame)frame).stat;
+                    return true;
+                case 10:
+                    armRotation = ((LeapRotationStatFrame)frame).stat;
+                    return true;
             }
             return false;
         }
@@ -220,6 +287,14 @@ namespace PlayRecorder.Leap
             hand.PalmWidth = palmWidth;
             hand.GrabStrength = grabStrength;
             hand.PalmVelocity = palmVelocity;
+            hand.Arm.PrevJoint = elbowPosition;
+            hand.WristPosition = wristPosition;
+            hand.Arm.NextJoint = wristPosition;
+            hand.Arm.Width = armWidth;
+            hand.Arm.Rotation = armRotation;
+            hand.Arm.Direction = (wristPosition - elbowPosition).normalized;
+            hand.Arm.Length = Vector3.Distance(elbowPosition, wristPosition);
+            hand.Arm.Center = (elbowPosition + wristPosition) / 2f;
         }
     }
 }
