@@ -52,8 +52,8 @@ The idea behind the overall structure is that PlayRecorder is its mostly own con
   - Everything needs to be within the scene before recording or playback starts.
 
 ## Requirements
-- [Odin Serializer](https://github.com/TeamSirenix/odin-serializer)
-  - This requires setting your project API Compatibility Level to .NET 4.x
+- [Odin Serializer](https://odininspector.com/download#serializer)
+  - This requires setting your project API Compatibility Level to .NET 4.x / .NET Framework
 - [Unity Editor Coroutines](https://docs.unity3d.com/Packages/com.unity.editorcoroutines@1.0/manual/index.html)
 
 Currently only verified to run on Windows and Standalone Windows builds. Other platforms may work however are beyond scope.

@@ -1,0 +1,24 @@
+{
+    "name": "Ultraleap.PlayRecorder.Addons.Leap",
+    "rootNamespace": "",
+    "references": [
+        "GUID:45c7b13aa4a7b4246b8397d77e52d180",
+        "GUID:cec9848704c49724192ff47f9b3e9156",
+        "GUID:2ee0542102ac1084e8d9a910885c1e81"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.ultraleap.tracking",
+            "expression": "",
+            "define": "PR_LEAP"
+        }
+    ],
+    "noEngineReferences": false
+}
