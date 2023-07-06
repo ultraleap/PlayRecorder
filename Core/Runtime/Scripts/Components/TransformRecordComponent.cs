@@ -32,7 +32,7 @@ namespace PlayRecorder
     {
         public TransformSpace space;
 
-        public TransformItem(string descriptor, string type, bool active, TransformSpace space) : base(descriptor, type, active)
+        public TransformItem(string descriptor, bool active, TransformSpace space) : base(descriptor, active)
         {
             this.space = space;
         }
@@ -87,17 +87,17 @@ namespace PlayRecorder
             {
                 if (_transform.localPosition != localPosition)
                 {
-                    localPosition = _transform.localPosition;
+                    localPosition = this._space == TransformSpace.Local ? _transform.localPosition : _transform.position;
                     hasChanged = true;
                 }
                 if (_transform.localRotation != localRotation)
                 {
-                    localRotation = _transform.localRotation;
+                    localRotation = this._space == TransformSpace.Local ? _transform.localRotation : _transform.rotation;
                     hasChanged = true;
                 }
                 if (_transform.localScale != localScale)
                 {
-                    localScale = _transform.localScale;
+                    localScale = this._space == TransformSpace.Local ? _transform.localScale : _transform.lossyScale;
                     hasChanged = true;
                 }
             }
@@ -125,6 +125,8 @@ namespace PlayRecorder
         public override bool StartRecording()
         {
             base.StartRecording();
+
+            _recordItem = new TransformItem(_descriptor, gameObject.activeInHierarchy, _transformSpace);
 
             _baseTransform = gameObject.transform;
 

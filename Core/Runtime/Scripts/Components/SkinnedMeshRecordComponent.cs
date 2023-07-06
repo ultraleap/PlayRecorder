@@ -9,7 +9,7 @@ namespace PlayRecorder
     {
         public bool updateOffscreen = false;
 
-        public SkinnedMeshItem(string descriptor, string type, bool active, TransformSpace space, bool updateOffscreen) : base(descriptor, type, active, space)
+        public SkinnedMeshItem(string descriptor, bool active, TransformSpace space, bool updateOffscreen) : base(descriptor, active, space)
         {
             this.updateOffscreen = updateOffscreen;
         }
@@ -62,7 +62,7 @@ namespace PlayRecorder
 
             BasicStartRecording();
 
-            _recordItem = new SkinnedMeshItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy, _transformSpace, _skinnedMeshRenderer.updateWhenOffscreen);
+            _recordItem = new SkinnedMeshItem(_descriptor, gameObject.activeInHierarchy, _transformSpace, _skinnedMeshRenderer.updateWhenOffscreen);
 
             _baseTransform = _skinnedMeshRenderer.rootBone;
             _extraTransforms = _skinnedMeshRenderer.bones.ToList();

@@ -134,7 +134,7 @@ namespace PlayRecorder
         {
             _currentTick = 0;
             _recording = true;
-            _recordItem = new RecordItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy);
+            _recordItem = new RecordItem(_descriptor, gameObject.activeInHierarchy);
             return true;
         }
 

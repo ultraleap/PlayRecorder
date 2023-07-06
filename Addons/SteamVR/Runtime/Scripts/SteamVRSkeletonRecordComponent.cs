@@ -189,7 +189,7 @@ namespace PlayRecorder.SteamVR
             base.StartRecording();
 
             // Could just not use the base.StartRecording() but we don't know what's going to change there
-            _recordItem = new HandItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy, skeletonHandID);
+            _recordItem = new HandItem(_descriptor, gameObject.activeInHierarchy, skeletonHandID);
 
             SetCaches();
 
