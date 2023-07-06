@@ -63,6 +63,7 @@ namespace PlayRecorder.Statistics
 
         private GUIContent _copyButton;
         private GUIContent _skipToEndButton;
+        private GUIStyle _wrappedLabel = null;
 
         [MenuItem("Ultraleap/PlayRecorder/Statistics")]
         public static void Init()
@@ -148,6 +149,9 @@ namespace PlayRecorder.Statistics
                     SetUILists();
                 }
             }
+
+            _wrappedLabel = new GUIStyle(EditorStyles.label);
+            _wrappedLabel.wordWrap = true;
         }
 
         private void OnPlaybackStart()
@@ -221,7 +225,7 @@ namespace PlayRecorder.Statistics
             }
             if (_dataCache.Count == 0 || playbackManager.currentFileIndex == -1)
             {
-                EditorGUILayout.LabelField(EditorMessages.noFilesInPlayback);
+                EditorGUILayout.LabelField(EditorMessages.noFilesInPlayback, _wrappedLabel);
                 if (GUILayout.Button("Open Playback Manager"))
                 {
                     Selection.activeObject = playbackManager.gameObject;
@@ -595,11 +599,11 @@ namespace PlayRecorder.Statistics
 
             GUIContent currentValLab = new GUIContent("Current Value", "The value of the statistic based on the current frame.");
             EditorGUILayout.LabelField(currentValLab, GUILayout.Width(EditorStyles.label.CalcSize(currentValLab).x));
-            _statCache[index].current = SingleStatBox(cache.values[GetStatIndex(cache)],cache.statFields);
+            _statCache[index].current = SingleStatBox(cache.values[GetStatIndex(cache)], cache.statFields);
 
             GUIContent lastValLab = new GUIContent("Final Value", "The final value of the statistic, regardless of the current frame.");
             EditorGUILayout.LabelField(lastValLab, GUILayout.Width(EditorStyles.label.CalcSize(lastValLab).x));
-            _statCache[index].final = SingleStatBox(cache.values[cache.values.Length - 1],cache.statFields);
+            _statCache[index].final = SingleStatBox(cache.values[cache.values.Length - 1], cache.statFields);
             _statCache[index].validStat = true;
 
             EditorGUILayout.EndFoldoutHeaderGroup();
@@ -657,18 +661,18 @@ namespace PlayRecorder.Statistics
         private string SingleStatBox(object item, FieldInfo[] info)
         {
             string output = "";
-            if(info.Length == 1)
+            if (info.Length == 1)
             {
                 output = EditorGUILayout.TextField(item.ToString());
                 CopyButton(output);
             }
-            else 
+            else
             {
                 output = "(";
                 for (int i = 0; i < info.Length; i++)
                 {
                     output += info[i].GetValue(item).ToString();
-                    if(i != info.Length - 1)
+                    if (i != info.Length - 1)
                     {
                         output += ", ";
                     }
@@ -682,7 +686,7 @@ namespace PlayRecorder.Statistics
 
         private void CopyButton(string toCopy)
         {
-            if(GUILayout.Button(_copyButton,GUILayout.Width(Sizes.widthCharButton)))
+            if (GUILayout.Button(_copyButton, GUILayout.Width(Sizes.widthCharButton)))
             {
                 GUIUtility.systemCopyBuffer = toCopy;
             }

@@ -18,5 +18,12 @@
     "name": "Ultraleap",
     "email": "contact@ultraleap.com",
     "url": "https://www.ultraleap.com"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Ultraleap Hand Recording",
+      "description": "",
+      "path": "Addons/Leap/Example~"
+    }
+  ]
 }

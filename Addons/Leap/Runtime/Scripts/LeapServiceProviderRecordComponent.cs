@@ -5,6 +5,7 @@
 #if PR_LEAP
 using UnityEngine;
 using Leap;
+using Leap.Unity;
 
 namespace PlayRecorder.Leap
 {
@@ -22,6 +23,14 @@ namespace PlayRecorder.Leap
         private float _handDistanceThreshold = 0.00075f;
 
         private LeapHandCache _leftCache, _rightCache;
+
+        [SerializeField, Tooltip("Records a statistic when the hand tracking state changes.")]
+        private bool _recordHandTrackingState = true;
+        [SerializeField, Tooltip("Records a statistic when the hand pinch state changes. This will automatically record an unpinch event when the hand loses tracking.")]
+        private bool _recordHandPinchState = true;
+
+        private bool _oldLeftTracking = false, _oldRightTracking = false;
+        private bool _oldLeftPinch = false, _oldRightPinch = false;
 
 #if UNITY_EDITOR
         public override string editorHelpbox => "You will need to ensure any hand models or providers you want to record/playback consume the Leap Playback Provider in their Input Provider slot.";
@@ -110,11 +119,70 @@ namespace PlayRecorder.Leap
         protected override void RecordTickLogic()
         {
             bool left = false, right = false;
+            bool leftPinch = false, rightPinch = false;
             if(_currentFrame.Hands.Count > 0)
             {
-                left = _currentFrame.Hands.FindIndex(x => x.IsLeft) != -1;
-                right = _currentFrame.Hands.FindIndex(x => !x.IsLeft) != -1;
+                int ind = _currentFrame.Hands.FindIndex(x => x.IsLeft);
+                left = ind != -1;
+                leftPinch = ind != -1 && _currentFrame.Hands[ind].IsPinching();
+
+                ind = _currentFrame.Hands.FindIndex(x => !x.IsLeft);
+                right = ind != -1;
+                rightPinch = ind != -1 && _currentFrame.Hands[ind].IsPinching();
             }
+
+            if (_recordHandTrackingState)
+            {
+                if (left != _oldLeftTracking)
+                {
+                    AddStatistic("Left Hand Tracked", left);
+                    _oldLeftTracking = left;
+                }
+
+                if (right != _oldRightTracking)
+                {
+                    AddStatistic("Right Hand Tracked", right);
+                    _oldRightTracking = right;
+                }
+            }
+
+            if (_recordHandPinchState)
+            {
+                if (left)
+                {
+                    if(leftPinch != _oldLeftPinch)
+                    {
+                        AddStatistic("Left Hand Pinch", leftPinch);
+                        _oldLeftPinch = leftPinch;
+                    }
+                }
+                else
+                {
+                    if (_oldLeftPinch)
+                    {
+                        AddStatistic("Left Hand Pinch", false);
+                        _oldLeftPinch = false;
+                    }
+                }
+
+                if (right)
+                {
+                    if(rightPinch != _oldRightPinch)
+                    {
+                        AddStatistic("Right Hand Pinch", rightPinch);
+                        _oldRightPinch = rightPinch;
+                    }
+                }
+                else
+                {
+                    if (_oldRightPinch)
+                    {
+                        AddStatistic("Right Hand Pinch", false);
+                        _oldRightPinch = false;
+                    }
+                }
+            }
+            
             _recordItem.parts[LeapHandCache.framePosition].AddFrame(new LeapIDFrame(_currentTick, _currentFrame.Id, _currentFrame.Timestamp, _currentFrame.CurrentFramesPerSecond, left, right));
             
             _leftCache.RecordStatFrames(_recordItem, _currentTick, LeapHandCache.leftHandOffset);
