@@ -18,6 +18,7 @@ namespace PlayRecorder {
 
         [SerializeField, HideInInspector]
         private bool _recording = false, _recordingPaused = false;
+        public bool Recording => _recording;
 
         [SerializeField] [Range(1, 120)]
         private int _frameRateVal = 60;
@@ -104,7 +105,11 @@ namespace PlayRecorder {
                 return;
             }
             OnPreRecordingStart?.Invoke();
+#if UNITY_ANDROID
+            _unityDataPath = Application.persistentDataPath;
+#else
             _unityDataPath = Application.dataPath;
+#endif
             _data = new Data()
             {
                 recordingName = recordingName,

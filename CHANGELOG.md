@@ -14,11 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Converted project into a Unity package format for easier consumption and usage
 - Improved statistics window graphs
 - Changed statistics to use generic types for better usage
+- PlayRecorder menu has been moved to Ultraleap -> PlayRecorder
 
 ### Fixed
 - Minor bug with recording name checks
 - Incorrect conversions of RecordItem types
 - TransformRecordComponent transform spaces are correctly accounted for
+- Correct data path for saving recordings on Android
 
 ## [1.0.0 and older]
 

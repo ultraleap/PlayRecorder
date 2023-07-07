@@ -7,13 +7,13 @@ namespace PlayRecorder.Statistics
     public static class StatisticGraph
     {
 
-        public static Texture2D GenerateGraph(RecordMessage message, StatisticWindow.StatCache cache, int width, int height, int allMaxFrame, List<Color> lineColors, Color backgroundColor)
+        public static Texture2D GenerateGraph(StatisticWindow.StatCache cache, int width, int height, int allMaxFrame, List<Color> lineColors, Color backgroundColor)
         {
             if (cache.maxFrame == 0)
             {
                 return null;
             }
-            
+#pragma warning disable 0162
             for (int i = 0; i < cache.values.Length; i++)
             {
                 if (cache.type == typeof(string))
@@ -29,6 +29,7 @@ namespace PlayRecorder.Statistics
                     return tex;
                 }
             }
+#pragma warning restore 0162
             return null;
         }
 

@@ -418,7 +418,7 @@ namespace PlayRecorder.Statistics
                 {
                     continue;
                 }
-                _statCache[i].graph = StatisticGraph.GenerateGraph(_dataCache[_statCache[i].fileIndex].messages[_statCache[i].messageIndex], _statCache[i], (int)(_windowRect.width - 16 - (_scrollBarActive ? (_scrollbarWidth - 1) : 0)), 80, _globalMaxFrame, _graphColors, _backgroundColor);
+                _statCache[i].graph = StatisticGraph.GenerateGraph(_statCache[i], (int)(_windowRect.width - 16 - (_scrollBarActive ? (_scrollbarWidth - 1) : 0)), 80, _globalMaxFrame, _graphColors, _backgroundColor);
             }
         }
 
