@@ -49,6 +49,11 @@ namespace PlayRecorder.Statistics
             for (int i = 0; i < cache.values.Length; i++)
             {
                 item = cache.values[i];
+                if(item.GetType() == typeof(bool))
+                {
+                    positive = 1;
+                    break;
+                }
                 if (item.GetType() == typeof(int) ||
                     item.GetType() == typeof(float) ||
                     item.GetType() == typeof(double))
@@ -114,6 +119,7 @@ namespace PlayRecorder.Statistics
             else
             {
                 object previous = null;
+                DrawLinesFromObject(cache.values[0], cache.values[0], texture, 0, cache.recordMessage.frames[0], cache.maxFrame, negative, range, lineColors);
                 for (int i = 0; i < cache.values.Length; i++)
                 {
                     item = cache.values[i];
@@ -131,7 +137,14 @@ namespace PlayRecorder.Statistics
 
         private static void DrawLinesFromObject(object item, object previousItem, Texture2D texture, float previousFrame, float currentFrame, float endFrame, float negative, float range, List<Color> lineColors)
         {
-            if (item.GetType() == typeof(int) ||
+            if(item.GetType() == typeof(bool))
+            {
+                bool.TryParse(item.ToString(), out bool val);
+                bool.TryParse(previousItem.ToString(), out bool valPrev);
+                DrawSingleLine(texture, previousFrame, currentFrame, endFrame, valPrev ? 1 : 0, valPrev ? 1 : 0, negative, range, lineColors[0 % lineColors.Count]);
+                DrawSingleLine(texture, currentFrame, currentFrame, endFrame, valPrev ? 1 : 0, val ? 1 : 0, negative, range, lineColors[0 % lineColors.Count]);
+            }
+            else if (item.GetType() == typeof(int) ||
                 item.GetType() == typeof(float) ||
                 item.GetType() == typeof(double))
             {

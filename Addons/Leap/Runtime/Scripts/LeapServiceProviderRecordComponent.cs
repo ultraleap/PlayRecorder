@@ -1,5 +1,3 @@
-// To enable this addon go to Edit -> Project Settings -> Player -> Other Settings -> Scripting Define Symbols and add
-// PR_LEAP;
 // This records information from a LeapProvider object (e.g. LeapServiceProvider/LeapXRServiceProvider), listening to all frame and hand information. Use this when you want to reproduce all the logic that both hands may have done.
 // You need to add a LeapPlaybackProvider to your object have frames played back, in place of your original LeapProvider.
 #if PR_LEAP
@@ -19,7 +17,7 @@ namespace PlayRecorder.Leap
         private bool _frameUpdated = false;
         private Frame _currentFrame;
 
-        [SerializeField, Tooltip("The distance difference between previous joint positions before a frame is recorded. Whole hand will be recorded.")]
+        [SerializeField, Tooltip("The distance difference between previous joint positions before a frame is recorded. Whole hand will be recorded. Setting this value to zero will record every update.")]
         private float _handDistanceThreshold = 0.00075f;
 
         private LeapHandCache _leftCache, _rightCache;

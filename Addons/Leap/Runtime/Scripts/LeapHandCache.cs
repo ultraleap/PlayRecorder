@@ -135,7 +135,7 @@ namespace PlayRecorder.Leap
             vectorHand.Encode(hand);
             for (int i = 0; i < jointCache.Length; i++)
             {
-                if (Vector3.Distance(vectorHand.jointPositions[i], jointCache[i]) > distanceThreshold)
+                if (distanceThreshold == 0 || Vector3.Distance(vectorHand.jointPositions[i], jointCache[i]) > distanceThreshold)
                 {
                     jointCache[i] = vectorHand.jointPositions[i];
                     handUpdated = true;

@@ -1,5 +1,3 @@
-// To enable this addon go to Edit -> Project Settings -> Player -> Other Settings -> Scripting Define Symbols and add
-// PR_LEAP;
 #if PR_LEAP
 using UnityEngine;
 using System;
