@@ -1,0 +1,19 @@
+{
+    "name": "Ultraleap.PlayRecoder.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:45c7b13aa4a7b4246b8397d77e52d180",
+        "GUID:95f9d24904e26812c174a3cc12e922ae"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
