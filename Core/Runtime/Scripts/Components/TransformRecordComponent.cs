@@ -32,7 +32,7 @@ namespace PlayRecorder
     {
         public TransformSpace space;
 
-        public TransformItem(string descriptor, bool active, TransformSpace space) : base(descriptor, active)
+        public TransformItem(string descriptor, string componentType, bool active, TransformSpace space) : base(descriptor, componentType, active)
         {
             this.space = space;
         }
@@ -126,7 +126,7 @@ namespace PlayRecorder
         {
             base.StartRecording();
 
-            _recordItem = new TransformItem(_descriptor, gameObject.activeInHierarchy, _transformSpace);
+            _recordItem = new TransformItem(_descriptor, this.GetType().ToString(), gameObject.activeInHierarchy, _transformSpace);
 
             _baseTransform = gameObject.transform;
 

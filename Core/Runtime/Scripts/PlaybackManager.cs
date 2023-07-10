@@ -321,7 +321,7 @@ namespace PlayRecorder {
             int rCacheInd = -1, binderInd = -1;
             for (int j = 0; j < data.objects.Count; j++)
             {
-                binderInd = _binders.FindIndex(x => (x.descriptor == data.objects[j].descriptor) && (x.type == data.objects[j].type));
+                binderInd = _binders.FindIndex(x => (x.descriptor == data.objects[j].descriptor) && (x.type == data.objects[j].componentType));
                 if (binderInd != -1)
                 {
                     _binders[binderInd].count++;
@@ -349,7 +349,7 @@ namespace PlayRecorder {
                     {
                         descriptor = data.objects[j].descriptor,
                         count = 1,
-                        type = data.objects[j].type,
+                        type = data.objects[j].componentType,
                         recordComponent = rc,
                     });
                 }
@@ -414,7 +414,7 @@ namespace PlayRecorder {
 
             for (int i = 0; i < _binders.Count; i++)
             {
-                int ind = _currentData.objects.FindIndex(x => (x.descriptor == _binders[i].descriptor) && (x.type == _binders[i].type));
+                int ind = _currentData.objects.FindIndex(x => (x.descriptor == _binders[i].descriptor) && (x.componentType == _binders[i].type));
                 if (ind != -1)
                 {
                     _binders[i].recordItem = _currentData.objects[ind];

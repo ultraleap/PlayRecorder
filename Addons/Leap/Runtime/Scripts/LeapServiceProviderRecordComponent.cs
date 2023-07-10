@@ -70,7 +70,7 @@ namespace PlayRecorder.Leap
             _playbackProvider.OnUpdateFrame += OnUpdateFrame;
 
             // Could just not use the base.StartRecording() but we don't know what's going to change there
-            _recordItem = new RecordItem(_descriptor, true);
+            _recordItem = new RecordItem(_descriptor, this.GetType().ToString(), true);
 
             CreateParts();
 
