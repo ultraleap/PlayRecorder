@@ -10,7 +10,7 @@
 </b>
 </p>
 
-PlayRecorder lets you record Unity scene logic into binary files that work in **both** the editor or builds. Once a recording is made with a scene, even if that recording is created within a build, it can be played back within the editor, making it incredibly useful for recording data from user studies or analytics. Data can also be recorded within the editor, and then played back within a build.
+PlayRecorder lets you record Unity scene logic into binary files that work in **both** the editor or builds. Once a recording is made with a scene, even if that recording is created within a build, it can be played back within the editor, making it incredibly useful for recording data from user studies or analytics. Data can also be recorded within the editor, and then played back within a build. This also works across different platforms making it flexible for use on deployed apps.
 
 All data recorded by PlayRecorder is entirely polymorphic, allowing for considerably large amounts of customisation with little effort. Due to this you can quite easily and quickly add your own custom data into the system, while still being sure it will be recorded.
 
@@ -46,6 +46,8 @@ The idea behind the overall structure is that PlayRecorder is its mostly own con
   - View all statistics recorded across all currently loaded playback files.
   - Basic graphs showing statistical value over time.
   - One click customisable CSV statistic exporting.
+- Addons
+  - Support for both Ultraleap Hand Tracking and SteamVR Skeletal recording. 
 
 ## Limitations
 - PlayRecorder does not understand instantiated objects.
@@ -56,7 +58,7 @@ The idea behind the overall structure is that PlayRecorder is its mostly own con
   - This requires setting your project API Compatibility Level to .NET 4.x / .NET Framework
 - [Unity Editor Coroutines](https://docs.unity3d.com/Packages/com.unity.editorcoroutines@1.0/manual/index.html)
 
-Currently only verified to run on Windows and Standalone Windows builds. Other platforms may work however are beyond scope.
+Currently only verified to run on Windows and Standalone Windows builds. It has also been confirmed to run on [Android](https://github.com/ultraleap/PlayRecorder/wiki/Android-Recordings) based VR headsets. Other platforms may work however are beyond scope.
 
 ## Disclaimers
 PlayRecorder is licensed under [Apache 2.0](LICENSE).
