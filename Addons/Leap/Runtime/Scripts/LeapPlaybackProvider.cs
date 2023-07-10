@@ -6,8 +6,10 @@ using Leap.Unity;
 
 namespace PlayRecorder.Leap
 {
+    /// <summary>
+    /// This provider will continue to show live hand tracking data until playback begins.
+    /// </summary>
     [AddComponentMenu("PlayRecorder/Ultraleap/Leap Playback Provider"),
-        Tooltip("This provider will continue to show live hand tracking data until playback begins."),
         RequireComponent(typeof(LeapServiceProviderRecordComponent))]
     public class LeapPlaybackProvider : PostProcessProvider
     {
