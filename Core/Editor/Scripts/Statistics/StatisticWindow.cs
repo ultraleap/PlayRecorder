@@ -28,6 +28,8 @@ namespace PlayRecorder.Statistics
             public object[] values;
             public System.Type type;
             public FieldInfo[] statFields;
+            public float[] statTimes;
+            public float maxTime;
             public RecordMessage recordMessage;
             public bool expanded = false;
             public int frameIndex = 0;
@@ -487,13 +489,26 @@ namespace PlayRecorder.Statistics
                 _statCache[ind].fileIndex = f;
                 _statCache[ind].messageIndex = mi;
                 _statCache[ind].maxFrame = cache.frameCount;
+
                 _statCache[ind].fileName = cache.name;
                 _statCache[ind].statName = cache.messages[mi].message;
                 _statCache[ind].recordMessage = cache.messages[mi];
+                List<float> times = new List<float>();
+                _statCache[ind].maxTime = (float)cache.frameCount / cache.frameRate;
+                for (int j = 0; j < _statCache[ind].recordMessage.frames.Count; j++)
+                {
+                    times.Add((float)(InverseLerpDouble(0, cache.frameCount, _statCache[ind].recordMessage.frames[j]) * _statCache[ind].maxTime));
+                }
+                _statCache[ind].statTimes = times.ToArray();
                 _statCache[ind].statCount = cache.messages[mi].frames.Count;
                 _statCache[ind].current = "";
                 _statCache[ind].final = "";
             }
+        }
+
+        private static double InverseLerpDouble(double a, double b, double v)
+        {
+            return (v - a) / (b - a);
         }
 
         private void ExportCSVButtons()
@@ -580,7 +595,12 @@ namespace PlayRecorder.Statistics
         {
             _statCount++;
             GUILayout.BeginVertical(GUI.skin.box);
-            GUIContent label = new GUIContent((_allFiles ? (cache.fileIndex + 1).ToString() + ". " : "") + cache.statName + " -  (" + cache.frameIndex + "/" + cache.maxFrame + ")");
+            
+            // Convert the time to readable formats
+            string timeLabel = TimeUtil.ConvertToTime(InverseLerpDouble(0, cache.maxFrame, cache.frameIndex) * cache.maxTime);
+            string endTimeLabel = TimeUtil.ConvertToTime(cache.maxTime);
+
+            GUIContent label = new GUIContent($"{(_allFiles ? (cache.fileIndex + 1).ToString() + ". " : "")} {cache.statName} - ({cache.frameIndex}/{cache.maxFrame}) - ({timeLabel}/{endTimeLabel})");
             cache.expanded = EditorGUILayout.BeginFoldoutHeaderGroup(cache.expanded, label);
             cache.validStat = false;
             Rect scrollCheck = GUILayoutUtility.GetLastRect();
@@ -594,7 +614,7 @@ namespace PlayRecorder.Statistics
             }
             EditorGUILayout.BeginHorizontal();
 
-            GUIContent statCount = new GUIContent("(" + cache.values.Length.ToString() + ")", "The number of recorded instances of the statistic.");
+            GUIContent statCount = new GUIContent($"({cache.values.Length})", "The number of recorded instances of the statistic.");
             EditorGUILayout.LabelField(statCount, Styles.textBold, GUILayout.Width(Styles.textBold.CalcSize(statCount).x));
 
             GUIContent currentValLab = new GUIContent("Current Value", "The value of the statistic based on the current frame.");

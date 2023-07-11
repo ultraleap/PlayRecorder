@@ -12,7 +12,8 @@ namespace PlayRecorder.Statistics
         private float _width = 0f;
         private List<StatisticWindow.StatCache> _statsCache;
 
-        private const string _columnsString = "Variable,VariableIndex,Value\n";
+        private const string _columnsString = "Variable,VariableIndex,VariableTime,Value\n";
+        private const int _columnsPreCount = 4;
 
         private string _exampleText = "";
 
@@ -96,8 +97,8 @@ namespace PlayRecorder.Statistics
             EditorGUILayout.EndScrollView();
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Columns: " + (3 + (_keepFileNumbers ? 1 : 0) + (_keepFileNames ? 1 : 0)).ToString());
-            EditorGUILayout.LabelField("Rows: " + _totalRows.ToString());
+            EditorGUILayout.LabelField($"Columns: {_columnsPreCount + (_keepFileNumbers ? 1 : 0) + (_keepFileNames ? 1 : 0)}");
+            EditorGUILayout.LabelField($"Rows: {_totalRows}");
             EditorGUILayout.EndHorizontal();
             if(GUILayout.Button("Export CSV"))
             {
@@ -122,6 +123,7 @@ namespace PlayRecorder.Statistics
                         line += AddFileInfo(cache);
                         line += (cache.statName.ToCSVCell() + "_" + cache.statFields[y].Name).ToCSVCell() + ",";
                         line += i.ToString() + ",";
+                        line += cache.statTimes[i].ToString() + ",";
                         line += cache.statFields[y].GetValue(cache.values[i]).ToString().ToCSVCell() + "\n";
                     }
                 }
@@ -130,6 +132,7 @@ namespace PlayRecorder.Statistics
                     line += AddFileInfo(cache);
                     line += cache.statName.ToCSVCell() + ",";
                     line += i.ToString() + ",";
+                    line += cache.statTimes[i].ToString() + ",";
                     line += cache.values[i].ToString().ToCSVCell() + "\n";
                 }
             }
