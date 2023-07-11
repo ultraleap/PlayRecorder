@@ -10,7 +10,7 @@ namespace PlayRecorder
         public bool playAutomatically = false, animatePhysics = false;
         public int cullingType = 0;
         
-        public AnimationItem(string descriptor, bool active, bool playAutomatically, bool animatePhysics, int cullingType) : base(descriptor, active)
+        public AnimationItem(string descriptor, string componentType, bool active, bool playAutomatically, bool animatePhysics, int cullingType) : base(descriptor, componentType, active)
         {
             this.playAutomatically = playAutomatically;
             this.animatePhysics = animatePhysics;
@@ -95,7 +95,7 @@ namespace PlayRecorder
             }
 
             base.StartRecording();
-            _recordItem = new AnimationItem(descriptor, gameObject.activeInHierarchy, _animation.playAutomatically, _animation.animatePhysics, (int)_animation.cullingType);
+            _recordItem = new AnimationItem(descriptor, this.GetType().ToString(), gameObject.activeInHierarchy, _animation.playAutomatically, _animation.animatePhysics, (int)_animation.cullingType);
 
             SetAnimationClips();
 

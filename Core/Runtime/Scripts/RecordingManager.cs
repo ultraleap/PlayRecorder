@@ -105,7 +105,7 @@ namespace PlayRecorder {
                 return;
             }
             OnPreRecordingStart?.Invoke();
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             _unityDataPath = Application.persistentDataPath;
 #else
             _unityDataPath = Application.dataPath;

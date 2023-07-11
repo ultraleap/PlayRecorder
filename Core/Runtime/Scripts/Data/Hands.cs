@@ -82,7 +82,7 @@ namespace PlayRecorder.Hands
 
         public HandID handID;
 
-        public HandItem(string descriptor, bool active, HandID hand) : base(descriptor, active)
+        public HandItem(string descriptor, string componentType, bool active, HandID hand) : base(descriptor, componentType, active)
         {
             handID = hand;
         }

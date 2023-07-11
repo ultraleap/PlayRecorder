@@ -11,7 +11,7 @@ namespace PlayRecorder
         public bool applyRootMotion = false, fireEvents = false, keepAnimatorControllerState = false;
         public int updateMode = 1, cullingMode = 1;
 
-        public AnimatorItem(string descriptor, bool active, TransformSpace space, bool applyRootMotion, int updateMode, int cullingMode, bool fireEvents, bool keepAnimatorControllerState) : base(descriptor, active, space)
+        public AnimatorItem(string descriptor, string componentType, bool active, TransformSpace space, bool applyRootMotion, int updateMode, int cullingMode, bool fireEvents, bool keepAnimatorControllerState) : base(descriptor, componentType, active, space)
         {
             this.applyRootMotion = applyRootMotion;
             this.updateMode = updateMode;
@@ -166,7 +166,7 @@ namespace PlayRecorder
             }
 
             base.StartRecording();
-            _recordItem = new AnimatorItem(descriptor, gameObject.activeInHierarchy, _rootObjectTransformSpace, _animator.applyRootMotion, (int)_animator.updateMode, (int)_animator.cullingMode, _animator.fireEvents, _animator.keepAnimatorStateOnDisable);
+            _recordItem = new AnimatorItem(descriptor, this.GetType().ToString(), gameObject.activeInHierarchy, _rootObjectTransformSpace, _animator.applyRootMotion, (int)_animator.updateMode, (int)_animator.cullingMode, _animator.fireEvents, _animator.keepAnimatorStateOnDisable);
 
             SetAnimatorParameters();
 
