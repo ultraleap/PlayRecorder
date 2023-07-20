@@ -595,7 +595,7 @@ namespace PlayRecorder.Statistics
         {
             _statCount++;
             GUILayout.BeginVertical(GUI.skin.box);
-            
+
             // Convert the time to readable formats
             string timeLabel = TimeUtil.ConvertToTime(InverseLerpDouble(0, cache.maxFrame, cache.frameIndex) * cache.maxTime);
             string endTimeLabel = TimeUtil.ConvertToTime(cache.maxTime);

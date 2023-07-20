@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3]
+
+### Added
+- Rotation statistic recording
+- Option to flatten multipart statistics (e.g. XYZ) into a single line during CSV export
+
+### Changed
+- Playback file checks are more aggressive to ensure file changes are accounted for
+
 ## [1.1.2] - 11/07/23
 
 ### Added
