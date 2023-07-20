@@ -81,7 +81,7 @@ namespace PlayRecorder
 
         protected void OnDisable()
         {
-            if(_recording)
+            if (_recording)
             {
                 _recordItem.AddStatus(false, _currentTick);
                 OnRecordingDisable();
@@ -92,7 +92,7 @@ namespace PlayRecorder
 
         protected virtual void Reset()
         {
-            _descriptor = name +"_"+ GetType().FormatType();
+            _descriptor = name + "_" + GetType().FormatType();
         }
 
 #endif
@@ -165,7 +165,7 @@ namespace PlayRecorder
             {
                 RecordTickLogic();
             }
-            catch(Exception error)
+            catch (Exception error)
             {
                 Debug.LogError("Error with " + _gameObjectName + " on RecordTickLogic.\n" + error.ToString(), this);
             }
@@ -220,7 +220,7 @@ namespace PlayRecorder
                 return;
 
             int ind = _recordItem.messages.FindIndex(x => x.message == message);
-            if(ind == -1)
+            if (ind == -1)
             {
                 RecordStatInt rsi = new RecordStatInt { message = message };
                 rsi.frames.Add(_currentTick);
@@ -363,6 +363,18 @@ namespace PlayRecorder
             }
         }
 
+        public void AddStatistic(string message, Quaternion value, bool eulerAngles = true)
+        {
+            if (eulerAngles)
+            {
+                AddStatistic(message, value.eulerAngles);
+            }
+            else
+            {
+                AddStatistic(message, new Vector4(value.x, value.y, value.z, value.w));
+            }
+        }
+
         private void StatisticWarning(RecordMessage type)
         {
             Debug.LogWarning("Stat already assigned under different type: " + type.GetType().ToString());
@@ -399,9 +411,9 @@ namespace PlayRecorder
 
         public void SetPlaybackIgnores(PlaybackIgnoreItem playbackIgnore)
         {
-            if(_customPlaybackIgnoreItem == null)
+            if (_customPlaybackIgnoreItem == null)
             {
-                if(playbackIgnore != null)
+                if (playbackIgnore != null)
                 {
                     _playbackIgnoreItem = playbackIgnore;
                 }
@@ -415,7 +427,7 @@ namespace PlayRecorder
                 _playbackIgnoreItem = _customPlaybackIgnoreItem.item;
             }
             // This allows for empty ignores to not affect other components
-            if(_playbackIgnoreItem != null)
+            if (_playbackIgnoreItem != null)
             {
                 SetPlaybackIgnoreTransforms();
                 PlaybackIgnore();
@@ -451,7 +463,7 @@ namespace PlayRecorder
                         continue;
                     }
 
-                    if(typeof(Collider).IsSameOrSubclass(components[j].GetType()) && _playbackIgnoreItem.disableCollisions)
+                    if (typeof(Collider).IsSameOrSubclass(components[j].GetType()) && _playbackIgnoreItem.disableCollisions)
                     {
                         ((Collider)components[j]).enabled = false;
                         continue;
@@ -480,11 +492,11 @@ namespace PlayRecorder
                     // Enforce the settings for the specific defined items
                     if (behaviours[j].GetType() == typeof(Camera))
                     {
-                        if(_playbackIgnoreItem.disableCamera)
+                        if (_playbackIgnoreItem.disableCamera)
                         {
                             behaviours[j].enabled = false;
                         }
-                        if(_playbackIgnoreItem.disableVRCamera)
+                        if (_playbackIgnoreItem.disableVRCamera)
                         {
                             ((Camera)behaviours[j]).stereoTargetEye = StereoTargetEyeMask.None;
                         }
@@ -494,13 +506,13 @@ namespace PlayRecorder
                     found = false;
                     for (int k = 0; k < _playbackIgnoreItem.enabledBehaviours.Count; k++)
                     {
-                        if(behaviours[j].GetType().ToString().Contains(_playbackIgnoreItem.enabledBehaviours[k],StringComparison.InvariantCultureIgnoreCase))
+                        if (behaviours[j].GetType().ToString().Contains(_playbackIgnoreItem.enabledBehaviours[k], StringComparison.InvariantCultureIgnoreCase))
                         {
                             found = true;
                         }
                     }
 
-                    if(!found)
+                    if (!found)
                     {
                         behaviours[j].enabled = false;
                     }
@@ -511,7 +523,7 @@ namespace PlayRecorder
         public virtual void StartPlaying()
         {
             _playing = true;
-            
+
             OnStartPlayback?.Invoke();
         }
 
@@ -525,9 +537,9 @@ namespace PlayRecorder
                     {
                         PlayUpdateLogic();
                     }
-                    catch(Exception error)
+                    catch (Exception error)
                     {
-                        Debug.LogError("Error with " + _gameObjectName + " on PlayUpdateLogic.\n"+error.ToString(), this);
+                        Debug.LogError("Error with " + _gameObjectName + " on PlayUpdateLogic.\n" + error.ToString(), this);
                     }
                 }
                 _playUpdatedParts.Clear();
@@ -581,13 +593,13 @@ namespace PlayRecorder
                             {
                                 PlayTickLogic(i);
                             }
-                            catch(Exception error)
+                            catch (Exception error)
                             {
                                 Debug.LogError("Error with " + _gameObjectName + " on PlayTickLogic.\n" + error.ToString(), this);
                             }
                         }
                     }
-                    if(_playUpdatedParts.Count > 0)
+                    if (_playUpdatedParts.Count > 0)
                     {
                         PlayAfterTickLogic();
                     }
@@ -600,7 +612,7 @@ namespace PlayRecorder
         /// </summary>
         protected virtual void PlayTickLogic(int index)
         {
-            
+
         }
 
         /// <summary>
@@ -630,7 +642,7 @@ namespace PlayRecorder
         public void SetDescriptor(string descriptor)
         {
             _descriptor = descriptor;
-            if(_manager != null)
+            if (_manager != null)
             {
                 _uniqueDescriptor = _manager.CheckUniqueDescriptor(this);
             }
