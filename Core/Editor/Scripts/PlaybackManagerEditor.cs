@@ -30,6 +30,8 @@ namespace PlayRecorder
         private SerializedProperty _timeCounter;
         private SerializedProperty _ignoreFile;
 
+        private bool _awaitingRefreshVal = false;
+
         private string _componentFilter = "";
 
         private GUIContent _recordFoldoutGUI = new GUIContent("", "You can drag files onto this header to add them to the files list.");
@@ -53,6 +55,14 @@ namespace PlayRecorder
             }
         }
 
+        private void OnDestroy()
+        {
+            if (_awaitingRefreshVal)
+            {
+                Debug.LogWarning("Playback Manager needs to Update Files before you can enter play mode.", serializedObject.targetObject);
+            }
+        }
+
         public override bool RequiresConstantRepaint()
         {
             return false;
@@ -65,6 +75,7 @@ namespace PlayRecorder
             _binders = serializedObject.FindProperty("_binders");
             _currentFile = serializedObject.FindProperty("_currentFile");
             _awaitingRefresh = serializedObject.FindProperty("_awaitingFileRefresh");
+            _awaitingRefreshVal = _awaitingRefresh.boolValue;
             _oldFileIndex = serializedObject.FindProperty("_oldFileIndex");
             _playing = serializedObject.FindProperty("_playing");
             _changingFiles = serializedObject.FindProperty("_changingFiles");
@@ -248,17 +259,13 @@ namespace PlayRecorder
             if (_recordedFiles.isExpanded)
             {
                 _fileScrollPos = EditorGUILayout.BeginScrollView(_fileScrollPos, GUILayout.Height(Sizes.Playback.heightFileScroll));
+                EditorGUI.BeginChangeCheck();
                 for (int i = 0; i < _recordedFiles.arraySize; i++)
                 {
-                    if (!(_fileScrollPos.y - ((Sizes.heightLine + Sizes.padding)*2) <= ((Sizes.heightLine+Sizes.padding) * (i - 1)) && _fileScrollPos.y + Sizes.Playback.heightFileScroll > ((Sizes.heightLine + Sizes.padding) * i)))
+                    if (!(_fileScrollPos.y - ((Sizes.heightLine + Sizes.padding) * 2) <= ((Sizes.heightLine + Sizes.padding) * (i - 1)) && _fileScrollPos.y + Sizes.Playback.heightFileScroll > ((Sizes.heightLine + Sizes.padding) * i)))
                     {
                         EditorGUILayout.LabelField("");
                         continue;
-                    }
-
-                    if (_recordedFiles.GetArrayElementAtIndex(i).objectReferenceValue == null)
-                    {
-                        _awaitingRefresh.boolValue = true;
                     }
 
                     EditorGUILayout.BeginHorizontal();
@@ -283,7 +290,6 @@ namespace PlayRecorder
                     {
                         _recordedFiles.GetArrayElementAtIndex(i).objectReferenceValue = null;
                         _recordedFiles.DeleteArrayElementAtIndex(i);
-                        _awaitingRefresh.boolValue = true;
                         if (_currentFile.intValue >= _recordedFiles.arraySize)
                         {
                             _currentFile.intValue = _recordedFiles.arraySize - 1;
@@ -293,6 +299,10 @@ namespace PlayRecorder
                     EditorGUI.EndDisabledGroup();
 
                     EditorGUILayout.EndHorizontal();
+                }
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _awaitingRefresh.boolValue = true;
                 }
                 EditorGUILayout.EndScrollView();
             }
@@ -324,13 +334,13 @@ namespace PlayRecorder
                     for (int i = 0; i < _recordedFiles.arraySize; i++)
                     {
                         TextAsset t = (TextAsset)_recordedFiles.GetArrayElementAtIndex(i).objectReferenceValue;
-                        if(t == null)
+                        if (t == null)
                         {
                             continue;
                         }
                         string guid = "";
                         long local = 0;
-                        if(AssetDatabase.TryGetGUIDAndLocalFileIdentifier(t, out guid, out local))
+                        if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(t, out guid, out local))
                         {
                             playlist.Add(new PlaylistItem(t.name, AssetDatabase.GUIDToAssetPath(guid), guid));
                         }
@@ -343,10 +353,10 @@ namespace PlayRecorder
 
             EditorGUI.EndDisabledGroup();
 
-            if (GUILayout.Button(new GUIContent("Load Playlist","Loading a playlist will overwrite your current set of loaded files. Playlist order is determined on how files are found, not the order they are present within the file.")))
+            if (GUILayout.Button(new GUIContent("Load Playlist", "Loading a playlist will overwrite your current set of loaded files. Playlist order is determined on how files are found, not the order they are present within the file.")))
             {
                 var path = EditorUtility.OpenFilePanel("Load Playlist", "", "json");
-                if(path.Length != 0)
+                if (path.Length != 0)
                 {
                     try
                     {
@@ -357,7 +367,7 @@ namespace PlayRecorder
                         for (int i = 0; i < playlist.Count; i++)
                         {
                             temp = AssetDatabase.GUIDToAssetPath(playlist[i].guid.ToString());
-                            if(temp.Contains(playlist[i].name + ".bytes"))
+                            if (temp.Contains(playlist[i].name + ".bytes"))
                             {
                                 textAssets.Add(AssetDatabase.LoadAssetAtPath<TextAsset>(temp));
                                 playlist.RemoveAt(i);
@@ -370,11 +380,11 @@ namespace PlayRecorder
                             for (int i = 0; i < assets.Length; i++)
                             {
                                 temp = AssetDatabase.GUIDToAssetPath(assets[i]);
-                                if(temp.EndsWith("bytes"))
+                                if (temp.EndsWith("bytes"))
                                 {
                                     for (int j = 0; j < playlist.Count; j++)
                                     {
-                                        if(temp.Contains(playlist[j].name))
+                                        if (temp.Contains(playlist[j].name))
                                         {
                                             textAssets.Add(AssetDatabase.LoadAssetAtPath<TextAsset>(temp));
                                             playlist.RemoveAt(j);
@@ -382,7 +392,7 @@ namespace PlayRecorder
                                         }
                                     }
                                 }
-                                if(playlist.Count == 0)
+                                if (playlist.Count == 0)
                                 {
                                     break;
                                 }
@@ -433,7 +443,7 @@ namespace PlayRecorder
                 }
             }
 
-            GUIContent recordComponents = new GUIContent("Recorded Items (" + _binders.arraySize+")", EditorMessages.playbackRecordItemInfo);
+            GUIContent recordComponents = new GUIContent("Recorded Items (" + _binders.arraySize + ")", EditorMessages.playbackRecordItemInfo);
 
             EditorGUILayout.BeginHorizontal();
 
@@ -444,19 +454,19 @@ namespace PlayRecorder
             GUIContent redLabel = new GUIContent(EditorGUIUtility.IconContent("redLight"));
             redLabel.tooltip = EditorMessages.playbackRecordItemInfo;
 
-            _binders.isExpanded = EditorGUI.Foldout(foldoutRect,_binders.isExpanded, recordComponents, true, Styles.foldoutBold);
+            _binders.isExpanded = EditorGUI.Foldout(foldoutRect, _binders.isExpanded, recordComponents, true, Styles.foldoutBold);
 
-            EditorGUILayout.LabelField(greenLabel,Styles.textIconBold,GUILayout.Width(Sizes.widthIcon));
+            EditorGUILayout.LabelField(greenLabel, Styles.textIconBold, GUILayout.Width(Sizes.widthIcon));
 
             GUIContent gcLabel = new GUIContent(assignedCount.ToString(), EditorMessages.playbackRecordItemInfo);
 
-            EditorGUILayout.LabelField(gcLabel,Styles.textBold, GUILayout.Width(Styles.textBold.CalcSize(gcLabel).x));
+            EditorGUILayout.LabelField(gcLabel, Styles.textBold, GUILayout.Width(Styles.textBold.CalcSize(gcLabel).x));
 
-            EditorGUILayout.LabelField(redLabel,Styles.textIconBold, GUILayout.Width(Sizes.widthIcon));
+            EditorGUILayout.LabelField(redLabel, Styles.textIconBold, GUILayout.Width(Sizes.widthIcon));
 
             GUIContent rcLabel = new GUIContent(unassignedCount.ToString(), EditorMessages.playbackRecordItemInfo);
 
-            EditorGUILayout.LabelField(rcLabel, Styles.textBold,GUILayout.Width(Styles.textBold.CalcSize(rcLabel).x));
+            EditorGUILayout.LabelField(rcLabel, Styles.textBold, GUILayout.Width(Styles.textBold.CalcSize(rcLabel).x));
 
             EditorGUILayout.EndHorizontal();
 
@@ -507,7 +517,7 @@ namespace PlayRecorder
             EditorGUILayout.LabelField(new GUIContent("Playback Ignore File", "This file controls which components on a RecordComponent's object are NOT disabled when playback begins. If no file is assigned then the default values for each RecordComponent will be used."), Styles.textBold);
             _ignoreFile.objectReferenceValue = EditorGUILayout.ObjectField(_ignoreFile.objectReferenceValue, typeof(PlaybackIgnoreComponentsObject), false);
             EditorGUILayout.EndHorizontal();
-            if(_ignoreFile.objectReferenceValue == null)
+            if (_ignoreFile.objectReferenceValue == null)
             {
                 EditorGUILayout.HelpBox("To create an Ignore File, go to your project assets, right click -> Create -> PlayRecorder -> Playback Ignore Asset. If no file is selected, default values are used.", MessageType.Info);
             }
@@ -569,8 +579,5 @@ namespace PlayRecorder
 
             EditorGUI.EndDisabledGroup();
         }
-
-        
     }
-
 }

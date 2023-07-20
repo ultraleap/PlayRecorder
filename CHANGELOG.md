@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rotation statistic recording
 - Option to flatten multipart statistics (e.g. XYZ) into a single line during CSV export
 
+### Changed
+- Playback file checks are more aggressive to ensure file changes are accounted for
+
 ## [1.1.2] - 11/07/23
 
 ### Added
