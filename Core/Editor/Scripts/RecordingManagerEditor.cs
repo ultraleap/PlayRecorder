@@ -131,8 +131,12 @@ namespace PlayRecorder
                 if (componentNames[i].components.Count > 1 || Regex.Replace(componentNames[i].descriptor, @"\s+", "") == "")
                 {
                     duplicates = true;
-                    _duplicateItems.boolValue = duplicates;
                 }
+            }
+
+            if(_duplicateItems.boolValue != duplicates)
+            {
+                _duplicateItems.boolValue = duplicates;
             }
 
             if (duplicates)
