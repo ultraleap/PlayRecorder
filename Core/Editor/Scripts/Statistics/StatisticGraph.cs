@@ -50,7 +50,7 @@ namespace PlayRecorder.Statistics
             for (int i = 0; i < cache.values.Length; i++)
             {
                 item = cache.values[i];
-                if(item.GetType() == typeof(bool))
+                if (item.GetType() == typeof(bool))
                 {
                     positive = 1;
                     break;
@@ -138,7 +138,7 @@ namespace PlayRecorder.Statistics
 
         private static void DrawLinesFromObject(object item, object previousItem, Texture2D texture, float previousFrame, float currentFrame, float endFrame, float negative, float range, List<Color> lineColors)
         {
-            if(item.GetType() == typeof(bool))
+            if (item.GetType() == typeof(bool))
             {
                 bool.TryParse(item.ToString(), out bool val);
                 bool.TryParse(previousItem.ToString(), out bool valPrev);
@@ -175,13 +175,34 @@ namespace PlayRecorder.Statistics
                 DrawSingleLine(texture, previousFrame, currentFrame, endFrame, v4Prev.z, v4.z, negative, range, lineColors[2 % lineColors.Count]);
                 DrawSingleLine(texture, previousFrame, currentFrame, endFrame, v4Prev.w, v4.w, negative, range, lineColors[3 % lineColors.Count]);
             }
+
         }
 
         private static void DrawSingleLine(Texture2D texture, float previousFrame, float currentFrame, float endFrame, float previousValue, float currentValue, float negative, float range, Color color)
         {
-            texture.DrawLine(new Vector2((previousFrame / endFrame) * texture.width, ((previousValue + Mathf.Abs(negative)) / range) * texture.height),
+            if (range == 0)
+            {
+                texture.DrawLine(new Vector2((previousFrame / endFrame) * texture.width, texture.height / 2f),
+                        new Vector2((currentFrame / endFrame) * texture.width, texture.height / 2f),
+                        color);
+            }
+            else
+            {
+                if (((currentFrame - previousFrame) / (float)endFrame) > 0.05f)
+                {
+                    color = new Color(color.r, color.g, color.b, color.a * 0.4f);
+                    texture.DrawLine(new Vector2((previousFrame / endFrame) * texture.width, ((previousValue + Mathf.Abs(negative)) / range) * texture.height),
+                        new Vector2((currentFrame / endFrame) * texture.width, ((previousValue + Mathf.Abs(negative)) / range) * texture.height),
+                        color);
+                }
+                else
+                {
+                    texture.DrawLine(new Vector2((previousFrame / endFrame) * texture.width, ((previousValue + Mathf.Abs(negative)) / range) * texture.height),
                         new Vector2((currentFrame / endFrame) * texture.width, ((currentValue + Mathf.Abs(negative)) / range) * texture.height),
                         color);
+                }
+
+            }
         }
     }
 }
