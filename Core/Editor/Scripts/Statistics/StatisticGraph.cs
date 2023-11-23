@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using PlayRecorder.Tools;
 
@@ -188,7 +188,7 @@ namespace PlayRecorder.Statistics
             }
             else
             {
-                if (((currentFrame - previousFrame) / (float)endFrame) > 0.05f)
+                if (((currentFrame - previousFrame) / (float)endFrame) > 0.025f)
                 {
                     color = new Color(color.r, color.g, color.b, color.a * 0.4f);
                     texture.DrawLine(new Vector2((previousFrame / endFrame) * texture.width, ((previousValue + Mathf.Abs(negative)) / range) * texture.height),
